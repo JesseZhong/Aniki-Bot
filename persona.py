@@ -1,6 +1,6 @@
 #!/bin/python
 
-class Persona:
+class Persona(object):
 
     def __init__(self, name: str, avatar: str):
         super().__init__()

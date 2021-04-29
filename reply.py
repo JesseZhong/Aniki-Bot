@@ -1,6 +1,6 @@
 #!/bin/python
 
-from discord import Webhook, AsyncWebhookAdapter, TextChannel
+from discord import Webhook, AsyncWebhookAdapter, TextChannel, AllowedMentions
 from persona import Persona
 from discord.errors import NotFound
 
@@ -9,6 +9,13 @@ from discord.errors import NotFound
 
 class Reply:
 
+    def __init__(self):
+        super().__init__()
+        self.triggerPhrases = list()
+
+    async def load(self):
+        return
+
     async def send(
         self,
         channel: TextChannel,
@@ -16,19 +23,19 @@ class Reply:
         message: str,
         tts: bool = False
     ):
-        webhooks = channel.webhooks()
+        webhooks = await channel.webhooks()
 
         if webhooks:
-
-            try:
-                webhook = webhooks[0]
-                await webhook.send(
-                    content=message,
-                    wait=False,
-                    username=persona.name,
-                    avatar_url=persona.avatar,
-                    allowed_mentions=True
+            webhook = webhooks[0]
+            await webhook.send(
+                content=message,
+                wait=False,
+                username=persona.name,
+                avatar_url=persona.avatar,
+                allowed_mentions=AllowedMentions(
+                    everyone=False,
+                    replied_user=True,
+                    roles=True,
+                    users=True
                 )
-
-            except NotFound as e:
-                print(e)
+            )

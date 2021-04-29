@@ -55,3 +55,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+.data/
+error.log

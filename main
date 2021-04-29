@@ -6,6 +6,8 @@ from bot import Bot
 
 load_dotenv()
 API_TOKEN = os.getenv('DISCORD_TOKEN')
+DATA_DIR = os.getenv('DATA_DIR')
 
-bot = Bot(command_prefix='!')
+bot = Bot()
+bot.load(DATA_DIR)
 bot.run(API_TOKEN)
