@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Get script directory.
+scriptPath="$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )"
+directory=$PWD
+
+# Change to the script path.
+cd $scriptPath
+
+# Setup if just setting up.
+if [[ $1 = "setup" ]]
+then
+    # Create and activate virtual environment.
+    virtualenv env && . env/bin/activate
+
+    # Ensure all necessary packages are installed in the environments.
+    pip3 install -r ./requirements
+else
+    # Activate virtual environment.
+    . env/bin/activate
+
+    # Run it man.
+    python3 "${scriptPath}/main" "${directory}" "$1"
+fi
+
+# SHUT IT DOWN.
+deactivate
+cd - > /dev/null
