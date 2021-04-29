@@ -3,11 +3,22 @@
 import os
 from dotenv import load_dotenv
 from bot import Bot
+from filewatcher import FileWatcher
 
 load_dotenv()
 API_TOKEN = os.getenv('DISCORD_TOKEN')
 DATA_DIR = os.getenv('DATA_DIR')
 
 bot = Bot()
+
+# Load data.
 bot.load(DATA_DIR)
+
+# Setup file watcher to reload data when it changes.
+watcher = FileWatcher(DATA_DIR, lambda: bot.load(DATA_DIR))
+
+# Run the bot.
 bot.run(API_TOKEN)
+
+# Kill the watcher when the bot is done.
+watcher.stop()
