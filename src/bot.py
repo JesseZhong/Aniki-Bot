@@ -106,6 +106,10 @@ class Bot(Client):
                 await message.reply('You need to be in a voice channel to use this command.')
 
             return
+        
+        if content.startswith('!stop'):
+            await self.stop()
+            return
 
         # See if the user's message has any of the key/trigger words.
         # If it does, send back the reply.
@@ -183,6 +187,15 @@ class Bot(Client):
         except Exception as error:
             self.log_error(error)
             await voiceClient.disconnect()
+
+
+    async def stop(self):
+        """
+            Disconnects the bot from all voice channels.
+        """
+        for voice in self.voice_clients:
+            if voice:
+                await voice.disconnect()
 
 
     def log_error(self, error: Exception):
