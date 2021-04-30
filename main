@@ -2,8 +2,8 @@
 
 import os
 from dotenv import load_dotenv
-from bot import Bot
-from filewatcher import FileWatcher
+from src.bot import Bot
+from src.filewatcher import FileWatcher
 
 load_dotenv()
 API_TOKEN = os.getenv('DISCORD_TOKEN')

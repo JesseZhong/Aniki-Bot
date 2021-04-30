@@ -9,8 +9,8 @@ from discord import \
     Client, Message, Webhook, AsyncWebhookAdapter, \
     TextChannel, VoiceChannel, AllowedMentions, \
     FFmpegPCMAudio, PCMVolumeTransformer, Member
-from persona import Persona
-from ytdlsource import YTDLSource
+from .persona import Persona
+from .ytdlsource import YTDLSource
 import asyncio
 
 class Bot(Client):

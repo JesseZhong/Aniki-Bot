@@ -12,7 +12,8 @@
 			"**/.gitignore": true,
 
 			"**/env/**": true,
-			"**/__pycache__/**": true
+			"**/__pycache__/**": true,
+			"youtube*": true
 		}
 	}
 }
