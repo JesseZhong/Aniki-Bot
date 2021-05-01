@@ -92,10 +92,7 @@ class Bot(Client):
                 await message.reply('Please pass a valid url.')
                 return
 
-            if isinstance(author, Member) and \
-               author.voice and hasattr(author.voice, 'channel') and \
-               message.author.voice.channel:
-
+            if self.is_connected(author):
                 try:
                     channel = author.voice.channel
                     await self.play_yt_audio(channel, url)
@@ -107,8 +104,12 @@ class Bot(Client):
 
             return
         
-        if content.startswith('!stop'):
-            await self.stop()
+        if content.startswith('!stop') and self.is_connected(author):
+            await self.stop(author)
+            return
+
+        if content.startswith('!stopall'):
+            await self.stop_all()
             return
 
         # See if the user's message has any of the key/trigger words.
@@ -161,6 +162,7 @@ class Bot(Client):
         """
             Plays the audio of a YouTube video into a voice channel.
         """
+        # TODO: Specify a time range and timestamps.
 
         # Check if the client is already connected to the targetted voice channel.
         voiceClient = next(
@@ -189,13 +191,32 @@ class Bot(Client):
             await voiceClient.disconnect()
 
 
-    async def stop(self):
+    async def stop(self, user: Member):
+        """
+            Disconnects the user's current voice channel.
+        """
+        voice = user.voice.channel
+        for voice in self.voice_clients:
+            if voice:
+                await voice.disconnect()
+
+
+    async def stop_all(self):
         """
             Disconnects the bot from all voice channels.
         """
         for voice in self.voice_clients:
             if voice:
                 await voice.disconnect()
+
+
+    def is_connected(self, user) -> bool:
+        """
+            Check if the user is connected to a voice channel.
+        """
+        return isinstance(user, Member) and \
+            user.voice and hasattr(user.voice, 'channel') and \
+            user.voice.channel
 
 
     def log_error(self, error: Exception):
