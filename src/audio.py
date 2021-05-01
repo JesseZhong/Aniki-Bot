@@ -1,11 +1,10 @@
 #!/bin/python
 
 import asyncio
-import discord
+from discord import \
+    PCMVolumeTransformer, FFmpegPCMAudio, VoiceChannel, VoiceClient
 import youtube_dl
-
-# Taken from example:
-# https://github.com/Rapptz/discord.py/blob/master/examples/basic_voice.py
+from typing import List
 
 # Suppress noise about console usage from errors
 youtube_dl.utils.bug_reports_message = lambda: ''
@@ -30,7 +29,7 @@ ffmpeg_options = {
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
-class YTDLSource(discord.PCMVolumeTransformer):
+class Audio(PCMVolumeTransformer):
 
     def __init__(self, source, *, data, volume=0.5):
         super().__init__(source, volume)
@@ -42,7 +41,13 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
 
     @classmethod
-    async def from_url(cls, url, *, loop=None, stream=False):
+    async def from_url(
+        cls,
+        url,
+        *,
+        loop=None,
+        stream=False
+    ):
         loop = loop or asyncio.get_event_loop()
         data = await loop.run_in_executor(
             None,
@@ -61,9 +66,41 @@ class YTDLSource(discord.PCMVolumeTransformer):
             else ytdl.prepare_filename(data)
 
         return cls(
-            discord.FFmpegPCMAudio(
+            FFmpegPCMAudio(
                 filename,
                 **ffmpeg_options
             ),
             data=data
+        )
+
+    @staticmethod
+    async def play(
+        url: str,
+        voice_clients: List[VoiceClient],
+        voice_channel: VoiceChannel,
+        loop: asyncio.AbstractEventLoop
+    ):
+        """
+            Plays the audio of a YouTube video into a voice channel.
+        """
+
+        # Check if the client is already connected to the targetted voice channel.
+        voiceClient = next(
+            (v for v in voice_clients if v.channel == voice_channel),
+            None
+        )
+
+        # Connect if not already connected.
+        if not voiceClient:
+            voiceClient = await voice_channel.connect()
+            
+        player = await Audio.from_url(url)
+
+        # Play audio into the voice channel.
+        voiceClient.play(
+            player,
+            after=lambda error: asyncio.run_coroutine_threadsafe(
+                voiceClient.disconnect(),
+                loop
+            )
         )

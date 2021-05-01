@@ -7,10 +7,11 @@ from os import path
 from logging.handlers import RotatingFileHandler
 from discord import \
     Client, Message, Webhook, AsyncWebhookAdapter, \
-    TextChannel, VoiceChannel, AllowedMentions, \
-    FFmpegPCMAudio, PCMVolumeTransformer, Member
+    TextChannel, VoiceChannel, AllowedMentions, Member
 from .persona import Persona
-from .ytdlsource import YTDLSource
+from .reaction import Reaction
+from .audio import Audio
+from .state import is_connected
 import asyncio
 
 class Bot(Client):
@@ -31,8 +32,8 @@ class Bot(Client):
         self.logger.addHandler(handler)
 
         # Initiate properties.
-        self.personas = {}
-        self.phrases = {}
+        self.personas: dict[str, Persona] = {}
+        self.reactions: dict[str, Reaction] = {}
 
 
     def load(self, directory: str):
@@ -40,24 +41,22 @@ class Bot(Client):
             Load bot settings and customizations from a directory.
         """
 
-        # TODO: Support multiple phrases with different chances of triggering.
-
         try:
             # Load in personas.
             with open(path.join(directory, 'personas.json'), 'r') as personaFile:
-                self.personas = {k:Persona(**v) for k, v in json.load(personaFile).items()}
+                self.personas = {
+                    k:Persona(**v)
+                    for k, v
+                    in json.load(personaFile).items()
+                }
 
             # Load in and flatten phrases based of trigger phrases.
-            with open(path.join(directory, 'phrases.json'), 'r') as phrasesFile:
-                phrases = json.load(phrasesFile)
-                self.phrases = {
-                    t:{
-                        'content': p['content'],
-                        'persona': p['persona'],
-                        'tts': 'tts' in p and p['tts'] != 0
-                    }
-                    for p in phrases
-                    for t in p['triggers']
+            with open(path.join(directory, 'reactions.json'), 'r') as reactionsFile:
+                reactions = json.load(reactionsFile)
+                self.reactions = {
+                    t:Reaction(**r)
+                    for r in reactions
+                    for t in r['triggers']
                 }
         except Exception as error:
             self.log_error(error)
@@ -85,6 +84,7 @@ class Bot(Client):
         content = message.content
         author = message.author
 
+        # Attempts to play a YouTube audio.
         if content.startswith('!play '):
             url = content[6:]
 
@@ -92,22 +92,28 @@ class Bot(Client):
                 await message.reply('Please pass a valid url.')
                 return
 
-            if self.is_connected(author):
+            if is_connected(author):
                 try:
                     channel = author.voice.channel
-                    await self.play_yt_audio(channel, url)
+                    await Audio.play(
+                        url,
+                        self.voice_clients,
+                        channel,
+                        self.loop
+                    )
                 except Exception as error:
                     self.log_error(error)
                     pass
             else:
                 await message.reply('You need to be in a voice channel to use this command.')
-
             return
         
+        # Disconnects bot from the user's current voice channel.
         if content.startswith('!stop') and self.is_connected(author):
             await self.stop(author)
             return
 
+        # Disconnects bot from all voice channels.
         if content.startswith('!stopall'):
             await self.stop_all()
             return
@@ -115,80 +121,19 @@ class Bot(Client):
         # See if the user's message has any of the key/trigger words.
         # If it does, send back the reply.
         content = content.lower()
-        for key, value in self.phrases.items():
+        for key, value in self.reactions.items():
             if key in content:
                 try:
-                    await self.reply(
+                    await value.react(
+                        author,
                         message.channel,
-                        self.personas[value['persona']],
-                        value['content'],
-                        value['tts']
+                        self.personas,
+                        self.voice_clients,
+                        self.loop
                     )
                 except Exception as error:
                     self.log_error(error)
                     pass
-
-
-    async def reply(
-        self,
-        channel: TextChannel,
-        persona: Persona,
-        message: str,
-        tts: bool = False
-    ):
-        """
-            Sends a custom message using a webhook.
-            Uses a requested persona (fake user)
-            to send the message
-        """
-        webhooks = await channel.webhooks()
-
-        if webhooks:
-            webhook = webhooks[0]
-            await webhook.send(
-                content=message,
-                wait=False,
-                username=persona.name,
-                avatar_url=persona.avatar,
-                allowed_mentions=AllowedMentions(
-                    everyone=False,
-                    replied_user=True,
-                    roles=True,
-                    users=True
-                )
-            )
-
-    async def play_yt_audio(self, channel: VoiceChannel, url: str):
-        """
-            Plays the audio of a YouTube video into a voice channel.
-        """
-        # TODO: Specify a time range and timestamps.
-
-        # Check if the client is already connected to the targetted voice channel.
-        voiceClient = next(
-            (v for v in self.voice_clients if v.channel == channel),
-            None
-        )
-
-        # Connect if not already connected.
-        if not voiceClient:
-            voiceClient = await channel.connect()
-
-        try:
-            player = await YTDLSource.from_url(url)
-
-            # Play audio into the voice channel.
-            voiceClient.play(
-                player,
-                after=lambda error: asyncio.run_coroutine_threadsafe(
-                    voiceClient.disconnect(),
-                    self.loop
-                )
-            )
-
-        except Exception as error:
-            self.log_error(error)
-            await voiceClient.disconnect()
 
 
     async def stop(self, user: Member):
@@ -208,15 +153,6 @@ class Bot(Client):
         for voice in self.voice_clients:
             if voice:
                 await voice.disconnect()
-
-
-    def is_connected(self, user) -> bool:
-        """
-            Check if the user is connected to a voice channel.
-        """
-        return isinstance(user, Member) and \
-            user.voice and hasattr(user.voice, 'channel') and \
-            user.voice.channel
 
 
     def log_error(self, error: Exception):
