@@ -39,4 +39,4 @@ class ServerHandler(BaseHandler):
     
     def handle_reactions(self):
         self.set_headers(200)
-        self.send_file('reacions.json')
+        self.send_file('reactions.json')
