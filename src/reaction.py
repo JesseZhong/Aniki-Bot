@@ -63,7 +63,7 @@ class Reaction:
         # Check if there's any audio to play
         # and try to play it.
         if self.audio_url and is_connected(user):
-            voice_channel = user.author.channel
+            voice_channel = user.voice.channel
             await Audio.play(
                 self.audio_url,
                 voice_clients,

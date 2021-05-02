@@ -24,3 +24,11 @@ class BaseHandler(BaseHTTPRequestHandler):
         with open(os.path.join(DATA_DIR, filename), 'r') as file:
             data = json.load(file)
             self.respond(data)
+
+    
+    def authenticate(self):
+        return
+
+
+    def verify(self):
+        return
