@@ -104,7 +104,7 @@ class Audio(PCMVolumeTransformer):
             before = f'-ss {stringify(startTime)}' if startTime else ''
             after = f'-to {stringify(endTime - (startTime if startTime else 0))}' if endTime else ''
 
-            system(f'sudo ffmpeg -y -hide_banner -loglevel error {before} -i {filename} -vn {after} -c copy {clippedFile}')
+            system(f'ffmpeg -y -hide_banner -loglevel error {before} -i {filename} -vn {after} -c copy {clippedFile}')
 
 
             # Prep the clipped file instead of the original.
