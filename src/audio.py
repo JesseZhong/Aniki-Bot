@@ -7,7 +7,7 @@ import youtube_dl
 from typing import List
 from urllib.parse import urlparse, parse_qs, ParseResult
 from os import path, system
-from .timestamps import from_seconds, parse_timestamp, stringify
+from .timestamps import from_seconds, parse_timestamp, stringify, duration
 
 # Suppress noise about console usage from errors
 youtube_dl.utils.bug_reports_message = lambda: ''
@@ -102,7 +102,9 @@ class Audio(PCMVolumeTransformer):
             # Order matters for cutting speed.
             # https://stackoverflow.com/a/42827058/10167844
             before = f'-ss {stringify(startTime)}' if startTime else ''
-            after = f'-to {stringify(endTime - (startTime if startTime else 0))}' if endTime else ''
+            if endTime:
+                dur = duration(endTime, (startTime if startTime else from_seconds(0)))
+            after = f'-to {stringify(dur)}' if endTime else ''
 
             system(f'ffmpeg -y -hide_banner -loglevel error {before} -i {filename} -vn {after} -c copy {clippedFile}')
 
@@ -125,7 +127,10 @@ class Audio(PCMVolumeTransformer):
         url: str,
         voice_clients: List[VoiceClient],
         voice_channel: VoiceChannel,
-        loop: asyncio.AbstractEventLoop
+        loop: asyncio.AbstractEventLoop,
+        *,
+        start: str = None,
+        end: str = None
     ):
         """
             Plays the audio of a YouTube video into a voice channel.
@@ -141,7 +146,11 @@ class Audio(PCMVolumeTransformer):
         if not voiceClient:
             voiceClient = await voice_channel.connect()
             
-        player = await Audio.from_url(url)
+        player = await Audio.from_url(
+            url,
+            start=start,
+            end=end
+        )
 
         # Play audio into the voice channel.
         voiceClient.play(

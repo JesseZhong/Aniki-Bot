@@ -135,6 +135,9 @@ class Bot(Client):
                     self.log_error(error)
                     pass
 
+                # Only run one to not cause absolute chaos.
+                break
+
 
     async def stop(self, user: Member):
         """

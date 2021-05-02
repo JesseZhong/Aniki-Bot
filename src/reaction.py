@@ -68,7 +68,9 @@ class Reaction:
                 self.audio_url,
                 voice_clients,
                 voice_channel,
-                loop
+                loop,
+                start=self.start,
+                end=self.end
             )
 
 
