@@ -3,13 +3,13 @@
 import os
 from http.server import HTTPServer
 from dotenv import load_dotenv
-from .handler import ServerHandler
+from dashboard.server.handler import ServerHandler
 
 if __name__ == '__main__':
 
     load_dotenv()
     API_URL = os.getenv('API_URL')
-    API_PORT = os.getenv('API_PORT')
+    API_PORT = int(os.getenv('API_PORT'))
 
     server = HTTPServer(
         (API_URL, API_PORT),

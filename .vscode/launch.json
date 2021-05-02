@@ -8,7 +8,7 @@
             "name": "Run Bot Server",
             "type": "python",
             "request": "launch",
-            "program": "main",
+            "program": "bot-main",
             "console": "integratedTerminal",
             "sudo": true
         },
@@ -16,7 +16,7 @@
             "name": "Run Dashboard Server",
             "type": "python",
             "request": "launch",
-            "program": "./server/server",
+            "program": "dashboard-server",
             "console": "integratedTerminal",
             "sudo": true
         }
