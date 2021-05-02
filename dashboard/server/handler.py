@@ -1,26 +1,16 @@
 #!/bin/python
 
+import os
 import json
-from http.server import BaseHTTPRequestHandler
+from .basehandler import BaseHandler
 
-class ServerHandler(BaseHTTPRequestHandler):
-
-    def set_headers(self, code: int, message: str = None):
-        self.send_response(code, message)
-        self.send_header('Content-Type', 'application/json')
-        self.end_headers()
-
-
-    def respond(self, obj: {}):
-        self.wfile.write(
-            json.dumps(obj).encode(encoding='utf_8')
-        )
-        
+class ServerHandler(BaseHandler):
 
     def do_GET(self):
         
         routes = {
             '/personas': self.handle_personas,
+            '/reactions': self.handle_reactions,
             '/favicon.ico': self.handle_favicon,
             '/': self.handle_root
         }
@@ -44,6 +34,9 @@ class ServerHandler(BaseHTTPRequestHandler):
 
     def handle_personas(self):
         self.set_headers(200)
-        self.respond({
-            'PERSONA': 'YEAAAH BABY'
-        })
+        self.send_file('personas.json')
+
+    
+    def handle_reactions(self):
+        self.set_headers(200)
+        self.send_file('reacions.json')
