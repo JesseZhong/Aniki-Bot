@@ -1,0 +1,26 @@
+#!/bin/pythong
+
+import os
+from http.server import HTTPServer
+from dotenv import load_dotenv
+from .handler import ServerHandler
+
+if __name__ == '__main__':
+
+    load_dotenv()
+    API_URL = os.getenv('API_URL')
+    API_PORT = os.getenv('API_PORT')
+
+    server = HTTPServer(
+        (API_URL, API_PORT),
+        ServerHandler
+    )
+    print(f'Server started on {API_URL}:{API_PORT}.')
+
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+
+    server.server_close()
+    print('Server shutdown.')
