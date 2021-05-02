@@ -109,7 +109,7 @@ class Bot(Client):
             return
         
         # Disconnects bot from the user's current voice channel.
-        if content.startswith('!stop') and self.is_connected(author):
+        if content.startswith('!stop') and is_connected(author):
             await self.stop(author)
             return
 
