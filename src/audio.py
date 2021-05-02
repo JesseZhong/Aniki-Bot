@@ -5,6 +5,9 @@ from discord import \
     PCMVolumeTransformer, FFmpegPCMAudio, VoiceChannel, VoiceClient
 import youtube_dl
 from typing import List
+from urllib.parse import urlparse, parse_qs, ParseResult
+from os import path, system
+from .timestamps import from_seconds, parse_timestamp, stringify
 
 # Suppress noise about console usage from errors
 youtube_dl.utils.bug_reports_message = lambda: ''
@@ -23,11 +26,19 @@ ytdl_format_options = {
     'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
 }
 
-ffmpeg_options = {
-    'options': '-vn'
-}
-
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+
+def prepend(filename: str, prefix: str) -> str:
+    """
+        Adds a prefix to the beginning of the filename.
+    """
+    filePath, baseName = path.split(filename)
+    baseName = prefix + baseName
+    return path.join(filePath, baseName)
+
+
+clip_prefix = 'clipped_'
+
 
 class Audio(PCMVolumeTransformer):
 
@@ -43,11 +54,28 @@ class Audio(PCMVolumeTransformer):
     @classmethod
     async def from_url(
         cls,
-        url,
+        url: str,
         *,
-        loop=None,
-        stream=False
+        start: str = None,
+        end: str = None,
+        loop: bool = None,
+        stream: bool = False
     ):
+        # Parse time stamps if there are any.
+        startTime = parse_timestamp(start) if start else None
+        endTime = parse_timestamp(end) if end else None
+
+        # Check if a time stamp was specified with the URL.
+        parsedUrl: ParseResult = urlparse(url)
+        if parsedUrl.query:
+            query = parse_qs(parsedUrl.query)
+
+            if query and 't' in query:
+                try:
+                    startTime = from_seconds(int(query['t'][0]))
+                except ValueError:
+                    pass
+
         loop = loop or asyncio.get_event_loop()
         data = await loop.run_in_executor(
             None,
@@ -61,17 +89,36 @@ class Audio(PCMVolumeTransformer):
         if 'entries' in data:
             data = data['entries'][0]
 
+        # Download the video and return the filename.
         filename = data['url'] \
             if stream \
             else ytdl.prepare_filename(data)
 
+        # Clip the video if time stamps are specified.
+        if startTime or endTime:
+
+            clippedFile = prepend(filename, clip_prefix)
+
+            # Order matters for cutting speed.
+            # https://stackoverflow.com/a/42827058/10167844
+            before = f'-ss {stringify(startTime)}' if startTime else ''
+            after = f'-to {stringify(endTime - (startTime if startTime else 0))}' if endTime else ''
+
+            system(f'sudo ffmpeg -y -hide_banner -loglevel error {before} -i {filename} -vn {after} -c copy {clippedFile}')
+
+
+            # Prep the clipped file instead of the original.
+            filename = clippedFile
+
+
         return cls(
             FFmpegPCMAudio(
                 filename,
-                **ffmpeg_options
+                options='-vn'
             ),
             data=data
         )
+
 
     @staticmethod
     async def play(

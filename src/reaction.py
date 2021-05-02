@@ -20,7 +20,7 @@ class Reaction:
         end: str = None,
         volume: float = default_volume,
         tts: bool = False,
-         **kwargs
+        **kwargs
     ):
         super().__init__()
 

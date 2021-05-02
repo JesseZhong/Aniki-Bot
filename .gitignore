@@ -59,6 +59,6 @@ venv.bak/
 .data/
 error.log
 
-youtube*
+*youtube*
 
 TODO
