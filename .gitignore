@@ -53,7 +53,7 @@ env.bak/
 venv.bak/
 
 .data/
-error.log
+*-error.log
 
 *youtube*
 

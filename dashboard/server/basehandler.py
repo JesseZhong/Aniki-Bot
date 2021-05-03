@@ -7,7 +7,8 @@ import logging
 from logging.handlers import RotatingFileHandler
 import traceback
 from http.server import BaseHTTPRequestHandler
-from typing import Tuple, Union
+from typing import Tuple, Union, Dict, Callable
+
 
 DATA_DIR = os.getenv('DATA_DIR')
 SITE_URL = os.getenv('SITE_URL')
@@ -16,14 +17,20 @@ CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 PERMITTED_USERS = os.getenv('PERMITTED_USERS')
 DISCORD_OAUTH_API = 'https://discord.com/api/oauth2'
 
+
 class BaseHandler(BaseHTTPRequestHandler):
 
-    def __init__(self, request, client_address, server):
+    def __init__(
+        self,
+        get_routes: Dict[str, Callable[[], None]],
+        post_routes: Dict[str, Callable[[], None]],
+        *args,
+        **kwargs
+    ):
         """
             Sets up error logging.
         """
-        super().__init__(request, client_address, server)
-
+        
         self.logger = logging.getLogger('Error Log')
         self.logger.setLevel(logging.ERROR)
         handler = RotatingFileHandler(
@@ -34,6 +41,11 @@ class BaseHandler(BaseHTTPRequestHandler):
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
+        
+        self.get_routes: Dict[str, Callable[[], None]] = get_routes
+        self.post_routes: Dict[str, Callable[[], None]] = post_routes
+
+        super().__init__( *args, **kwargs)
 
 
     def set_headers(self, code: int, message: str = None):
@@ -61,6 +73,25 @@ class BaseHandler(BaseHTTPRequestHandler):
         with open(os.path.join(DATA_DIR, filename), 'r') as file:
             data = json.load(file)
             self.respond(data)
+
+
+    def handle_oauth_request(self) -> bool:
+        """
+            Checks and handles any Discord OAuth2
+            requests.
+
+            Returns 'True' if the request was for OAuth2.
+        """
+
+        routes: Dict[str, Callable[[], None]] = {
+            ''
+        }
+
+        if self.path in routes:
+            routes[self.parse_request]()
+            return True
+        else:
+            return False
 
     
     def request_authorization(self):
@@ -133,7 +164,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         return
 
 
-    def verify(self) -> Union[Tuple(int, str), None]:
+    def verify(self) -> Union[Tuple[int, str], None]:
         """
             Check for the 'Authorization' header in the request.
             Then verify that there is a valid Discord access
@@ -155,7 +186,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         except ValueError:
             return (400, 'Bad Request - Invalid Authorization')
 
-        if auth_type.lower() is not 'bearer':
+        if auth_type.lower() != 'bearer':
             return (403, 'Forbidden')
 
         # Check if the token is valid.
@@ -190,3 +221,31 @@ class BaseHandler(BaseHTTPRequestHandler):
             return (500, 'Server Error')
 
         return None
+
+
+    def do_GET(self):
+        """
+            Handle all incoming GET requests.
+        """
+
+        # Check for OAuth2 stuffs.
+        # If an OAuth2 request was made,
+        # handle it and do nothing else.
+        if self.handle_oauth_request:
+           return
+
+        # For everything else, check for a valid Discord token.
+        result = self.verify()
+
+        # Deny the user access if verification failed.
+        if result is not None:
+           self.set_headers(**result)
+           self.respond()
+           return
+
+        # Handle a request based off path.
+        if self.path in self.get_routes:
+            self.get_routes[self.path]()
+        else:
+            self.set_headers(404, 'Dude, fuck off!')
+            self.respond('Yo, WTF you doin here?!')
