@@ -7,6 +7,15 @@ from .basehandler import BaseHandler
 class ServerHandler(BaseHandler):
 
     def do_GET(self):
+
+        # Check for a valid Discord token.
+        result = self.verify()
+
+        # Deny the user access if verification failed.
+        if result is not None:
+            self.set_headers(**result)
+            self.respond()
+            return
         
         routes = {
             '/personas': self.handle_personas,

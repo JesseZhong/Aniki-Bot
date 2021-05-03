@@ -23,7 +23,7 @@ class Bot(Client):
         self.logger = logging.getLogger('Error Log')
         self.logger.setLevel(logging.ERROR)
         handler = RotatingFileHandler(
-            'error.log',
+            'bot-error.log',
             maxBytes=20000,
             backupCount=1
         )
