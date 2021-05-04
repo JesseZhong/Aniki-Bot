@@ -12,6 +12,7 @@ if __name__ == '__main__':
     API_URL = os.getenv('API_URL')
     API_PORT = int(os.getenv('API_PORT'))
     CERT_FILE = os.getenv('CERT_FILE')
+    KEY_FILE = os.getenv('KEY_FILE')
 
     server = HTTPServer(
         (API_URL, API_PORT),
@@ -21,6 +22,7 @@ if __name__ == '__main__':
         server.socket,
         server_side=True,
         certfile=CERT_FILE,
+        keyfile=KEY_FILE,
         ssl_version=ssl.PROTOCOL_TLSv1_2
     )
     print(f'Server started on {API_URL}:{API_PORT}.')

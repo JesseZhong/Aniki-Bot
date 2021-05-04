@@ -12,7 +12,8 @@ from typing import Tuple, Union, Dict, Callable, Set
 
 
 DATA_DIR = os.getenv('DATA_DIR')
-REDIRECT_URL = os.getenv('REDIRECT_URL')
+SITE_URL = os.getenv('SITE_URL')
+REDIRECT_URL = f'{SITE_URL}/authorized'
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 PERMITTED_USERS = os.getenv('PERMITTED_USERS')
