@@ -9,7 +9,7 @@
     "react-test": "craco test --env=jsdom",
     "react-eject": "react-scripts eject",
     "flow": "flow-remove-types app/ -d src/",
-    "start": "PORT=4200 yarn react-start",
+    "start": "PORT=4200 npm run react-start",
     "build": "craco build"
   },
   "devDependencies": {
@@ -30,8 +30,7 @@
     "react-scripts": "^4.0.3",
     "source-map-loader": "^0.2.4",
     "ts-loader": "^6.2.1",
-    "typescript": "^3.8.3",
-    "webpack-cli": "^3.3.10"
+    "typescript": "^3.8.3"
   },
   "dependencies": {
     "@craco/craco": "^5.6.3",
@@ -54,6 +53,7 @@
     "react-router-dom": "^5.1.2",
     "rxjs": "^6.5.4",
     "superagent": "^6.1.0",
+    "webpack-cli": "^4.6.0",
     "yup": "^0.28.4"
   },
   "eslintConfig": {
