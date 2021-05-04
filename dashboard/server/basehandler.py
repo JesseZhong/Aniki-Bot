@@ -7,15 +7,19 @@ import logging
 from logging.handlers import RotatingFileHandler
 import traceback
 from http.server import BaseHTTPRequestHandler
-from typing import Tuple, Union, Dict, Callable
+from hashlib import sha256
+from typing import Tuple, Union, Dict, Callable, Set
 
 
 DATA_DIR = os.getenv('DATA_DIR')
-SITE_URL = os.getenv('SITE_URL')
+REDIRECT_URL = os.getenv('REDIRECT_URL')
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 PERMITTED_USERS = os.getenv('PERMITTED_USERS')
 DISCORD_OAUTH_API = 'https://discord.com/api/oauth2'
+
+
+states: Set[str] = set()
 
 
 class BaseHandler(BaseHTTPRequestHandler):
@@ -30,7 +34,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         """
             Sets up error logging.
         """
-        
+
         self.logger = logging.getLogger('Error Log')
         self.logger.setLevel(logging.ERROR)
         handler = RotatingFileHandler(
@@ -57,6 +61,16 @@ class BaseHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
+    def get_header(self, key: str) -> Union[str, None]:
+        """
+            Attempts to pull a request header value.
+        """
+        if key not in self.headers or not self.headers[key]:
+            return None
+
+        return self.headers[key]
+
+
     def respond(self, content: {}):
         """
             Sends a response with the provided content.
@@ -64,6 +78,11 @@ class BaseHandler(BaseHTTPRequestHandler):
         self.wfile.write(
             json.dumps(content).encode(encoding='utf_8')
         )
+
+
+    def send_bad_request(self, content: str = None):
+        self.set_headers(400)
+        self.respond('Bad Request' if not content else content)
 
 
     def send_file(self, filename: str):
@@ -84,46 +103,68 @@ class BaseHandler(BaseHTTPRequestHandler):
         """
 
         routes: Dict[str, Callable[[], None]] = {
-            ''
+            '/authorize': self.request_authorization,
+            '/access': self.request_access,
+            '/refresh': self.refresh_access
         }
 
-        if self.path in routes:
-            routes[self.parse_request]()
-            return True
-        else:
-            return False
+        for route in routes:
+            if self.path.startswith(route):
+                routes[self.parse_request]()
+                return True
+            else:
+                return False
 
     
     def request_authorization(self):
 
-        # TODO: Hash session cookie.
-        state=f''
+        session = self.get_header('Session')
+        if not session:
+            self.send_bad_request('Missing session ID.')
+            return
+
+        # Hash the session 
+        state = sha256(bytes(session)).hexdigest()
         scope = 'identity'
-        redirect = f'{SITE_URL}'
+
+        global states
 
         # No need for the user to reapprove.
         prompt = 'none'
 
         auth_url = f'{DISCORD_OAUTH_API}/authorize?response_type=code' + \
             f'&client_id={CLIENT_ID}&scope={scope}&state={state}' + \
-            f'&redirect_uri={redirect}&prompt={prompt}'
+            f'&redirect_uri={REDIRECT_URL}&prompt={prompt}'
 
+        self.set_headers(200)
         self.respond({
-            'auth_url': auth_url
+            'auth_url': auth_url,
+            'state': state
         })
 
     
-    def request_access(self, code: str):
+    def request_access(self):
         """
             Responds with a new access token
             if a valid Discord authorization code.
         """
+
+        state = self.get_header('State')
+        if not state:
+            self.send_bad_request('Missing state.')
+            return
+
+        code = self.get_header('Code')
+        if not code:
+            self.send_bad_request('Missing code.')
+            return
+
         data = {
             'client_id': CLIENT_ID,
             'client_secret': CLIENT_SECRET,
             'grant_type': 'authorization_code',
             'code': code,
-            'redirect_uri': SITE_URL
+            'redirect_uri': REDIRECT_URL
         }
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -134,19 +175,26 @@ class BaseHandler(BaseHTTPRequestHandler):
             headers=headers
         )
         response.raise_for_status()
+        self.set_headers(200)
         self.respond(response)
 
 
-    def refresh_access(self, refresh_token: str):
+    def refresh_access(self):
         """
             Responds with a new access token
             if a valid Discord refresh token is provided.
         """
+
+        refresh = self.get_header('Refresh')
+        if not refresh:
+            self.send_bad_request('Missing refresh token.')
+            return
+
         data = {
             'client_id': CLIENT_ID,
             'client_secret': CLIENT_SECRET,
             'grant_type': 'refresh_token',
-            'refresh_token': refresh_token
+            'refresh_token': refresh
         }
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -157,6 +205,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             headers=headers
         )
         response.raise_for_status()
+        self.set_headers(200)
         self.respond(response)
 
 
@@ -231,7 +280,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         # Check for OAuth2 stuffs.
         # If an OAuth2 request was made,
         # handle it and do nothing else.
-        if self.handle_oauth_request:
+        if self.handle_oauth_request():
            return
 
         # For everything else, check for a valid Discord token.
@@ -239,8 +288,8 @@ class BaseHandler(BaseHTTPRequestHandler):
 
         # Deny the user access if verification failed.
         if result is not None:
-           self.set_headers(**result)
-           self.respond()
+           self.set_headers(*result)
+           self.respond('Nope')
            return
 
         # Handle a request based off path.
