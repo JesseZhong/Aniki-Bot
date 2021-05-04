@@ -13,7 +13,13 @@
 
 			"**/env/**": true,
 			"**/__pycache__/**": true,
-			"youtube*": true
+			"youtube*": true,
+
+
+			"**/node_modules/**": true,
+			"**/browserslist": true,
+			"**/tsconfig.json": true,
+			"**/webpack.config.js": true
 		}
 	}
 }

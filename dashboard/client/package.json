@@ -1,0 +1,65 @@
+{
+  "name": "media-browser",
+  "version": "1.0.0",
+  "description": "It do the thing.",
+  "private": true,
+  "scripts": {
+    "react-start": "craco start",
+    "react-build": "craco build",
+    "react-test": "craco test --env=jsdom",
+    "react-eject": "react-scripts eject",
+    "flow": "flow-remove-types app/ -d src/",
+    "start": "PORT=4200 yarn react-start",
+    "build": "craco build"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.3",
+    "@types/classnames": "^2.2.10",
+    "@types/flux": "^3.1.9",
+    "@types/lodash": "^4.14.149",
+    "@types/node-uuid": "^0.0.28",
+    "@types/react": "^16.9.17",
+    "@types/react-dom": "^16.9.5",
+    "@types/react-lazyload": "^3.1.0",
+    "@types/react-router-dom": "^5.1.3",
+    "@types/superagent": "^4.1.4",
+    "@types/webpack": "^4.41.7",
+    "@types/webpack-env": "^1.15.1",
+    "@types/yup": "^0.28.0",
+    "flow-remove-types": "^2.116.1",
+    "react-scripts": "^4.0.3",
+    "source-map-loader": "^0.2.4",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.8.3",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "@craco/craco": "^5.6.3",
+    "@fortawesome/fontawesome-svg-core": "^1.2.27",
+    "@fortawesome/free-brands-svg-icons": "^5.12.1",
+    "@fortawesome/free-regular-svg-icons": "^5.13.0",
+    "@fortawesome/free-solid-svg-icons": "^5.12.1",
+    "@fortawesome/react-fontawesome": "^0.1.8",
+    "@types/react-infinite": "^0.0.35",
+    "bootstrap": "^4.4.1",
+    "classnames": "^2.2.6",
+    "cross-env": "^6.0.3",
+    "flux": "^4.0.1",
+    "formik": "^2.1.4",
+    "lodash": "^4.17.15",
+    "node-sass": "^4.13.1",
+    "node-uuid": "^1.4.8",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-router-dom": "^5.1.2",
+    "rxjs": "^6.5.4",
+    "superagent": "^6.1.0",
+    "yup": "^0.28.4"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  }
+}
