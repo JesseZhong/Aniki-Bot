@@ -10,15 +10,14 @@ const ReactionCard = (props: {
     const reaction = props.reaction;
 
     return (
-        <>
-            <div
-                className={
-                    'reaction-card ' +
-                    props.className
-                }
-            >
-            </div>
-        </>
+        <div
+            className={
+                'reaction-card ' +
+                props.className
+            }
+        >
+            {reaction.content}
+        </div>
     );
 }
 

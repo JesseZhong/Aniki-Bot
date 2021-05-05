@@ -17,6 +17,7 @@ const PersonaCard = (props: {
                     props.className
                 }
             >
+                {persona.name}
             </div>
         </>
     );

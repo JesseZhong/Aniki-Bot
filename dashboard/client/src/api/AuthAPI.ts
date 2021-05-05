@@ -27,7 +27,7 @@ const AuthAPI = (
                 // Throw an exception if the wrong state was
                 // passed back. Might be a man-in-the middle attack.
                 const returnState = response.body['state'];
-                if (state != returnState) {
+                if (state !== returnState) {
                     console.log(`Incorrect state passed back. ${state} != ${returnState}`);
                 }
                 else {
@@ -53,8 +53,6 @@ const AuthAPI = (
                 if (error) {
                     return console.error(error);
                 }
-
-                console.log(response)
 
                 const {
                     access_token,

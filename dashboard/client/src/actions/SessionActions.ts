@@ -3,7 +3,7 @@ import { Session } from '../auth/Session';
 import ActionTypes from './ActionTypes';
 import { SessionPayload } from './SessionPayloads';
 
-export default {
+const SessionActions = {
     get(): void {
         AppDispatcher.dispatch({
             type: ActionTypes.GET_SESSION,
@@ -24,3 +24,5 @@ export default {
         } as SessionPayload)
     }
 }
+
+export default SessionActions;

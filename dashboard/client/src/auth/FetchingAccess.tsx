@@ -57,7 +57,7 @@ const AwaitAccess = (
 
     // Check for any kind of inconsistencies. States no matching or no
     // code could mean some kind of attack. Display this if that happens.
-    if (state != props.session.session_id || code == null) {
+    if (state !== props.session.session_id || code === null) {
         return (
             <div
                 className='d-flex flex-column justify-content-center align-items-center'
