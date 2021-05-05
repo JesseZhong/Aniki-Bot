@@ -49,6 +49,12 @@ class BaseHandler(BaseHTTPRequestHandler):
         self.get_routes: Dict[str, Callable[[], None]] = get_routes
         self.post_routes: Dict[str, Callable[[], None]] = post_routes
 
+        self.oauth_routes: Dict[str, Callable[[], None]] = {
+            '/authorize': self.request_authorization,
+            '/access': self.request_access,
+            '/refresh': self.refresh_access
+        } 
+
         super().__init__( *args, **kwargs)
 
 
@@ -112,18 +118,11 @@ class BaseHandler(BaseHTTPRequestHandler):
             Returns 'True' if the request was for OAuth2.
         """
 
-        routes: Dict[str, Callable[[], None]] = {
-            '/authorize': self.request_authorization,
-            '/access': self.request_access,
-            '/refresh': self.refresh_access
-        }
-
-        for route, handler in routes.items():
-            if self.path.startswith(route):
-                handler()
-                return True
-            else:
-                return False
+        if self.path in self.oauth_routes:
+            self.oauth_routes[self.path]()
+            return True
+        else:
+            return False
 
     
     def request_authorization(self):
@@ -182,9 +181,28 @@ class BaseHandler(BaseHTTPRequestHandler):
             data=data,
             headers=headers
         )
+
+        # Check for errors.
         response.raise_for_status()
+
+        tokens = json.loads(response.content)
+
+        # Grab the access_token and grab the user.
+        user = json.loads(self.get_user(tokens['access_token']).content)['user']
+
+        # Check for permissions.
+        permitted = self.permitted(
+            username=user['username'],
+            discriminator=user['discriminator']
+        )
+
+        # Append API permissions to the response.
+        tokens['permitted'] = permitted
+
+        print(tokens)
+
         self.set_headers(200)
-        self.respond(response)
+        self.respond(tokens)
 
 
     def refresh_access(self):
@@ -212,13 +230,34 @@ class BaseHandler(BaseHTTPRequestHandler):
             data=data,
             headers=headers
         )
-        response.raise_for_status()
+
         self.set_headers(200)
         self.respond(response)
 
 
     def revoke_access(self):
         return
+
+
+    def permitted(self, username: str, discriminator: str) -> bool:
+        """
+            Check if the user has permissions.
+        """
+        with open(self.PERMITTED_USERS, 'r') as file:
+            permittedUsers = json.load(file)
+            return f'{username}#{discriminator}' in permittedUsers
+
+
+    def get_user(self, access_token: str) -> requests.Response:
+        """
+            Pings Discord's API to get the user for the access token.
+        """
+        return requests.get(
+            f'{self.DISCORD_OAUTH_API}/@me',
+            headers={
+                'Authorization': f'Bearer {access_token}'
+            }
+        )
 
 
     def verify(self) -> Union[Tuple[int, str], None]:
@@ -238,7 +277,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             return (401, 'Unauthorized')
 
         try:
-            auth_type, token = self.headers['Authorization'].slit(' ')
+            auth_type, token = self.headers['Authorization'].split(' ')
 
         except ValueError:
             return (400, 'Bad Request - Invalid Authorization')
@@ -247,12 +286,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             return (403, 'Forbidden')
 
         # Check if the token is valid.
-        response = requests.get(
-            f'{self.DISCORD_OAUTH_API}/@me',
-            headers={
-                'Authorization': f'Bearer {token}'
-            }
-        )
+        response = self.get_user(token)
 
         if response.status_code != 200 or 'user' not in response.content:
             return (401, 'Unauthorized - Invalid Token')
@@ -262,11 +296,8 @@ class BaseHandler(BaseHTTPRequestHandler):
         username = response.content.user.username
 
         try:
-            # Check if the user has permissions.
-            with open(self.PERMITTED_USERS, 'r') as file:
-                permittedUsers = json.load(file)
-                if username not in permittedUsers:
-                    return (403, 'Forbidden')
+            if not self.permitted(username):
+                return (403, 'Forbidden')
         except OSError:
             print('Could not open or read the permissions file.')
             return (403, 'Forbidden')

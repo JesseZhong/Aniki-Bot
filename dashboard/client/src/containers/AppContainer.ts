@@ -44,7 +44,8 @@ export interface AppState {
 
     requestAccess: (
         state: string,
-        code: string
+        code: string,
+        received: () => void
     ) => void,
 
     personas: Personas,
@@ -63,7 +64,27 @@ function getState(): AppState {
         session: SessionStore.getState(),
 
         requestAuthorization: authApi.requestAuthorization,
-        requestAccess: authApi.requestAccess,
+        requestAccess: (
+            state: string,
+            code: string,
+            received: () => void
+        ) => authApi.requestAccess(
+            state,
+            code,
+            (
+                access_token: string,
+                refresh_token: string,
+                permitted: boolean
+            ) => {
+                let session = SessionStore.getState();
+                session.access_token = access_token;
+                session.refresh_token = refresh_token;
+                session.permitted = permitted;
+                Sessions.set(session);
+                SessionActions.set(session);
+                received();
+            }
+        ),
 
         personas: PersonaStore.getState(),
         receivePersonas: PersonaActions.receive,
@@ -77,7 +98,7 @@ function getState(): AppState {
     }
 }
 
-const token = getState().session.token;
+const token = getState().session.access_token;
 if (token) {
     personaApi.get(token, getState().receivePersonas);
     reactionApi.get(token, getState().receiveReactions);

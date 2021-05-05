@@ -1,6 +1,14 @@
 import request, { Response } from "superagent";
 
 
+interface TokenResponse {
+    access_token: string;
+    refresh_token: string;
+    scope: string;
+    permitted: boolean;
+}
+
+
 const AuthAPI = (
     url: string
 ) => ({
@@ -30,9 +38,36 @@ const AuthAPI = (
 
     requestAccess(
         state: string,
-        code: string
+        code: string,
+        received: (
+            access_token: string,
+            refresh_token: string,
+            permitted: boolean
+        ) => void
     ): void {
+        request.get(`${url}/access`)
+            .set('Accept', 'application/json')
+            .set('State', state)
+            .set('Code', code)
+            .end((error: any, response: Response) => {
+                if (error) {
+                    return console.error(error);
+                }
 
+                console.log(response)
+
+                const {
+                    access_token,
+                    refresh_token,
+                    permitted
+                } = response.body as TokenResponse;
+
+                received(
+                    access_token,
+                    refresh_token,
+                    permitted
+                );
+            });
     }
 });
 

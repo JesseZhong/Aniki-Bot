@@ -6,7 +6,8 @@ const key = 'session';
 
 export interface Session {
     session_id: string;
-    token?: string;
+    access_token?: string;
+    refresh_token?: string;
     user?: User;
     permitted: boolean;
 }
@@ -36,5 +37,9 @@ export const Sessions = {
         }
 
         receive(session);
+    },
+
+    set: (session: Session) => {
+        ls.set(key, session);
     }
 }

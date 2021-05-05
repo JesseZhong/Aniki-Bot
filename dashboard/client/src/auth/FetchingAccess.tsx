@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useHistory, useLocation } from 'react-router-dom';
 import { faCircleNotch, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Session } from './Session';
@@ -9,10 +9,12 @@ const AwaitAccess = (
         session: Session,
         requestAccess: (
             state: string,
-            code: string
+            code: string,
+            received: () => void
         ) => void
     }
 ) => {
+    const history = useHistory();
 
     // When the user authorizes or denies Discord access
     // they will be routed to this component via the Discord
@@ -52,6 +54,34 @@ const AwaitAccess = (
 
     const code = query.get('code');
     const state = query.get('state');
+
+    // Check for any kind of inconsistencies. States no matching or no
+    // code could mean some kind of attack. Display this if that happens.
+    if (state != props.session.session_id || code == null) {
+        return (
+            <div
+                className='d-flex flex-column justify-content-center align-items-center'
+                style={{
+                    height: '100vh'
+                }}
+            >
+                <img
+                    src='https://media1.tenor.com/images/04ab212f14107f7595857c74819a79c9/tenor.gif?itemid=9167536'
+                    alt='What even?'
+                />
+                <h1>Incorrect State</h1>
+                <p>You, uh, playing fuck, fuck games??</p>
+            </div>
+        );
+    }
+
+    // Ping the API to retreive the access and refresh tokens from Discord.
+    // Navigate back to root once the tokens are received.
+    props.requestAccess(
+        state,
+        code,
+        () => history.push('/')
+    );
 
     return (
         <div

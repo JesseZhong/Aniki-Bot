@@ -7,7 +7,6 @@ import ReactionsPage from './reactions/ReactionsPage';
 import PrivateRoute from './auth/PrivateRoute';
 import Denied from './auth/Denied';
 import FetchingAccess from './auth/FetchingAccess';
-import Authenticate from './auth/Authenticate';
 import RequestAuthorization from './auth/RequestAuth';
 
 const App = (state: AppState) => (
@@ -33,10 +32,6 @@ const App = (state: AppState) => (
                         requestAccess={state.requestAccess}
                     />
                 }
-            />
-            <Route
-                path='/authenticate'
-                render={(props: any) => <Authenticate {...props} />}
             />
             <PrivateRoute
                 path='/reactions'

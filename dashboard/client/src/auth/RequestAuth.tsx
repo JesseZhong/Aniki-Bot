@@ -1,5 +1,5 @@
 import React from 'react';
-import { faExchangeAlt } from '@fortawesome/free-solid-svg-icons';
+import { faSync } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Session } from './Session';
 
@@ -42,8 +42,9 @@ const RequestAuthorization = (
             }}
         >
             <FontAwesomeIcon
-                icon={faExchangeAlt}
+                icon={faSync}
                 size={'5x'}
+                spin
                 className='text-info'
             />
             <h1>Requesting Authorization</h1>

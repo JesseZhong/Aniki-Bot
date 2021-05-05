@@ -9,8 +9,8 @@ export default (props: {
     <Route 
         {...props}
         render={(routeProps: any) => (
-            props.session?.token
-            ? props.session?.permitted
+            props.session?.access_token
+            ? props.session?.permitted == true
                 ? props.render(routeProps)
                 : <Redirect to='/denied' />
             : <Redirect to='/requestauth' />
