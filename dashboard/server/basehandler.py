@@ -288,15 +288,16 @@ class BaseHandler(BaseHTTPRequestHandler):
         # Check if the token is valid.
         response = self.get_user(token)
 
-        if response.status_code != 200 or 'user' not in response.content:
+        if response.status_code != 200:
             return (401, 'Unauthorized - Invalid Token')
 
-        if 'username' not in response.content.user:
-            return (403, 'Forbidden - Invalid User')
-        username = response.content.user.username
+        user = json.loads(response.content)['user']
 
         try:
-            if not self.permitted(username):
+            if not self.permitted(
+                username=user['username'],
+                discriminator=user['discriminator']
+            ):
                 return (403, 'Forbidden')
         except OSError:
             print('Could not open or read the permissions file.')
