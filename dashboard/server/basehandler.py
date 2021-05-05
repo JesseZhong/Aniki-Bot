@@ -8,6 +8,7 @@ from logging.handlers import RotatingFileHandler
 import traceback
 from http.server import BaseHTTPRequestHandler
 from typing import Tuple, Union, Dict, Callable, Set
+from urllib.parse import quote
 
 
 states: Set[str] = set()
@@ -117,9 +118,9 @@ class BaseHandler(BaseHTTPRequestHandler):
             '/refresh': self.refresh_access
         }
 
-        for route in routes:
+        for route, handler in routes.items():
             if self.path.startswith(route):
-                routes[self.parse_request]()
+                handler()
                 return True
             else:
                 return False
@@ -131,16 +132,17 @@ class BaseHandler(BaseHTTPRequestHandler):
         if not state:
             self.send_bad_request('Missing state.')
             return
-        scope = 'identity'
+        scope = 'identify'
 
         global states
 
         # No need for the user to reapprove.
         prompt = 'none'
 
+        redirect = quote(self.REDIRECT_URL, safe='')
         auth_url = f'{self.DISCORD_OAUTH_API}/authorize?response_type=code' + \
-            f'&client_id={self.CLIENT_ID}&scope={scope}&state={state}' + \
-            f'&redirect_uri={self.REDIRECT_URL}&prompt={prompt}'
+            f'&client_id={self.CLIENT_ID}&state={state}&scope={scope}' + \
+            f'&redirect_uri={redirect}&prompt={prompt}'
 
         self.set_headers(200)
         self.respond({
