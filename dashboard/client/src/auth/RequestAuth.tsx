@@ -13,13 +13,27 @@ const RequestAuthorization = (
     }
 ) => {
 
+    // The client first requests a Discord OAuth URL
+    // the user can use to login and or authorize access
+    // to this app using their Discord identity.
+    // NOTE: Session id is passed so both the client
+    // and API can verify it is the same user performing
+    // these handshakes throughout the OAuth process.
     props.requestAuthorization(
         props.session?.session_id,
         (auth_url: string) => {
-            console.log(auth_url)
+
+            // Redirect the user to the OAuth URL
+            // as soon as it is received from the API.
+            // The user will have to confirm or deny
+            // if they'd like this app to have access
+            // to their identity.
+            window.location.href = auth_url;
         }
     )
 
+    // Display waiting page while the OAuth URL
+    // is being fetched from the API.
     return (
         <div
             className='d-flex flex-column justify-content-center align-items-center'
@@ -27,13 +41,15 @@ const RequestAuthorization = (
                 height: '100vh'
             }}
         >
-            <h1>Requesting Authorization</h1>
             <FontAwesomeIcon
                 icon={faExchangeAlt}
-                size={'4x'}
+                size={'5x'}
+                className='text-info'
             />
+            <h1>Requesting Authorization</h1>
+            <p>Please wait while we connect you.</p>
         </div>
-    )
+    );
 }
 
 export default RequestAuthorization;

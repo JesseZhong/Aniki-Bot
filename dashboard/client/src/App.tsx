@@ -6,7 +6,7 @@ import PersonasPage from './personas/PersonasPage';
 import ReactionsPage from './reactions/ReactionsPage';
 import PrivateRoute from './auth/PrivateRoute';
 import Denied from './auth/Denied';
-import AwaitAccess from './auth/AwaitAccess';
+import FetchingAccess from './auth/FetchingAccess';
 import Authenticate from './auth/Authenticate';
 import RequestAuthorization from './auth/RequestAuth';
 
@@ -15,7 +15,7 @@ const App = (state: AppState) => (
         <Switch>
             <Route
                 path='/denied'
-                render={(props: any) => <Denied />}
+                render={() => <Denied />}
             />
             <Route
                 path='/requestauth'
@@ -26,28 +26,45 @@ const App = (state: AppState) => (
                     />}
             />
             <Route
-                path='/authenticate'
-                render={(props: any) => <Authenticate {...props} />}
+                path='/authorized'
+                render={(props: any) =>
+                    <FetchingAccess {...props}
+                        session={state.session}
+                        requestAccess={state.requestAccess}
+                    />
+                }
             />
             <Route
-                path='/authorized'
-                render={(props: any) => <AwaitAccess />}
+                path='/authenticate'
+                render={(props: any) => <Authenticate {...props} />}
             />
             <PrivateRoute
                 path='/reactions'
                 session={state.session}
-                render={(props: any) => <ReactionsPage {...props} reactions={state.reactions} />}
+                render={(props: any) =>
+                    <ReactionsPage {...props}
+                        reactions={state.reactions}
+                    />
+                }
             />
             <PrivateRoute
                 path='/personas'
                 session={state.session}
-                render={(props: any) => <PersonasPage {...props} personas={state.personas} />}
+                render={(props: any) =>
+                    <PersonasPage {...props}
+                        personas={state.personas}
+                    />
+                }
             />
             <PrivateRoute
                 exact
                 path='/'
                 session={state.session}
-                render={(props: any) => <ReactionsPage {...props} reactions={state.reactions} />}
+                render={(props: any) =>
+                    <ReactionsPage {...props}
+                        reactions={state.reactions}
+                    />
+                }
             />
             <Route path='*' component={PageNotFound} />
         </Switch>
