@@ -10,20 +10,43 @@ import { Reaction, Reactions } from '../reactions/Reactions';
 import ReactionActions from '../actions/ReactionActions';
 import ReactionStore from '../stores/ReactionStore';
 import ReactionAPI from '../api/ReactionAPI';
+import { Session, Sessions } from '../auth/Session';
+import SessionStore from '../stores/SessionStore';
+import SessionActions from '../actions/SessionActions';
+import AuthAPI from '../api/AuthAPI';
 
-const url = 'https://';
+const url = process.env.REACT_APP_API_URL ?? '';
 
+const authApi = AuthAPI(url);
 const personaApi = PersonaAPI(url);
 const reactionApi = ReactionAPI(url);
 
+// Load session.
+Sessions.load(
+    SessionActions.receive
+);
+
 function getStores() {
     return [
+        SessionStore,
         PersonaStore,
         ReactionStore
     ]
 }
 
 export interface AppState {
+    session: Session,
+
+    requestAuthorization: (
+        state: string,
+        received: (auth_url: string) => void
+    ) => void,
+
+    requestAccess: (
+        state: string,
+        code: string
+    ) => void,
+
     personas: Personas,
     receivePersonas: (personas: Personas) => void,
     putPersona: (key: string, persona: Persona) => void,
@@ -37,6 +60,11 @@ export interface AppState {
 
 function getState(): AppState {
     return {
+        session: SessionStore.getState(),
+
+        requestAuthorization: authApi.requestAuthorization,
+        requestAccess: authApi.requestAccess,
+
         personas: PersonaStore.getState(),
         receivePersonas: PersonaActions.receive,
         putPersona: PersonaActions.put,
@@ -49,7 +77,10 @@ function getState(): AppState {
     }
 }
 
-personaApi.get(getState().receivePersonas);
-reactionApi.get(getState().receiveReactions);
+const token = getState().session.token;
+if (token) {
+    personaApi.get(token, getState().receivePersonas);
+    reactionApi.get(token, getState().receiveReactions);
+}
 
 export default Container.createFunctional(App, getStores, getState);

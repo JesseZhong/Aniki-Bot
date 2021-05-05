@@ -7,17 +7,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import traceback
 from http.server import BaseHTTPRequestHandler
-from hashlib import sha256
 from typing import Tuple, Union, Dict, Callable, Set
-
-
-DATA_DIR = os.getenv('DATA_DIR')
-SITE_URL = os.getenv('SITE_URL')
-REDIRECT_URL = f'{SITE_URL}/authorized'
-CLIENT_ID = os.getenv('CLIENT_ID')
-CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-PERMITTED_USERS = os.getenv('PERMITTED_USERS')
-DISCORD_OAUTH_API = 'https://discord.com/api/oauth2'
 
 
 states: Set[str] = set()
@@ -32,6 +22,14 @@ class BaseHandler(BaseHTTPRequestHandler):
         *args,
         **kwargs
     ):
+        self.DATA_DIR = os.getenv('DATA_DIR')
+        self.SITE_URL = os.getenv('SITE_URL')
+        self.REDIRECT_URL = f'{self.SITE_URL}/authorized'
+        self.CLIENT_ID = os.getenv('CLIENT_ID')
+        self.CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+        self.PERMITTED_USERS = os.getenv('PERMITTED_USERS')
+        self.DISCORD_OAUTH_API = 'https://discord.com/api/oauth2'
+
         """
             Sets up error logging.
         """
@@ -58,6 +56,16 @@ class BaseHandler(BaseHTTPRequestHandler):
             Set a response's headers.
         """
         self.send_response(code, message)
+        origin = self.get_header('Origin')
+        if origin == self.SITE_URL:
+            self.send_header('Access-Control-Allow-Origin', self.SITE_URL)
+        self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS, PUT, DELETE')
+        self.send_header("Access-Control-Allow-Headers", "X-Requested-With")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Headers", "Accept")
+        self.send_header("Access-Control-Allow-Headers", "Authorization")
+        self.send_header("Access-Control-Allow-Headers", "State")
+        self.send_header("Access-Control-Allow-Headers", "Code")
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
 
@@ -90,7 +98,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         """
             Sends the contents of a specified file.
         """
-        with open(os.path.join(DATA_DIR, filename), 'r') as file:
+        with open(os.path.join(self.DATA_DIR, filename), 'r') as file:
             data = json.load(file)
             self.respond(data)
 
@@ -119,13 +127,10 @@ class BaseHandler(BaseHTTPRequestHandler):
     
     def request_authorization(self):
 
-        session = self.get_header('Session')
-        if not session:
-            self.send_bad_request('Missing session ID.')
+        state = self.get_header('State')
+        if not state:
+            self.send_bad_request('Missing state.')
             return
-
-        # Hash the session 
-        state = sha256(bytes(session)).hexdigest()
         scope = 'identity'
 
         global states
@@ -133,9 +138,9 @@ class BaseHandler(BaseHTTPRequestHandler):
         # No need for the user to reapprove.
         prompt = 'none'
 
-        auth_url = f'{DISCORD_OAUTH_API}/authorize?response_type=code' + \
-            f'&client_id={CLIENT_ID}&scope={scope}&state={state}' + \
-            f'&redirect_uri={REDIRECT_URL}&prompt={prompt}'
+        auth_url = f'{self.DISCORD_OAUTH_API}/authorize?response_type=code' + \
+            f'&client_id={self.CLIENT_ID}&scope={scope}&state={state}' + \
+            f'&redirect_uri={self.REDIRECT_URL}&prompt={prompt}'
 
         self.set_headers(200)
         self.respond({
@@ -161,17 +166,17 @@ class BaseHandler(BaseHTTPRequestHandler):
             return
 
         data = {
-            'client_id': CLIENT_ID,
-            'client_secret': CLIENT_SECRET,
+            'client_id': self.CLIENT_ID,
+            'client_secret': self.CLIENT_SECRET,
             'grant_type': 'authorization_code',
             'code': code,
-            'redirect_uri': REDIRECT_URL
+            'redirect_uri': self.REDIRECT_URL
         }
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
         response = requests.post(
-            f'{DISCORD_OAUTH_API}/token',
+            f'{self.DISCORD_OAUTH_API}/token',
             data=data,
             headers=headers
         )
@@ -192,8 +197,8 @@ class BaseHandler(BaseHTTPRequestHandler):
             return
 
         data = {
-            'client_id': CLIENT_ID,
-            'client_secret': CLIENT_SECRET,
+            'client_id': self.CLIENT_ID,
+            'client_secret': self.CLIENT_SECRET,
             'grant_type': 'refresh_token',
             'refresh_token': refresh
         }
@@ -201,7 +206,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             'Content-Type': 'application/x-www-form-urlencoded'
         }
         response = requests.post(
-            f'{DISCORD_OAUTH_API}/token',
+            f'{self.DISCORD_OAUTH_API}/token',
             data=data,
             headers=headers
         )
@@ -241,7 +246,7 @@ class BaseHandler(BaseHTTPRequestHandler):
 
         # Check if the token is valid.
         response = requests.get(
-            f'{DISCORD_OAUTH_API}/@me',
+            f'{self.DISCORD_OAUTH_API}/@me',
             headers={
                 'Authorization': f'Bearer {token}'
             }
@@ -256,7 +261,7 @@ class BaseHandler(BaseHTTPRequestHandler):
 
         try:
             # Check if the user has permissions.
-            with open(PERMITTED_USERS, 'r') as file:
+            with open(self.PERMITTED_USERS, 'r') as file:
                 permittedUsers = json.load(file)
                 if username not in permittedUsers:
                     return (403, 'Forbidden')
@@ -299,3 +304,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         else:
             self.set_headers(404, 'Dude, fuck off!')
             self.respond('Yo, WTF you doin here?!')
+
+    
+    def do_OPTIONS(self):
+        self.set_headers(200, 'OK')
