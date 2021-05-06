@@ -22,41 +22,42 @@ const Video = (
     if (ytMatch?.groups) {
         const id = ytMatch.groups['id'];
         if (id) {
-            return (
-                <div>
-                    <iframe
-                        width={props.width}
-                        height={props.height}
-                        className={props.className}
-                        src={`https://www.youtube.com/embed/${id}`}
-                        title={title}
-                        allowFullScreen
-                    />
-                </div>
-            )
+            src = `https://www.youtube.com/embed/${id}`;
+            title = id;
         }
     }
 
     // Check if it's a Twitch clip.
     else if(twMatch?.groups) {
-        const channel = twMatch.groups['channel'];
+        //const channel = twMatch.groups['channel'];
         const clip = twMatch.groups['clip'];
         if (clip && SITE_DOMAIN) {
-            src = `https://www.twitch.tv/embed?clip=${clip}&parent=${SITE_DOMAIN}`;
+            src = `https://clips.twitch.tv/embed?clip=${clip}&parent=${SITE_DOMAIN}`;
             title = clip;
-
-            // return (
-            //     <ReactTwitchEmbedVideo />
-            // )
         }
     }
 
-    
-    return (
-        <span className='text-danger ml-1'>
-            Unsupported Video
-        </span>
-    )
+    if (src) {
+        return (
+            <div>
+                <iframe
+                    width={props.width}
+                    height={props.height}
+                    className={props.className}
+                    src={src}
+                    title={title}
+                    allowFullScreen
+                />
+            </div>
+        )
+    }
+    else {
+        return (
+            <span className='text-danger ml-1'>
+                Unsupported Video
+            </span>
+        )
+    }
 }
 
 export default Video;
