@@ -15,7 +15,7 @@ const PersonaCard = (props: {
         <div
             className={
                 'persona-card d-flex flex-row' +
-                props.className
+                (props.className ? ` ${props.className}` : '')
             }
         >
             <img

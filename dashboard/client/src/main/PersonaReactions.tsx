@@ -47,7 +47,7 @@ const PersonaReactions = (
                                         reaction => reaction.persona === key
                                     )
                                     .map(
-                                        (reaction, index) =>
+                                        (reaction, index) => 
                                             <ReactionCard
                                                 key={`${key}-${index}`}
                                                 reaction={reaction}

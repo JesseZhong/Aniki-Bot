@@ -1,7 +1,8 @@
 import React from 'react';
 import { Reaction } from './Reactions';
-import './ReactionCard.sass';
 import Video from '../embeds/Video';
+import './ReactionCard.sass';
+
 
 const ReactionCard = (props: {
     reaction: Reaction,
@@ -9,14 +10,23 @@ const ReactionCard = (props: {
 }) => {
     const reaction = props.reaction;
     const triggers = reaction.triggers;
-    const contentByWords = reaction.content?.split(' ')
     const audio = reaction.audio_url;
+
+    // Split content by words and replace GIF links with img elements.
+    const gifRegex = /(https{0,1}:\/\/[^\s]+\.gif[^\s]*)/;
+    const contentParts = reaction.content?.split(gifRegex).filter(w => w);
+    const content = contentParts?.map(
+        (part, index) =>
+            part.match(gifRegex)
+            ? <img key={index} src={part} alt={part} />
+            : <span key={index}>{part}</span>
+    )
 
     return (
         <div
             className={
-                'reaction-card ' +
-                (props.className || '')
+                'reaction-card' +
+                (props.className ? ` ${props.className}` : '')
             }
         >
             <div>
@@ -46,30 +56,10 @@ const ReactionCard = (props: {
                 </span>
             </div>
             {
-                contentByWords &&
+                content &&
                 <div>
                     <b>Message:</b>
-                    <p>
-                    {
-                        contentByWords.map(
-                            (word, index) =>
-                                word.match(/^https{0,1}:\/\/.*\.gif.*/)
-                                ?
-                                <>
-                                    <br />
-                                    <img
-                                        key={index}
-                                        src={word}
-                                        alt={'gif'}
-                                    />
-                                    <br />
-                                </>
-                                : [
-                                    index > 0 && ' ',
-                                    word
-                                ]
-                        )
-                    }
+                    <p>{content}
                     </p>
                 </div>
             }
