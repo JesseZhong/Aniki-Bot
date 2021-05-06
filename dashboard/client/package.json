@@ -9,7 +9,7 @@
     "react-test": "craco test --env=jsdom",
     "react-eject": "react-scripts eject",
     "flow": "flow-remove-types app/ -d src/",
-    "start": "PORT=4200 npm run react-start",
+    "start": "PORT=4200 HTTPS=true npm run react-start",
     "build": "craco build"
   },
   "devDependencies": {

@@ -182,8 +182,19 @@ class BaseHandler(BaseHTTPRequestHandler):
             headers=headers
         )
 
-        # Check for errors.
-        response.raise_for_status()
+        try:
+            # Check for errors.
+            response.raise_for_status()
+        except requests.HTTPError as error:
+
+            # Print and log the bad request to the user endpoint.
+            msg = f'Status: {response.status_code}\nReason: {response.reason}' \
+                + f'Content: {response.content}'
+            self.log_error(msg)
+            print(msg)
+
+            self.set_headers(500)
+            return
 
         tokens = json.loads(response.content)
 

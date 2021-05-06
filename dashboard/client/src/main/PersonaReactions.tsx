@@ -49,7 +49,7 @@ const PersonaReactions = (
                                     .map(
                                         (reaction, index) =>
                                             <ReactionCard
-                                                key={index}
+                                                key={`${key}-${index}`}
                                                 reaction={reaction}
                                             />
                                     )
