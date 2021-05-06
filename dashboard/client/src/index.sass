@@ -6,9 +6,15 @@ $size: 1.2rem
 html, body, div#root > div.container, .vh-100
   min-height: 100vh
 
-div.page
-    min-width: 100vh
-    min-height: 100vh 
+div.content
+  position: relative
+
+  > div.content-area
+    min-width: 100%
+
+    > div.page
+      min-width: calc(100% - 4rem)
+      min-height: 100vh 
 
 
 body

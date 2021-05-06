@@ -16,7 +16,9 @@ const ReactionCard = (props: {
                 props.className
             }
         >
-            {reaction.content}
+            <p>
+                {reaction.content}
+            </p>
         </div>
     );
 }
