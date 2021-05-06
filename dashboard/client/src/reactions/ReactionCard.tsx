@@ -57,16 +57,25 @@ const ReactionCard = (props: {
             </div>
             {
                 content &&
-                <div>
+                <div className='mt-3'>
                     <b>Message:</b>
-                    <p>{content}
-                    </p>
+                    <div className='d-flex flex-column'>
+                        {content}
+                    </div>
                 </div>
             }
             {
                 audio &&
-                <div>
-                    <b>Audio:</b>
+                <div className='mt-3'>
+                    <span>
+                        <b>Audio:</b>
+                        <a
+                            className='text-info ml-1'
+                            href={audio}
+                        >
+                            {audio}
+                        </a>
+                    </span>
                     <Video url={audio} />
                 </div>
             }

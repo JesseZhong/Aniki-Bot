@@ -1,8 +1,28 @@
 @import "../theme"
 
+$width: 400px
+$height: 225px
+
 div.reaction-card
     margin: 0.1em
+    background-color: $secondary
+    width: 100%
+    padding: 0.5em 1em 0.5em 0.5em
+    border-radius: 7px
+
+    a
+        font-size: x-small
 
     p
         font-size: small
         font-weight: 100
+
+    img
+        width: $width
+        height: $height
+        object-fit: contain
+        object-position: left top
+
+    iframe
+        width: $width
+        height: $height

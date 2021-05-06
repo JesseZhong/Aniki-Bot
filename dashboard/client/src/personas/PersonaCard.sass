@@ -4,10 +4,19 @@ $size: 4em
 
 div.persona-card
     margin: 0.1em
+    width: 100%
 
     img.avatar
         border-radius: 50%
         overflow: hidden
         width: $size
         height: $size
+        min-width: $size
+        min-height: $size
         object-fit: cover
+
+    > div.content
+        width: 100%
+        
+        > div.children
+            width: 100%

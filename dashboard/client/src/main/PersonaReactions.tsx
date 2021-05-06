@@ -17,7 +17,7 @@ const PersonaReactions = (
 
     return (
         <div>
-            <div>
+            <div className='mb-5'>
             {
                 reactions &&
                 Array.from(reactions)
@@ -29,17 +29,22 @@ const PersonaReactions = (
                             <ReactionCard
                                 key={index}
                                 reaction={reaction}
+                                className='mb-3'
                             />
                     )
             }
             </div>
-            <h2>Characters</h2>
+            <h2>Bot Personas</h2>
             <div>
             {
                 personas &&
                 Object.entries(personas).map(
                     ([key, persona]) =>
-                            <PersonaCard persona={persona} key={key}>
+                            <PersonaCard
+                                persona={persona}
+                                key={key}
+                                className='mb-4'
+                            >
                             {
                                 reactions &&
                                 Array.from(reactions)
@@ -51,6 +56,7 @@ const PersonaReactions = (
                                             <ReactionCard
                                                 key={`${key}-${index}`}
                                                 reaction={reaction}
+                                                className='mb-2'
                                             />
                                     )
                             }
