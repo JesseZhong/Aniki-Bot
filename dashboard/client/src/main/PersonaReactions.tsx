@@ -33,7 +33,7 @@ const PersonaReactions = (
                     )
             }
             </div>
-            <h2>With Personas</h2>
+            <h2>Characters</h2>
             <div>
             {
                 personas &&
