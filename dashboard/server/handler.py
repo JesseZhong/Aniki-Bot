@@ -7,16 +7,22 @@ from .basehandler import BaseHandler
 class ServerHandler(BaseHandler):
 
     def __init__(self, *args, **kwargs):
+
+        get_routes={
+            '/personas': self.get_personas,
+            '/reactions': self.get_reactions,
+            '/favicon.ico': self.get_favicon,
+            '/': self.get_root
+        }
+        post_routes={}
+        put_routes={}
+        delete_routes={}
+
         super().__init__(
-            get_routes={
-                '/personas': self.get_personas,
-                '/reactions': self.get_reactions,
-                '/favicon.ico': self.get_favicon,
-                '/': self.get_root
-            },
-            post_routes={},
-            put_routes={},
-            delete_routes={},
+            get_routes,
+            post_routes,
+            put_routes,
+            delete_routes,
             *args,
             **kwargs
         )
