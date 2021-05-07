@@ -29,16 +29,15 @@ const ReactionCard = (props: {
                 (props.className ? ` ${props.className}` : '')
             }
         >
-            <div className='mx-4'>
+            <div className='mx-4 d-flex flex-column'>
                 <b>
                     Trigger
                     {
                         triggers &&
                         triggers.length > 1 ? 's' : ''
                     }
-                    :
                 </b>
-                <span className='ml-1'>
+                <span>
                 {
                     triggers &&
                     triggers.map(
@@ -60,8 +59,8 @@ const ReactionCard = (props: {
                 <>
                     <hr />
                     <div className='mx-4'>
-                        <b>Message:</b>
-                        <div className='d-flex flex-column'>
+                        <b>Message</b>
+                        <div className='d-flex flex-column message-content'>
                             {content}
                         </div>
                     </div>
@@ -71,17 +70,36 @@ const ReactionCard = (props: {
                 audio &&
                 <>
                     <hr />
-                    <div className='mx-4'>
-                        <span>
-                            <b>Audio:</b>
-                            <a
-                                className='text-info ml-1'
-                                href={audio}
-                            >
-                                {audio}
-                            </a>
-                        </span>
+                    <div className='mx-4 d-flex flex-column'>
+                        <b>Audio</b>
+                        <a
+                            className='text-info mb-1'
+                            href={audio}
+                        >
+                            {audio}
+                        </a>
                         <Video url={audio} />
+                        {
+                            reaction.start &&
+                            <span className='audio-setting'>
+                                <b>Starts at </b>
+                                <span className='text-success'>{reaction.start}</span>
+                            </span>
+                        }
+                        {
+                            reaction.end &&
+                            <span className='audio-setting'>
+                                <b>Ends at </b>
+                                <span className='text-danger'>{reaction.end}</span>
+                            </span>
+                        }
+                        {
+                            reaction.volume &&
+                            <span className='audio-setting'>
+                                <b>Volume set at </b>
+                                <span className='text-warning'>{reaction.volume * 100}%</span>
+                            </span>
+                        }
                     </div>
                 </>
             }
