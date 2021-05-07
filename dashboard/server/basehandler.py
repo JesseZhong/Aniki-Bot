@@ -20,6 +20,8 @@ class BaseHandler(BaseHTTPRequestHandler):
         self,
         get_routes: Dict[str, Callable[[], None]],
         post_routes: Dict[str, Callable[[], None]],
+        put_routes: Dict[str, Callable[[], None]],
+        delete_routes: Dict[str, Callable[[], None]],
         *args,
         **kwargs
     ):
@@ -48,6 +50,8 @@ class BaseHandler(BaseHTTPRequestHandler):
         
         self.get_routes: Dict[str, Callable[[], None]] = get_routes
         self.post_routes: Dict[str, Callable[[], None]] = post_routes
+        self.put_routes: Dict[str, Callable[[], None]] = put_routes
+        self.delete_routes: Dict[str, Callable[[], None]] = delete_routes
 
         self.oauth_routes: Dict[str, Callable[[], None]] = {
             '/authorize': self.request_authorization,
@@ -323,16 +327,10 @@ class BaseHandler(BaseHTTPRequestHandler):
         return None
 
 
-    def do_GET(self):
+    def handler_for(self, routes: Dict[str, Callable[[], None]]):
         """
-            Handle all incoming GET requests.
+            Handles all requests for a set of routes.
         """
-
-        # Check for OAuth2 stuffs.
-        # If an OAuth2 request was made,
-        # handle it and do nothing else.
-        if self.handle_oauth_request():
-           return
 
         # For everything else, check for a valid Discord token.
         result = self.verify()
@@ -344,11 +342,47 @@ class BaseHandler(BaseHTTPRequestHandler):
            return
 
         # Handle a request based off path.
-        if self.path in self.get_routes:
-            self.get_routes[self.path]()
+        if self.path in routes:
+            routes[self.path]()
         else:
             self.set_headers(404, 'Dude, fuck off!')
             self.respond('Yo, WTF you doin here?!')
+
+
+
+    def do_GET(self):
+        """
+            Handle all incoming GET requests.
+        """
+
+        # Check for OAuth2 stuffs.
+        # If an OAuth2 request was made,
+        # handle it and do nothing else.
+        if self.handle_oauth_request():
+           return
+
+        self.handler_for(self.get_routes)
+
+    
+    def do_POST(self):
+        """
+            Handle all incoming PUT requests.
+        """
+        self.handler_for(self.post_routes)
+
+
+    def do_PUT(self):
+        """
+            Handle all incoming PUT requests.
+        """
+        self.handler_for(self.put_routes)
+
+
+    def do_DELETE(self):
+        """
+            Handle all incoming PUT requests.
+        """
+        self.handler_for(self.delete_routes)
 
     
     def do_OPTIONS(self):
