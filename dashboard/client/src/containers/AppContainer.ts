@@ -76,12 +76,22 @@ function getState(): AppState {
                 refresh_token: string,
                 permitted: boolean
             ) => {
+                // Load up session info.
                 let session = SessionStore.getState();
                 session.access_token = access_token;
                 session.refresh_token = refresh_token;
                 session.permitted = permitted;
+
+                // Save it.
                 Sessions.set(session);
                 SessionActions.set(session);
+
+                // Perform a single data fetch after session update.
+                if (access_token) {
+                    personaApi.get(access_token, getState().receivePersonas);
+                    reactionApi.get(access_token, getState().receiveReactions);
+                }
+
                 received();
             }
         ),
@@ -98,6 +108,7 @@ function getState(): AppState {
     }
 }
 
+// Fetch data if existing session is valid.
 const token = getState().session.access_token;
 if (token) {
     personaApi.get(token, getState().receivePersonas);

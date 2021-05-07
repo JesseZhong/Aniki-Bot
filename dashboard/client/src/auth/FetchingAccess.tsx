@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useHistory, useLocation } from 'react-router-dom';
+import { Link, Redirect, useHistory, useLocation } from 'react-router-dom';
 import { faCircleNotch, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Session } from './Session';
@@ -15,13 +15,22 @@ const AwaitAccess = (
     }
 ) => {
     const history = useHistory();
+    const location = useLocation();
+
+    // NOTE: Discord OAuth service seems to call this route twice,
+    // causing a second post to the API and therefore the Discord
+    // token endpoint again. This causes both the API and site to error.
+    // Check if the session already has a token before proceeding.
+    if (props.session.access_token) {
+        return (<Redirect to='/' />);
+    };
 
     // When the user authorizes or denies Discord access
     // they will be routed to this component via the Discord
     // OAuth redirect_uri.
     
     // Grab the queries that were passed.
-    const query = new URLSearchParams(useLocation().search);
+    const query = new URLSearchParams(location.search);
 
     // If the user denied access, an error (usually 'access_denied') is passed.
     // In this case, inform the user that authorization is required and prompt
