@@ -1,7 +1,7 @@
 service: aniki-site
 name: aniki-site
 component: website
-org: aniki-discord-bot
+org: ${env:ORG}
 
 frameworkVersion: '>=1.0.0 <2.0.0'
 
