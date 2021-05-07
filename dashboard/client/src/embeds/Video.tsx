@@ -1,7 +1,5 @@
 import React from 'react';
 
-const SITE_DOMAIN = process.env.REACT_APP_SITE_DOMAIN;
-
 const Video = (
     props: {
         url: string,
@@ -10,7 +8,7 @@ const Video = (
         className?: string
     }
 ) => {
-
+    const PARENT_DOMAIN = process.env.REACT_APP_SITE_DOMAIN;
     const url = props.url;
     let src = '';
     let title = '';
@@ -31,8 +29,8 @@ const Video = (
     else if(twMatch?.groups) {
         //const channel = twMatch.groups['channel'];
         const clip = twMatch.groups['clip'];
-        if (clip && SITE_DOMAIN) {
-            src = `https://clips.twitch.tv/embed?clip=${clip}&parent=${SITE_DOMAIN}`;
+        if (clip && PARENT_DOMAIN) {
+            src = `https://clips.twitch.tv/embed?clip=${clip}&parent=${PARENT_DOMAIN}`;
             title = clip;
         }
     }
