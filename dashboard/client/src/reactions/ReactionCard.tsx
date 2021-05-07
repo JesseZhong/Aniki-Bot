@@ -29,7 +29,7 @@ const ReactionCard = (props: {
                 (props.className ? ` ${props.className}` : '')
             }
         >
-            <div>
+            <div className='mx-4'>
                 <b>
                     Trigger
                     {
@@ -57,27 +57,33 @@ const ReactionCard = (props: {
             </div>
             {
                 content &&
-                <div className='mt-3'>
-                    <b>Message:</b>
-                    <div className='d-flex flex-column'>
-                        {content}
+                <>
+                    <hr />
+                    <div className='mx-4'>
+                        <b>Message:</b>
+                        <div className='d-flex flex-column'>
+                            {content}
+                        </div>
                     </div>
-                </div>
+                </>
             }
             {
                 audio &&
-                <div className='mt-3'>
-                    <span>
-                        <b>Audio:</b>
-                        <a
-                            className='text-info ml-1'
-                            href={audio}
-                        >
-                            {audio}
-                        </a>
-                    </span>
-                    <Video url={audio} />
-                </div>
+                <>
+                    <hr />
+                    <div className='mx-4'>
+                        <span>
+                            <b>Audio:</b>
+                            <a
+                                className='text-info ml-1'
+                                href={audio}
+                            >
+                                {audio}
+                            </a>
+                        </span>
+                        <Video url={audio} />
+                    </div>
+                </>
             }
         </div>
     );
