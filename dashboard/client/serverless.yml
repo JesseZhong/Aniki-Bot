@@ -1,0 +1,18 @@
+service: aniki-site
+name: aniki-site
+component: website
+org: aniki-discord-bot
+
+frameworkVersion: '>=1.0.0 <2.0.0'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: ${env:AWS_REGION}
+  deploymentBucket:
+    name: ${env:DEPLOYMENT_BUCKET}
+
+inputs:
+  region: ${env:AWS_REGION}
+  src: ./build
+  domain: ${env:SITE_URL}
