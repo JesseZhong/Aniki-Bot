@@ -20,14 +20,14 @@ const PersonaReactions = (
             <div className='mb-5'>
             {
                 reactions &&
-                Array.from(reactions)
+                Object.entries(reactions)
                     .filter(
-                        reaction => !reaction.persona
+                        ([key, reaction]) => !reaction.persona
                     )
                     .map(
-                        (reaction, index) =>
+                        ([key, reaction]) =>
                             <ReactionCard
-                                key={index}
+                                key={key}
                                 reaction={reaction}
                                 className='mb-3'
                             />
@@ -39,22 +39,22 @@ const PersonaReactions = (
             {
                 personas &&
                 Object.entries(personas).map(
-                    ([key, persona]) =>
+                    ([pKey, persona]) =>
                             <PersonaCard
                                 persona={persona}
-                                key={key}
+                                key={pKey}
                                 className='mb-4'
                             >
                             {
                                 reactions &&
-                                Array.from(reactions)
+                                Object.entries(reactions)
                                     .filter(
-                                        reaction => reaction.persona === key
+                                        ([_rKey, reaction]) => reaction.persona === pKey
                                     )
                                     .map(
-                                        (reaction, index) => 
+                                        ([key, reaction]) => 
                                             <ReactionCard
-                                                key={`${key}-${index}`}
+                                                key={key}
                                                 reaction={reaction}
                                                 className='mb-2'
                                             />

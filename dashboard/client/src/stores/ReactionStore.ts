@@ -1,7 +1,7 @@
 import { ReduceStore } from 'flux/utils';
 import AppDispatcher, { ActionPayload } from '../AppDispatcher';
 import ActionTypes from '../actions/ActionTypes';
-import { ReceiveReactionsPayload } from '../actions/ReactionPayloads';
+import { ReceiveReactionsPayload, PutReactionPayload, RemoveReactionPayload } from '../actions/ReactionPayloads';
 import { Reaction, Reactions } from '../reactions/Reactions';
 
 class ReactionStore extends ReduceStore<Reactions, ActionPayload> {
@@ -11,7 +11,7 @@ class ReactionStore extends ReduceStore<Reactions, ActionPayload> {
     }
 
     public getInitialState(): Reactions {
-        return new Set<Reaction>();
+        return new Map<string, Reaction>();
     }
 
     public reduce(state: Reactions, action: ActionPayload): Reactions {
@@ -22,6 +22,21 @@ class ReactionStore extends ReduceStore<Reactions, ActionPayload> {
                     state = receiveAction.reactions;
                 }
                 return state;
+
+            case ActionTypes.PUT_REACTION:
+                const putAction: PutReactionPayload = action as PutReactionPayload;
+                if (putAction) {
+                    state.set(putAction.key, putAction.reaction);
+                }
+                return state;
+
+            case ActionTypes.REMOVE_REACTION:
+                const removeAction: RemoveReactionPayload = action as RemoveReactionPayload;
+                if (removeAction) {
+                    state.delete(removeAction.key);
+                }
+                return state;
+
             case ActionTypes.GET_REACTIONS:
             default:
                 return state;

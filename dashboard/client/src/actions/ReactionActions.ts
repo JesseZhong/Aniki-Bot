@@ -17,17 +17,18 @@ const ReactionActions = {
         } as ReceiveReactionsPayload);
     },
 
-    put(reaction: Reaction) {
+    put(key: string, reaction: Reaction) {
         AppDispatcher.dispatch({
             type: ActionTypes.PUT_REACTION,
+            key: key,
             reaction: reaction
         } as PutReactionPayload);
     },
 
-    remove(reaction: Reaction) {
+    remove(key: string) {
         AppDispatcher.dispatch({
             type: ActionTypes.REMOVE_REACTION,
-            reaction: reaction
+            key: key
         } as RemoveReactionPayload);
     }
 }

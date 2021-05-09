@@ -1,7 +1,7 @@
 import { ReduceStore } from 'flux/utils';
 import AppDispatcher, { ActionPayload } from '../AppDispatcher';
 import ActionTypes from '../actions/ActionTypes';
-import { ReceivePersonasPayload } from '../actions/PersonaPayloads';
+import { PutPersonaPayload, ReceivePersonasPayload, RemovePersonaPayload } from '../actions/PersonaPayloads';
 import { Persona, Personas } from '../personas/Personas';
 
 class PersonaStore extends ReduceStore<Personas, ActionPayload> {
@@ -20,6 +20,20 @@ class PersonaStore extends ReduceStore<Personas, ActionPayload> {
                 const receiveAction: ReceivePersonasPayload = action as ReceivePersonasPayload;
                 if (receiveAction) {
                     state = receiveAction.personas;
+                }
+                return state;
+
+            case ActionTypes.PUT_PERSONA:
+                const putAction: PutPersonaPayload = action as PutPersonaPayload;
+                if (putAction) {
+                    state.set(putAction.key, putAction.persona);
+                }
+                return state;
+
+            case ActionTypes.REMOVE_PERSONA:
+                const removeAction: RemovePersonaPayload = action as RemovePersonaPayload;
+                if (removeAction) {
+                    state.delete(removeAction.key);
                 }
                 return state;
 

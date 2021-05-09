@@ -10,4 +10,4 @@ export interface Reaction {
     persona: string
 }
 
-export type Reactions = Set<Reaction>;
+export type Reactions = Map<string, Reaction>;

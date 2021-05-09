@@ -7,17 +7,22 @@
         "key": {
             "description": "A unique name or identifier.",
             "type": "string",
-            "pattern": "^[a-zA-Z0-9-_.]{3,25}$"
+            "pattern": "^[a-zA-Z0-9-_.]{3,25}$",
+            "minLength": 3,
+            "maxLength": 25
         },
         "name": {
             "description": "Display name for the persona. Based off https://discord.com/developers/docs/resources/user.",
             "type": "string",
-            "pattern": "^(?!.{0,32}[@#:].{0,32}|discordtag$|everyone$|here$|```).{2,32}$"
+            "pattern": "^(?!.{0,32}[@#:].{0,32}|discordtag$|everyone$|here$|```).{2,32}$",
+            "minLength": 2,
+            "maxLength": 32
         },
         "avatar": {
             "description": "The URL for the display image.",
             "type": "string",
-            "pattern": "^(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)"
+            "pattern": "^(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)",
+            "maxLength": 2000
         }
     },
     "required": [

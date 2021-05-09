@@ -6,9 +6,10 @@ export interface ReceiveReactionsPayload extends ActionPayload {
 }
 
 export interface PutReactionPayload extends ActionPayload {
+    key: string,
     reaction: Reaction
 }
 
 export interface RemoveReactionPayload extends ActionPayload {
-    reaction: Reaction
+    key: string
 }
