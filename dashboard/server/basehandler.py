@@ -68,7 +68,7 @@ class BaseHandler(BaseHTTPRequestHandler):
     def regexify(self, routes: List[Tuple[str, Callable[[], None]]]):
         result = []
         for (key, handler) in routes:
-            result.append((rf'^{re.escape(key)}(?:|\/+)(?P<stub>.+)$', handler))
+            result.append((rf'^{re.escape(key)}(?:|/|/(?P<stub>.+))$', handler))
         return result
 
     def set_headers(self, code: int, message: str = None):
@@ -268,8 +268,6 @@ class BaseHandler(BaseHTTPRequestHandler):
 
         # Append API permissions to the response.
         tokens['permitted'] = permitted
-
-        print(tokens)
 
         self.set_headers(200)
         self.respond(tokens)

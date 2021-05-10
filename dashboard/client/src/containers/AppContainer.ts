@@ -55,8 +55,8 @@ export interface AppState {
 
     reactions: Reactions,
     receiveReactions: (reactions: Reactions) => void,
-    putReaction: (reaction: Reaction) => void,
-    removeReaction: (reaction: Reaction) => void
+    putReaction: (key: string, reaction: Reaction) => void,
+    removeReaction: (key: string) => void
 }
 
 function getState(): AppState {
