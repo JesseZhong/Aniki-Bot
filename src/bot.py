@@ -55,7 +55,7 @@ class Bot(Client):
                 reactions = json.load(reactionsFile)
                 self.reactions = {
                     t:Reaction(**r)
-                    for r in reactions
+                    for r in reactions.values()
                     for t in r['triggers']
                 }
         except Exception as error:
