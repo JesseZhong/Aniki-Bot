@@ -4,13 +4,6 @@
     "description": "Body for a Persona PUT request.",
     "type": "object",
     "properties": {
-        "key": {
-            "description": "A unique name or identifier.",
-            "type": "string",
-            "pattern": "^[a-zA-Z0-9-_.]{3,25}$",
-            "minLength": 3,
-            "maxLength": 25
-        },
         "name": {
             "description": "Display name for the persona. Based off https://discord.com/developers/docs/resources/user.",
             "type": "string",
@@ -26,7 +19,6 @@
         }
     },
     "required": [
-        "key",
         "name",
         "avatar"
     ]

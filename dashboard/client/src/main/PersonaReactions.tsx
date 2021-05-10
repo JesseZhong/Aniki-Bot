@@ -22,7 +22,7 @@ const PersonaReactions = (
                 reactions &&
                 Object.entries(reactions)
                     .filter(
-                        ([key, reaction]) => !reaction.persona
+                        ([_key, reaction]) => !reaction.persona
                     )
                     .map(
                         ([key, reaction]) =>

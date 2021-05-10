@@ -4,10 +4,13 @@ import os
 import json
 import requests
 import logging
+import re
+from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 from logging.handlers import RotatingFileHandler
 import traceback
 from http.server import BaseHTTPRequestHandler
-from typing import Tuple, Union, Dict, Callable, Set
+from typing import Tuple, Union, Dict, Callable, Set, List
 from urllib.parse import quote
 
 
@@ -18,10 +21,10 @@ class BaseHandler(BaseHTTPRequestHandler):
 
     def __init__(
         self,
-        get_routes: Dict[str, Callable[[], None]],
-        post_routes: Dict[str, Callable[[], None]],
-        put_routes: Dict[str, Callable[[], None]],
-        delete_routes: Dict[str, Callable[[], None]],
+        get_routes: List[Tuple[str, Callable[[], None]]],
+        post_routes: List[Tuple[str, Callable[[], None]]],
+        put_routes: List[Tuple[str, Callable[[], None]]],
+        delete_routes: List[Tuple[str, Callable[[], None]]],
         *args,
         **kwargs
     ):
@@ -48,10 +51,10 @@ class BaseHandler(BaseHTTPRequestHandler):
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         
-        self.get_routes: Dict[str, Callable[[], None]] = get_routes
-        self.post_routes: Dict[str, Callable[[], None]] = post_routes
-        self.put_routes: Dict[str, Callable[[], None]] = put_routes
-        self.delete_routes: Dict[str, Callable[[], None]] = delete_routes
+        self.get_routes: List[Tuple[str, Callable[[], None]]] = self.regexify(get_routes)
+        self.post_routes: List[Tuple[str, Callable[[], None]]] = self.regexify(post_routes)
+        self.put_routes: List[Tuple[str, Callable[[], None]]] = self.regexify(put_routes)
+        self.delete_routes: List[Tuple[str, Callable[[], None]]] = self.regexify(delete_routes)
 
         self.oauth_routes: Dict[str, Callable[[], None]] = {
             '/authorize': self.request_authorization,
@@ -61,6 +64,12 @@ class BaseHandler(BaseHTTPRequestHandler):
 
         super().__init__( *args, **kwargs)
 
+
+    def regexify(self, routes: List[Tuple[str, Callable[[], None]]]):
+        result = []
+        for (key, handler) in routes:
+            result.append((rf'^{re.escape(key)}(?:|\/+)(?P<stub>.+)$', handler))
+        return result
 
     def set_headers(self, code: int, message: str = None):
         """
@@ -98,6 +107,52 @@ class BaseHandler(BaseHTTPRequestHandler):
         self.wfile.write(
             json.dumps(content).encode(encoding='utf_8')
         )
+
+    
+    def get_content(self):
+        """
+            Returns the content body of the request.
+        """
+        contentLen = int(self.headers.get('Content-Length'))
+        return json.loads(self.rfile.read(contentLen)) \
+            if contentLen > 0 \
+            else {}
+    
+
+    def put_item(
+        self,
+        schema: {},
+        filename: str,
+        key_regex: str
+    ):
+        # Check for path stub and its validity.
+        if not self.subpath:
+            self.send_bad_request('Key must be specified.')
+            return
+
+        subMatch = re.match(key_regex, self.subpath)
+        if not subMatch:
+            self.send_bad_request('Invalid key.')
+            return
+
+        # Check content for errors.
+        content = self.get_content()
+        try:
+            validate(
+                instance=content,
+                schema=schema
+            )
+        except ValidationError as error:
+            self.send_bad_request(error.message)
+            return
+
+        with open(os.path.join(self.DATA_DIR, filename), 'rw') as file:
+            data = json.load(file)
+            data[self.subpath] = content
+
+            file.write(data)
+
+        self.set_headers(201, 'Accepted')
 
 
     def send_bad_request(self, content: str = None):
@@ -327,7 +382,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         return None
 
 
-    def handler_for(self, routes: Dict[str, Callable[[], None]]):
+    def handler_for(self, routes: List[Tuple[str, Callable[[], None]]]):
         """
             Handles all requests for a set of routes.
         """
@@ -342,11 +397,16 @@ class BaseHandler(BaseHTTPRequestHandler):
            return
 
         # Handle a request based off path.
-        if self.path in routes:
-            routes[self.path]()
-        else:
-            self.set_headers(404, 'Dude, fuck off!')
-            self.respond('Yo, WTF you doin here?!')
+        for (route, handler) in routes:
+            match: re.Match = re.match(route, self.path)
+            if match:
+                stub = match.group('stub')
+                self.subpath = stub if stub else None
+                handler()
+                return
+        
+        self.set_headers(404, 'Dude, fuck off!')
+        self.respond('Yo, WTF you doin here?!')
 
 
 
