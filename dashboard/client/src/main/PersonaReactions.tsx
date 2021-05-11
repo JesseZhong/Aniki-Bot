@@ -1,4 +1,3 @@
-import React from 'react';
 import PersonaCard from '../personas/PersonaCard';
 import { Personas } from '../personas/Personas';
 import ReactionCard from '../reactions/ReactionCard';
