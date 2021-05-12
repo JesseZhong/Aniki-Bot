@@ -13,6 +13,7 @@ const ReactionCard = (props: {
 }) => {
     const reaction = props.reaction;
     const [edit, setEdit] = useState(false);
+    const [hovered, setHovered] = useState(false);
 
     return (
         <div
@@ -20,12 +21,14 @@ const ReactionCard = (props: {
                 'reaction-card' +
                 (props.className ? ` ${props.className}` : '')
             }
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
         >
             {
-                !edit &&
+                !edit && hovered &&
                 <button
                     type='button'
-                    className='edit-btn'
+                    className='edit-btn btn'
                     onClick={() => setEdit(true)}
                 >
                     <FontAwesomeIcon icon={faEdit} />

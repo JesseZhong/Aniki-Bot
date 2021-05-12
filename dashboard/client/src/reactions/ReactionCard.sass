@@ -5,11 +5,12 @@ $height: 225px
 
 div.reaction-card
     margin: 0.1em
-    background-color: $secondary
+    background-color: $background3
     width: 100%
     padding: 0.8em 0 1em 0
     border-radius: 7px
-    border: 1px solid $primary
+    border: 1px solid $border1
+    position: relative
 
     a
         font-size: small
@@ -33,7 +34,15 @@ div.reaction-card
         height: $height
 
     hr
-        border-top: 2px solid $primary
+        border-top: 2px solid $border1
 
     span.audio-setting
         font-size: smaller
+
+    button.edit-btn
+        position: absolute
+        top: -1em
+        right: 1em
+        color: $color1
+        background-color: $background4
+        border: 1px solid $border1
