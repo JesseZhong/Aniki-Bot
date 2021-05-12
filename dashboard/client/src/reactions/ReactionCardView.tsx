@@ -70,28 +70,35 @@ const ReactionCardView = (props: {
                         >
                             {audio}
                         </a>
-                        <Video url={audio} />
-                        {
-                            reaction.start &&
-                            <span className='audio-setting'>
-                                <b>Starts at </b>
-                                <span className='text-success'>{reaction.start}</span>
-                            </span>
-                        }
-                        {
-                            reaction.end &&
-                            <span className='audio-setting'>
-                                <b>Ends at </b>
-                                <span className='text-danger'>{reaction.end}</span>
-                            </span>
-                        }
-                        {
-                            reaction.volume &&
-                            <span className='audio-setting'>
-                                <b>Volume set at </b>
-                                <span className='text-warning'>{reaction.volume * 100}%</span>
-                            </span>
-                        }
+                        <div className='d-flex flex-row'>
+                            <Video url={audio} />
+                            {
+                                (reaction.start || reaction.end || reaction.volume) &&
+                                <div className='audio-info ms-4 mb-2 d-flex flex-column'>
+                                    {
+                                        reaction.start &&
+                                        <span className='audio-setting'>
+                                            <b>Starts at </b>
+                                            <span className='text-success'>{reaction.start}</span>
+                                        </span>
+                                    }
+                                    {
+                                        reaction.end &&
+                                        <span className='audio-setting'>
+                                            <b>Ends at </b>
+                                            <span className='text-danger'>{reaction.end}</span>
+                                        </span>
+                                    }
+                                    {
+                                        reaction.volume &&
+                                        <span className='audio-setting'>
+                                            <b>Volume set at </b>
+                                            <span className='text-warning'>{reaction.volume * 100}%</span>
+                                        </span>
+                                    }
+                                </div>
+                                }
+                        </div>
                     </div>
                 </>
             }

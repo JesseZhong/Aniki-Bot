@@ -51,7 +51,7 @@ const Video = (
     }
     else {
         return (
-            <span className='text-danger ml-1'>
+            <span className='text-danger ms-1'>
                 Unsupported Video
             </span>
         )

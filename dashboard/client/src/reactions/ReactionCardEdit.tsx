@@ -3,6 +3,8 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import { useState } from "react";
 import { Reaction } from "./Reactions";
 import VideoClipper from '../embeds/VideoClipper';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 
 const ReactionCardEdit = (props: {
     reaction?: Reaction,
@@ -14,6 +16,13 @@ const ReactionCardEdit = (props: {
 
     return (
         <>
+            <button
+                type='button'
+                className='btn btn-danger close-btn text-white'
+                onClick={props.finishedEdit}
+            >
+                <FontAwesomeIcon icon={faTimes} />
+            </button>
             <Formik
                 initialValues={
                     reaction ?? {
@@ -95,7 +104,7 @@ const ReactionCardEdit = (props: {
                         <button
                             type='submit'
                             disabled={isSubmitting}
-                            className='btn btn-primary mr-2'
+                            className='btn btn-primary me-2'
                         >
                             Save
                         </button>

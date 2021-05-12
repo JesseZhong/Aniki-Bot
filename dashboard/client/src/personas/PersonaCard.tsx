@@ -23,7 +23,7 @@ const PersonaCard = (props: {
                 src={persona.avatar}
                 alt={persona.name}
             />
-            <div className='ml-3 content'>
+            <div className='ms-3 content'>
                 <h3 className='align-top'>
                     {persona.name}
                 </h3>
