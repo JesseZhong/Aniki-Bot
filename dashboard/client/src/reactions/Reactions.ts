@@ -2,8 +2,9 @@ export interface Reaction {
     triggers: string[];
     
     audio_url: string,
-    start: string,
-    end: string,
+    start?: string,
+    end?: string,
+    clip?: [number, number],
     volume: number,
 
     content: string,

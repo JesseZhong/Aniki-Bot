@@ -44,7 +44,8 @@ const ReactionCardEdit = (props: {
                                 className='form-control'
                                 id='audio_url'
                                 onChange={(event: React.FormEvent<HTMLInputElement>) => {
-                                    setShowAudioFields(!!event.currentTarget.value);
+                                    const value = event.currentTarget.value;
+                                    setShowAudioFields(!!value);
                                 }}
                             />
                             <ErrorMessage
@@ -57,22 +58,17 @@ const ReactionCardEdit = (props: {
                             showAudioFields &&
                             <>
                                 <div className='form-group'>
-                                    <label htmlFor='start'>Start Time</label>
                                     <Field name='yes'>
                                         {() => (
-
                                             <VideoClipper
-                                                start={values.start}
-                                                end={values.end}
-                                                min={0}
-                                                max={200}
-                                                set={(
-                                                    start: string,
-                                                    end: string
-                                                ) => {
-                                                    values.start = start;
-                                                    values.end = end;
-                                                }}
+                                                video_url={values.audio_url}
+                                                clip_range={values.clip}
+                                                width={500}
+                                                set={
+                                                    (range?: [number, number]) => {
+                                                        values.clip = range;
+                                                    }
+                                                }
                                             />
                                         )}
                                     </Field>

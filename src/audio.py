@@ -7,6 +7,7 @@ import youtube_dl
 from typing import List
 from urllib.parse import urlparse, parse_qs, ParseResult
 from os import path, system
+import subprocess
 from .timestamps import from_seconds, parse_timestamp, stringify, duration
 
 # Suppress noise about console usage from errors
@@ -58,6 +59,7 @@ class Audio(PCMVolumeTransformer):
         *,
         start: str = None,
         end: str = None,
+        clip: List[float],
         loop: bool = None,
         stream: bool = False
     ):
@@ -95,9 +97,26 @@ class Audio(PCMVolumeTransformer):
             else ytdl.prepare_filename(data)
 
         # Clip the video if time stamps are specified.
-        if startTime or endTime:
+        if startTime or endTime or (clip and len(clip) == 2):
 
             clippedFile = prepend(filename, clip_prefix)
+
+            # If clipping range is specifed, override.
+            if clip:
+                result = subprocess.run(
+                    [
+                        'ffprobe',
+                        '-v', 'error',
+                        '-show_entries', 'format=duration',
+                        '-of', 'default=noprint_wrappers=1:nokey=1',
+                        filename
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT
+                )
+                duration = float(result.stdout)
+                startTime = from_seconds(clip[0] * duration)
+                endTime = from_seconds(clip[1] * duration)
 
             # Order matters for cutting speed.
             # https://stackoverflow.com/a/42827058/10167844
@@ -130,7 +149,8 @@ class Audio(PCMVolumeTransformer):
         loop: asyncio.AbstractEventLoop,
         *,
         start: str = None,
-        end: str = None
+        end: str = None,
+        clip: List[float] = None
     ):
         """
             Plays the audio of a YouTube video into a voice channel.
@@ -149,7 +169,8 @@ class Audio(PCMVolumeTransformer):
         player = await Audio.from_url(
             url,
             start=start,
-            end=end
+            end=end,
+            clip=clip
         )
 
         # Play audio into the voice channel.

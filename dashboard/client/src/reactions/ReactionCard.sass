@@ -1,7 +1,9 @@
 @import "../theme"
 
+$aspect-ratio: 0.5625
+
 $width: 400px
-$height: 225px
+$height: $width * $aspect-ratio
 
 div.reaction-card
     margin: 0.1em
@@ -28,10 +30,7 @@ div.reaction-card
         height: $height
         object-fit: contain
         object-position: left top
-
-    iframe
-        width: $width
-        height: $height
+        border-radius: 4px
 
     hr
         border-top: 2px solid $border1
@@ -52,7 +51,13 @@ div.reaction-card
         top: -1em
         right: 1em
 
-    div.audio-info
-        width: 25%
-        padding: 1em
+    iframe
+        border-radius: 5px
+
+    div.video-card
+        border-radius: 5px
         background-color: $background4
+        padding: 1.2em
+
+        div.audio-info
+            padding: 1em

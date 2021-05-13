@@ -1,10 +1,11 @@
 import React from 'react';
 
+const aspect_ratio = 0.5625;
+
 const Video = (
     props: {
         url: string,
-        width?: string,
-        height?: string,
+        width?: number,
         className?: string
     }
 ) => {
@@ -37,10 +38,19 @@ const Video = (
 
     if (src) {
         return (
-            <div>
+            <div
+                className={
+                    'd-flex justify-content-center' +
+                    (props.className ? ` ${props.className}` : '')
+                }
+            >
                 <iframe
                     width={props.width}
-                    height={props.height}
+                    height={
+                        props.width
+                        ? props.width * aspect_ratio
+                        : undefined
+                    }
                     className={props.className}
                     src={src}
                     title={title}

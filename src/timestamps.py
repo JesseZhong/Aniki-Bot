@@ -1,7 +1,7 @@
 #!/bin/python
 import time
 
-def from_seconds(seconds: int) -> time:
+def from_seconds(seconds: float) -> time:
     return time.gmtime(seconds)
 
 

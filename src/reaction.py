@@ -17,6 +17,7 @@ class Reaction:
         content: str = None,
         persona: str = None,
         start: str = None,
+        clip: List[float] = None,
         end: str = None,
         volume: float = default_volume,
         tts: bool = False,
@@ -27,6 +28,7 @@ class Reaction:
         self.audio_url = audio_url
         self.start = start
         self.end = end
+        self.clip = clip
         self.volume = volume
 
         self.content = content
@@ -70,7 +72,8 @@ class Reaction:
                 voice_channel,
                 loop,
                 start=self.start,
-                end=self.end
+                end=self.end,
+                clip=self.clip
             )
 
 
