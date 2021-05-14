@@ -1,5 +1,5 @@
 import { Reaction } from './Reactions';
-import Video from '../embeds/Video';
+import AudioCard from '../embeds/AudioCard';
 
 const ReactionCardView = (props: {
     reaction: Reaction,
@@ -18,20 +18,6 @@ const ReactionCardView = (props: {
             ? <img key={index} src={part} alt={part} />
             : <span key={index}>{part}</span>
     )
-
-
-    let edgeColor = 'black';
-    let audioSource = '';
-    if (audio) {
-        if (audio?.match(/.*youtu.*/)) {
-            edgeColor = '#FF0000';
-            audioSource = 'YouTube';
-        }
-        else if (audio?.match(/.*\.twitch\.tv.*/)) {
-            edgeColor = '#471a90';
-            audioSource = 'Twitch';
-        }
-    }
 
     return (
         <>
@@ -76,59 +62,10 @@ const ReactionCardView = (props: {
                 audio &&
                 <>
                     <hr />
-                    <div
-                        className='video-card mx-4 d-flex flex-column'
-                        style={{
-                            borderLeft: `4px solid ${edgeColor}`
-                        }}
-                    >
-                        <span>
-                            <b>Audio</b>
-                            {
-                                audioSource &&
-                                <span
-                                    style={{ fontSize: 'smaller' }}
-                                >
-                                    {` (${audioSource})`}
-                                </span>
-                            }
-                        </span>
-                        <a
-                            className='text-info mt-2 mb-3'
-                            href={audio}
-                        >
-                            {audio}
-                        </a>
-                        <div className='d-flex flex-row'>
-                            <Video url={audio} width={400} />
-                            {
-                                (reaction.start || reaction.end || reaction.volume) &&
-                                <div className='audio-info ms-2 d-flex flex-column'>
-                                    {
-                                        reaction.start &&
-                                        <span className='audio-setting mb-2'>
-                                            <b>Starts at </b>
-                                            <span className='text-success'>{reaction.start}</span>
-                                        </span>
-                                    }
-                                    {
-                                        reaction.end &&
-                                        <span className='audio-setting mb-2'>
-                                            <b>Ends at </b>
-                                            <span className='text-danger'>{reaction.end}</span>
-                                        </span>
-                                    }
-                                    {
-                                        reaction.volume &&
-                                        <span className='audio-setting'>
-                                            <b>Volume set to </b>
-                                            <span className='text-warning'>{reaction.volume * 100}%</span>
-                                        </span>
-                                    }
-                                </div>
-                                }
-                        </div>
-                    </div>
+                    <AudioCard
+                        className='mx-4'
+                        reaction={reaction}
+                    />
                 </>
             }
         </>

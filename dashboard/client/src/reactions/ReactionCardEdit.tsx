@@ -5,6 +5,7 @@ import { Reaction } from "./Reactions";
 import VideoClipper from '../embeds/VideoClipper';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import VolumeControl from '../embeds/VolumeControl';
 
 const ReactionCardEdit = (props: {
     reaction?: Reaction,
@@ -36,13 +37,46 @@ const ReactionCardEdit = (props: {
             >
                 {({ isSubmitting, values }) => (
                     <Form className='mx-4'>
-                        <div className='form-group'>
-                            <label htmlFor='audio_url'>Audio/Video URL</label>
+                        <div className='input-group input-group-sm flex-nowrap'>
+                            <span className='input-group-text bg-transparent text-white'>
+                                Triggers
+                            </span>
+                            <Field
+                                name='triggers'
+                                placeholder='List trigger words, separated by commas'
+                                className='form-control'
+                            />
+                            <ErrorMessage
+                                name='triggers'
+                                component='div'
+                                className='text-danger'
+                            />
+                        </div>
+                        <div className='form-floating mt-3'>
+                            <Field
+                                id='content'
+                                as='textarea'
+                                name='content'
+                                placeholder='Write a message that will automatically be sent'
+                                className='form-control'
+                            />
+                            <label htmlFor='content'>
+                                Message
+                            </label>
+                            <ErrorMessage
+                                name='content'
+                                component='div'
+                                className='text-danger'
+                            />
+                        </div>
+                        <div className='input-group input-group-sm flex-nowrap mt-3'>
+                            <span className='input-group-text'>
+                                Audio URL
+                            </span>
                             <Field
                                 name='audio_url'
                                 placeholder='YouTube or Twitch Clip'
                                 className='form-control'
-                                id='audio_url'
                                 onChange={(event: React.FormEvent<HTMLInputElement>) => {
                                     const value = event.currentTarget.value;
                                     setShowAudioFields(!!value);
@@ -56,9 +90,9 @@ const ReactionCardEdit = (props: {
                         </div>
                         {
                             showAudioFields &&
-                            <>
+                            <div className='d-flex flex-row mt-3'>
                                 <div className='form-group'>
-                                    <Field name='yes'>
+                                    <Field name='clip'>
                                         {() => (
                                             <VideoClipper
                                                 video_url={values.audio_url}
@@ -78,39 +112,31 @@ const ReactionCardEdit = (props: {
                                         className='text-danger'
                                     />
                                 </div>
-                                <div className='form-group'>
-                                    <label htmlFor='volume'>Audio Volume</label>
-                                    <Field
-                                        type='range'
-                                        name='volume'
-                                        className='form-control'
-                                        id='volume'
-                                        min='0'
-                                        max='1'
-                                        step='0.05'
-                                    />
-                                    <ErrorMessage
-                                        name='volume'
-                                        component='div'
-                                        className='text-danger'
-                                    />
+                                <div className='ms-3 d-flex flex-column justify-content-end'>
+                                    <Field name='volume'>
+                                        {() => (
+                                            <VolumeControl volume={values.volume} />
+                                        )}
+                                    </Field>
                                 </div>
-                            </>
+                            </div>
                         }
-                        <button
-                            type='submit'
-                            disabled={isSubmitting}
-                            className='btn btn-primary me-2'
-                        >
-                            Save
-                        </button>
-                        <button
-                            type='button'
-                            className='btn btn-dark'
-                            onClick={props.finishedEdit}
-                        >
-                            Cancel
-                        </button>
+                        <div className='mt-3'>
+                            <button
+                                type='submit'
+                                disabled={isSubmitting}
+                                className='btn btn-primary me-2'
+                            >
+                                Save
+                            </button>
+                            <button
+                                type='button'
+                                className='btn btn-secondary'
+                                onClick={props.finishedEdit}
+                            >
+                                Cancel
+                            </button>
+                        </div>
                     </Form>
                 )}
             </Formik>

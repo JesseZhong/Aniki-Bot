@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { TwoThumbInputRange } from 'react-two-thumb-input-range';
 import Video from './Video';
+import './VideoClipper.sass'
 
 const VideoClipper = (props: {
     video_url: string,
-    width?: number,
+    width: number,
     clip_range?: [number, number],
     set: (value?: [number, number]) => void,
     className?: string
@@ -25,9 +26,12 @@ const VideoClipper = (props: {
                 'd-flex flex-column' +
                 (props.className ? ` ${props.className}` : '')
             }
+            style={{
+                width: `${props.width}px`
+            }}
         >
             <Video
-                className='my-2 edit-view'
+                className='my-2'
                 width={props.width}
                 url={props.video_url}
             />
@@ -43,9 +47,9 @@ const VideoClipper = (props: {
                     props.set(adjusted);
                 }}
                 showLabels={false}
-                inputStyle={
-                    props.width ? { width: `${props.width}px` } : undefined
-                }
+                inputStyle={{
+                    width: `calc(${props.width}px - 1.3em)`
+                }}
             />
         </div>
     )
