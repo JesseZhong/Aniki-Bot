@@ -1,4 +1,5 @@
 import React from 'react';
+import './Video.sass';
 
 const aspect_ratio = 0.5625;
 
@@ -40,7 +41,7 @@ const Video = (
         return (
             <div
                 className={
-                    'd-flex justify-content-center' +
+                    'd-flex justify-content-center video' +
                     (props.className ? ` ${props.className}` : '')
                 }
             >

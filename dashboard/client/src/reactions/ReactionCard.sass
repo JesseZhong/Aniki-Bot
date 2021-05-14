@@ -1,9 +1,5 @@
 @import "../theme"
 
-$aspect-ratio: 0.5625
-
-$width: 400px
-$height: $width * $aspect-ratio
 
 div.reaction-card
     margin: 0.1em
@@ -14,30 +10,6 @@ div.reaction-card
     border: 1px solid $border1
     position: relative
 
-    a
-        font-size: small
-
-    div.message-content
-        font-size: small
-        font-weight: 100
-
-    i
-        font-size: smaller
-        font-weight: 400
-
-    img
-        width: $width
-        height: $height
-        object-fit: contain
-        object-position: left top
-        border-radius: 4px
-
-    hr
-        border-top: 2px solid $border1
-
-    span.audio-setting
-        font-size: smaller
-
     button.edit-btn
         position: absolute
         top: -1em
@@ -46,12 +18,4 @@ div.reaction-card
         background-color: $background4
         border: 1px solid $border1
         z-index: 10
-
-    button.close-btn
-        position: absolute
-        top: -1em
-        right: 1em
-        z-index: 10
-
-    iframe
-        border-radius: 5px
+    

@@ -1,5 +1,6 @@
 import { Reaction } from './Reactions';
 import AudioCard from '../embeds/AudioCard';
+import './ReactionCardView.sass';
 
 const ReactionCardView = (props: {
     reaction: Reaction,
@@ -20,7 +21,7 @@ const ReactionCardView = (props: {
     )
 
     return (
-        <>
+        <div className='reaction-view'>
             <div className='mx-4 d-flex flex-column'>
                 <b>
                     Trigger
@@ -68,7 +69,7 @@ const ReactionCardView = (props: {
                     />
                 </>
             }
-        </>
+        </div>
     )
 }
 

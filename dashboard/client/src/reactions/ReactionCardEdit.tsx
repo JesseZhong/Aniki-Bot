@@ -2,10 +2,11 @@ import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { useState } from "react";
 import { Reaction } from "./Reactions";
-import VideoClipper from '../embeds/VideoClipper';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import VideoClipper from '../embeds/VideoClipper';
 import VolumeControl from '../embeds/VolumeControl';
+import './ReactionCardEdit.sass';
 
 const ReactionCardEdit = (props: {
     reaction?: Reaction,
@@ -16,7 +17,7 @@ const ReactionCardEdit = (props: {
     const [showAudioFields, setShowAudioFields] = useState(!!reaction?.audio_url);
 
     return (
-        <>
+        <div className='reaction-edit'>
             <button
                 type='button'
                 className='btn btn-danger close-btn text-white'
@@ -140,7 +141,7 @@ const ReactionCardEdit = (props: {
                     </Form>
                 )}
             </Formik>
-        </>
+        </div>
     )
 }
 
