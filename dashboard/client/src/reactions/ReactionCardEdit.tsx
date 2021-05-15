@@ -38,8 +38,8 @@ const ReactionCardEdit = (props: {
             >
                 {({ isSubmitting, values }) => (
                     <Form className='mx-4'>
-                        <div className='input-group input-group-sm flex-nowrap'>
-                            <span className='input-group-text bg-transparent text-white'>
+                        <div className='input-group input-group-sm flex-nowrap pe-5'>
+                            <span className='input-group-text'>
                                 Triggers
                             </span>
                             <Field
