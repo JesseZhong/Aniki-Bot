@@ -2,5 +2,5 @@
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-sudo gnome-terminal --working-directory="$dir/" -- ./run ./dashboard-server
-sudo gnome-terminal --working-directory="$dir/dashboard/client/" -- npm run start
+gnome-terminal --tab --working-directory="$dir/" -- sudo ./run ./dashboard-server && \
+gnome-terminal --tab --working-directory="$dir/dashboard/client/" -- npm run start

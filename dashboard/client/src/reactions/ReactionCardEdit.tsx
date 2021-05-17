@@ -10,6 +10,7 @@ import './ReactionCardEdit.sass';
 
 const ReactionCardEdit = (props: {
     reaction?: Reaction,
+    set: (reaction: Reaction) => void,
     finishedEdit: () => void
 }) => {
 
@@ -20,7 +21,7 @@ const ReactionCardEdit = (props: {
         <div className='reaction-edit'>
             <button
                 type='button'
-                className='btn btn-danger close-btn text-white'
+                className='btn close-btn'
                 onClick={props.finishedEdit}
             >
                 <FontAwesomeIcon icon={faTimes} />
@@ -33,6 +34,7 @@ const ReactionCardEdit = (props: {
                 }
 
                 onSubmit={(reaction, { setSubmitting }) => {
+                    props.set(reaction);
                     setSubmitting(false);
                 }}
             >
@@ -126,13 +128,13 @@ const ReactionCardEdit = (props: {
                             <button
                                 type='submit'
                                 disabled={isSubmitting}
-                                className='btn btn-primary me-2'
+                                className='btn btn-success me-2'
                             >
                                 Save
                             </button>
                             <button
                                 type='button'
-                                className='btn btn-secondary'
+                                className='btn text-light'
                                 onClick={props.finishedEdit}
                             >
                                 Cancel

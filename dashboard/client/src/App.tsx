@@ -43,6 +43,10 @@ const App = (state: AppState) => (
                             <MainPage {...props}
                                 personas={state.personas}
                                 reactions={state.reactions}
+                                setPersona={state.putPersona}
+                                setReaction={state.putReaction}
+                                removePersona={state.removePersona}
+                                removeReaction={state.removeReaction}
                             />
                         }
                     />

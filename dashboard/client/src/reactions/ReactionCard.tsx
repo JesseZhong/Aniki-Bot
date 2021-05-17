@@ -3,12 +3,14 @@ import { useState } from 'react';
 import ReactionCardView from './ReactionCardView';
 import ReactionCardEdit from './ReactionCardEdit';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faTrashAlt, faEdit } from '@fortawesome/free-regular-svg-icons';
 import './ReactionCard.sass';
 
 
 const ReactionCard = (props: {
     reaction: Reaction,
+    set: (reaction: Reaction) => void,
+    remove: () => void,
     className?: string
 }) => {
     const reaction = props.reaction;
@@ -26,17 +28,31 @@ const ReactionCard = (props: {
         >
             {
                 !edit && hovered &&
-                <button
-                    type='button'
-                    className='edit-btn btn'
-                    onClick={() => setEdit(true)}
-                >
-                    <FontAwesomeIcon icon={faEdit} />
-                </button>
+                <div className='btn-group edit'>
+                    <button
+                        type='button'
+                        className='btn btn-sm'
+                        onClick={() => setEdit(true)}
+                    >
+                        <FontAwesomeIcon icon={faEdit} />
+                    </button>
+                    <button
+                        className='btn btn-sm'
+                        data-bs-toggle='modal'
+                        data-bs-target='#remove-dialog'
+                        onClick={props.remove}
+                    >
+                        <FontAwesomeIcon icon={faTrashAlt} />
+                    </button>
+                </div>
             }
             {
                 edit
-                ? <ReactionCardEdit reaction={reaction} finishedEdit={() => setEdit(false)} />
+                ? <ReactionCardEdit
+                    reaction={reaction}
+                    set={props.set}
+                    finishedEdit={() => setEdit(false)}
+                />
                 : <ReactionCardView reaction={reaction} />
             }
         </div>
