@@ -32,7 +32,6 @@ const PersonaReactions = (
         key: string,
         reaction: Reaction
     ) => {
-        console.log('shit')
         setDiagFields({
             title: 'Remove Reaction?',
             body: <div>
@@ -57,7 +56,7 @@ const PersonaReactions = (
             <div className='mb-5'>
             {
                 reactions &&
-                Object.entries(reactions)
+                [...reactions]
                     .filter(
                         ([_key, reaction]) => !reaction.persona
                     )
@@ -84,7 +83,7 @@ const PersonaReactions = (
             <div>
             {
                 personas &&
-                Object.entries(personas).map(
+                [...personas].map(
                     ([pKey, persona]) =>
                             <PersonaCard
                                 persona={persona}
@@ -98,7 +97,7 @@ const PersonaReactions = (
                             >
                             {
                                 reactions &&
-                                Object.entries(reactions)
+                                [...reactions]
                                     .filter(
                                         ([_rKey, reaction]) => reaction.persona === pKey
                                     )

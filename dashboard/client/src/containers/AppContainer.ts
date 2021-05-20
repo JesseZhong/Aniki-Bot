@@ -104,7 +104,13 @@ function getState(): AppState {
         reactions: ReactionStore.getState(),
         receiveReactions: ReactionActions.recieve,
         putReaction: ReactionActions.put,
-        removeReaction: ReactionActions.remove
+        removeReaction: (key: string) => {
+            const token = SessionStore.getState().access_token;
+            if (token) {
+                reactionApi.remove(token, key);
+                ReactionActions.remove(key);
+            }
+        }
     }
 }
 

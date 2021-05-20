@@ -28,7 +28,10 @@ class ServerHandler(BaseHandler):
             ('/personas', self.put_persona),
             ('/reactions', self.put_reaction)
         ]
-        delete_routes=[]
+        delete_routes=[
+            ('/personas', self.delete_persona),
+            ('/reactions', self.delete_reaction)
+        ]
 
         super().__init__(
             get_routes,
@@ -71,5 +74,19 @@ class ServerHandler(BaseHandler):
         self.put_item(
             self.put_reaction_schema,
             'reactions.json',
-            '[0-9a-f]{12}4[0-9a-f]{3}[89ab][0-9a-f]{15}\Z'
+            '^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$'
+        )
+
+    
+    def delete_persona(self):
+        self.delete_item(
+            'personas.json',
+            '^[a-zA-Z0-9-_.]{3,25}$'
+        )
+
+
+    def delete_reaction(self):
+        self.delete_item(
+            'reactions.json',
+            '^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$'
         )

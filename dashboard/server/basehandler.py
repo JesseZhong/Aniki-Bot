@@ -130,7 +130,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             self.send_bad_request('Key must be specified.')
             return
 
-        subMatch = re.match(key_regex, self.subpath)
+        subMatch = re.match(key_regex, self.subpath, re.RegexFlag.IGNORECASE)
         if not subMatch:
             self.send_bad_request('Invalid key.')
             return
@@ -146,11 +146,39 @@ class BaseHandler(BaseHTTPRequestHandler):
             self.send_bad_request(error.message)
             return
 
-        with open(os.path.join(self.DATA_DIR, filename), 'rw') as file:
+        path = os.path.join(self.DATA_DIR, filename)
+        with open(path, 'r') as file:
             data = json.load(file)
             data[self.subpath] = content
 
-            file.write(data)
+        with open(path, 'w') as file:
+            json.dump(data, file)
+
+        self.set_headers(201, 'Accepted')
+
+
+    def delete_item(
+        self,
+        filename: str,
+        key_regex: str
+    ):
+        # Check for path stub and its validity.
+        if not self.subpath:
+            self.send_bad_request('Key must be specified.')
+            return
+
+        subMatch = re.match(key_regex, self.subpath, re.RegexFlag.IGNORECASE)
+        if not subMatch:
+            self.send_bad_request('Invalid key.')
+            return
+
+        path = os.path.join(self.DATA_DIR, filename)
+        with open(path, 'r') as file:
+            data = json.load(file)
+            del data[self.subpath]
+
+        with open(path, 'w') as file:
+            json.dump(data, file)
 
         self.set_headers(201, 'Accepted')
 

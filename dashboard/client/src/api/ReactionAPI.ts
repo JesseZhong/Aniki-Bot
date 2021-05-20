@@ -16,7 +16,7 @@ const ReactionAPI = (
                     return console.error(error);
                 }
 
-                received(response.body);
+                received(new Map<string, Reaction>(Object.entries(response.body)));
             });
     },
 

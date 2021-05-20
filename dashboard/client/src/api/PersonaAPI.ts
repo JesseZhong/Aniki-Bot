@@ -16,7 +16,7 @@ const PersonaAPI = (
                     return console.error(error);
                 }
 
-                received(response.body);
+                received(new Map<string, Persona>(Object.entries(response.body)));
             });
     },
 

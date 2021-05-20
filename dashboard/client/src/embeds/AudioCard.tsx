@@ -46,16 +46,16 @@ const AudioCard = (props: {
                 }
             </span>
             <a
-                className='text-info mt-2 mb-3'
+                className='text-info mt-2 mb-3 overflow-hidden'
                 href={audio}
             >
                 {audio}
             </a>
-            <div className='d-flex flex-row'>
-                <Video url={audio} width={400} />
+            <div className='d-flex flex-row flex-wrap overflow-hidden'>
+                <Video className='me-2' url={audio} width={400} />
                 {
                     (reaction.start || reaction.end || reaction.volume) &&
-                    <div className='audio-info ms-2 d-flex flex-column'>
+                    <div className='audio-info d-flex flex-column'>
                         {
                             reaction.start &&
                             <span className='audio-setting mb-2'>
