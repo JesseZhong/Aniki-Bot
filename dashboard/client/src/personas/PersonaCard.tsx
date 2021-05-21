@@ -5,7 +5,7 @@ import './PersonaCard.sass';
 const PersonaCard = (props: {
     persona: Persona,
     className?: string,
-    children?: JSX.Element[],
+    children?: React.ReactNode,
     affixedChild?: JSX.Element
 }) => {
 

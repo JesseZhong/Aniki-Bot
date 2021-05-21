@@ -11,10 +11,11 @@ const ReactionCard = (props: {
     reaction: Reaction,
     set: (reaction: Reaction) => void,
     remove: () => void,
-    className?: string
+    className?: string,
+    edit?: boolean
 }) => {
     const reaction = props.reaction;
-    const [edit, setEdit] = useState(false);
+    const [edit, setEdit] = useState(!!props.edit);
     const [hovered, setHovered] = useState(false);
 
     return (

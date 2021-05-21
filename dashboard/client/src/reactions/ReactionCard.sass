@@ -1,7 +1,6 @@
 @import "../theme"
 
-
-div.reaction-card
+@mixin reaction-card()
     margin: 0.1em
     background-color: $background3
     width: 100%
@@ -9,6 +8,9 @@ div.reaction-card
     border-radius: 7px
     border: 1px solid $border1
     position: relative
+
+div.reaction-card
+    @include reaction-card()
 
     div.edit
         position: absolute
