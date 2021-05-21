@@ -152,7 +152,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             data[self.subpath] = content
 
         with open(path, 'w') as file:
-            json.dump(data, file)
+            json.dump(data, file, indent=4, sort_keys=True)
 
         self.set_headers(201, 'Accepted')
 
@@ -178,7 +178,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             del data[self.subpath]
 
         with open(path, 'w') as file:
-            json.dump(data, file)
+            json.dump(data, file, indent=4, sort_keys=True)
 
         self.set_headers(201, 'Accepted')
 

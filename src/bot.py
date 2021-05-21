@@ -13,6 +13,9 @@ from .reaction import Reaction
 from .audio import Audio
 from .state import is_connected
 import asyncio
+import re
+from collections import defaultdict
+from typing import Dict
 
 class Bot(Client):
 
@@ -32,32 +35,55 @@ class Bot(Client):
         self.logger.addHandler(handler)
 
         # Initiate properties.
-        self.personas: dict[str, Persona] = {}
-        self.reactions: dict[str, Reaction] = {}
+        self.guild_data: Dict[str, {
+            personas: Dict[str, Persona],
+            reactions: Dict[str, Reaction]
+        }] = defaultdict(dict)
 
 
-    def load(self, directory: str):
+    def add(self, guild: str, *, personas=None, reactions=None):
+
+        value = self.guild_data[guild]
+
+        if personas:
+            value['personas'] = personas
+
+        if reactions:
+            value['reactions'] = reactions
+
+
+    def load(self, filepath: str):
         """
             Load bot settings and customizations from a directory.
         """
+        file = path.basename(filepath)
+        guild = path.basename(path.dirname(filepath))
+
+        if not re.match(r'^/{0,1}[0-9]{18}/{0,1}$', guild):
+            return
 
         try:
             # Load in personas.
-            with open(path.join(directory, 'personas.json'), 'r') as personaFile:
-                self.personas = {
-                    k:Persona(**v)
-                    for k, v
-                    in json.load(personaFile).items()
-                }
+            if re.match(r'/{0,1}personas\.json', file):
+                with open(filepath, 'r') as personaFile:
+                    personas = {
+                        k:Persona(**v)
+                        for k, v
+                        in json.load(personaFile).items()
+                    }
+                    self.add(guild, personas=personas)
 
             # Load in and flatten phrases based of trigger phrases.
-            with open(path.join(directory, 'reactions.json'), 'r') as reactionsFile:
-                reactions = json.load(reactionsFile)
-                self.reactions = {
-                    t:Reaction(**r)
-                    for r in reactions.values()
-                    for t in r['triggers']
-                }
+            if re.match(r'/{0,1}reactions\.json', file):
+                with open(filepath, 'r') as reactionsFile:
+                    rawReactions = json.load(reactionsFile)
+                    reactions = {
+                        t:Reaction(**r)
+                        for r in rawReactions.values()
+                        for t in r['triggers']
+                    }
+                    self.add(guild, reactions=reactions)
+
         except Exception as error:
             self.log_error(error)
             pass
@@ -83,6 +109,7 @@ class Bot(Client):
 
         content = message.content
         author = message.author
+        guild = message.guild
 
         # Attempts to play a YouTube audio.
         if content.startswith('!play '):
@@ -121,22 +148,29 @@ class Bot(Client):
         # See if the user's message has any of the key/trigger words.
         # If it does, send back the reply.
         content = content.lower()
-        for key, value in self.reactions.items():
-            if key in content:
-                try:
-                    await value.react(
-                        author,
-                        message.channel,
-                        self.personas,
-                        self.voice_clients,
-                        self.loop
-                    )
-                except Exception as error:
-                    self.log_error(error)
-                    pass
+        if guild and str(guild.id) in self.guild_data:
 
-                # Only run one to not cause absolute chaos.
-                break
+            guild_id = str(guild.id)
+            reactions = self.guild_data[guild_id]['reactions']
+            personas = self.guild_data[guild_id]['personas']
+
+            if reactions and personas:
+                for key, value in reactions.items():
+                    if key in content:
+                        try:
+                            await value.react(
+                                author,
+                                message.channel,
+                                personas,
+                                self.voice_clients,
+                                self.loop
+                            )
+                        except Exception as error:
+                            self.log_error(error)
+                            pass
+
+                        # Only run one to not cause absolute chaos.
+                        break
 
 
     async def stop(self, user: Member):

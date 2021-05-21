@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from src.bot import Bot
 from src.filewatcher import FileWatcher
+from pathlib import Path
 
 load_dotenv()
 API_TOKEN = os.getenv('DISCORD_TOKEN')
@@ -12,10 +13,11 @@ DATA_DIR = os.getenv('DATA_DIR')
 bot = Bot()
 
 # Load data.
-bot.load(DATA_DIR)
+for file in list(Path(DATA_DIR).rglob('*.json')):
+    bot.load(file)
 
 # Setup file watcher to reload data when it changes.
-watcher = FileWatcher(DATA_DIR, lambda: bot.load(DATA_DIR))
+watcher = FileWatcher(DATA_DIR, bot.load)
 
 # Run the bot.
 bot.run(API_TOKEN)
