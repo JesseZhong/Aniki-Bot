@@ -33,8 +33,10 @@ class BaseHandler(BaseHTTPRequestHandler):
         self.REDIRECT_URL = f'{self.SITE_URL}/authorized'
         self.CLIENT_ID = os.getenv('CLIENT_ID')
         self.CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-        self.PERMITTED_USERS = os.getenv('PERMITTED_USERS')
-        self.DISCORD_OAUTH_API = 'https://discord.com/api/oauth2'
+        self.GUILDS = 'guilds.json'
+        self.PERMITTED_USERS = 'permitted.json'
+        self.DISCORD_API = 'https://discord.com/api'
+        self.DISCORD_OAUTH_API = f'{self.DISCORD_API}/oauth2'
 
         """
             Sets up error logging.
@@ -86,6 +88,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Authorization")
         self.send_header("Access-Control-Allow-Headers", "State")
         self.send_header("Access-Control-Allow-Headers", "Code")
+        self.send_header("Access-Control-Allow-Headers", "Guild")
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
 
@@ -289,10 +292,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         user = json.loads(self.get_user(tokens['access_token']).content)['user']
 
         # Check for permissions.
-        permitted = self.permitted(
-            username=user['username'],
-            discriminator=user['discriminator']
-        )
+        permitted = self.permitted(user)
 
         # Append API permissions to the response.
         tokens['permitted'] = permitted
@@ -335,13 +335,70 @@ class BaseHandler(BaseHTTPRequestHandler):
         return
 
 
-    def permitted(self, username: str, discriminator: str) -> bool:
+    def permitted(self, user) -> bool:
         """
             Check if the user has permissions.
         """
+
+        if not hasattr(self, 'guild'):
+            return False
+
+        username = user['username'],
+        discriminator = user['discriminator']
+        userid = user['id']
+
+        permFilename = os.path.join('./', self.guild, self.PERMITTED_USERS)
+
+        # Create permissions file if it doesn't exist.
+        if not os.path.exists(permFilename):
+            with open(permFilename, 'w') as file:
+                json.dump(
+                    {
+                        'user': [],
+                        'roles': []
+                    },
+                    file
+                )
+            return False
+
+        # Begin checking permissions.
         with open(self.PERMITTED_USERS, 'r') as file:
-            permittedUsers = json.load(file)
-            return f'{username}#{discriminator}' in permittedUsers
+            permittedPeeps = json.load(file)
+
+            # Check if the user is simply listed.
+            if 'users' in permittedPeeps and \
+                f'{username}#{discriminator}' in permittedPeeps['users']:
+                    return True
+            
+            # Try to resolve permissions for the user based of their guild role.
+            if 'roles' in permittedPeeps:
+
+                # List guild roles.
+                roles = requests.get(
+                    f'{self.DISCORD_API}/guilds/{self.guild}/roles'
+                )
+
+                # Cross-reference guild roles with listed roles.
+                # Grab their 'snowflake' ids.
+                allowedRoles = [
+                    role['id']
+                    for roleName in permittedPeeps['roles']
+                    for role in roles
+                    if role['name'] == roleName
+                ]
+
+                # Get the user's guild roles.
+                member = requests.get(
+                    f'{self.DISCORD_API}/guilds/{self.guild}/members/{userid}'
+                )
+
+                # Check if there are intersections between the user's
+                # roles and the listed ones.
+                if 'roles' in member and \
+                    any(set(allowedRoles) & set(member['roles'])):
+                        return True
+
+            return False
 
 
     def get_user(self, access_token: str) -> requests.Response:
@@ -354,6 +411,22 @@ class BaseHandler(BaseHTTPRequestHandler):
                 'Authorization': f'Bearer {access_token}'
             }
         )
+
+
+    def check_guild(self) -> bool:
+        guild = self.headers['Guild']
+
+        if not os.path.exists(self.GUILDS):
+            with open(self.GUILDS, 'w') as file:
+                json.dump(
+                    {},
+                    file
+                )
+            return False
+
+        with open(self.GUILDS, 'r') as file:
+            guilds: Dict[str, int] = json.load(file)
+            return guild in guilds
 
 
     def verify(self) -> Union[Tuple[int, str], None]:
@@ -369,8 +442,12 @@ class BaseHandler(BaseHTTPRequestHandler):
             failed OR the nothing if verification was successful.
         """
 
-        if 'Authorization' not in self.headers:
+        if 'Authorization' not in self.headers or 'Guild' not in self.headers:
             return (401, 'Unauthorized')
+
+        # Check if user is from an allowed guild.
+        if not self.check_guild():
+            return (403, 'Forbidden')
 
         try:
             auth_type, token = self.headers['Authorization'].split(' ')
@@ -390,10 +467,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         user = json.loads(response.content)['user']
 
         try:
-            if not self.permitted(
-                username=user['username'],
-                discriminator=user['discriminator']
-            ):
+            if not self.permitted(user):
                 return (403, 'Forbidden')
         except OSError:
             print('Could not open or read the permissions file.')
@@ -404,6 +478,8 @@ class BaseHandler(BaseHTTPRequestHandler):
                 'Stacktrace:\n' + traceback.format_exc()
             )
             return (500, 'Server Error')
+
+        #TODO: Perform user guild check.
 
         return None
 
