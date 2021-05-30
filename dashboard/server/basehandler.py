@@ -1,6 +1,7 @@
 #!/bin/python
 
 import os
+import errno
 import json
 import requests
 import logging
@@ -111,6 +112,11 @@ class BaseHandler(BaseHTTPRequestHandler):
             json.dumps(content).encode(encoding='utf_8')
         )
 
+
+    def send_bad_request(self, content: str = None):
+        self.set_headers(400)
+        self.respond('Bad Request' if not content else content)
+
     
     def get_content(self):
         """
@@ -149,13 +155,19 @@ class BaseHandler(BaseHTTPRequestHandler):
             self.send_bad_request(error.message)
             return
 
-        path = os.path.join(self.DATA_DIR, filename)
-        with open(path, 'r') as file:
-            data = json.load(file)
-            data[self.subpath] = content
+        path = os.path.join(self.DATA_DIR, self.guild, filename)
 
-        with open(path, 'w') as file:
-            json.dump(data, file, indent=4, sort_keys=True)
+        # Only attempt to put if the file exists.
+        if self.check_file_exists(path):
+
+            # Load the data and put the new item.
+            with open(path, 'r') as file:
+                data = json.load(file)
+                data[self.subpath] = content
+
+            # Save the data.
+            with open(path, 'w') as file:
+                json.dump(data, file, indent=4, sort_keys=True)
 
         self.set_headers(201, 'Accepted')
 
@@ -175,27 +187,51 @@ class BaseHandler(BaseHTTPRequestHandler):
             self.send_bad_request('Invalid key.')
             return
 
-        path = os.path.join(self.DATA_DIR, filename)
-        with open(path, 'r') as file:
-            data = json.load(file)
-            del data[self.subpath]
+        path = os.path.join(self.DATA_DIR, self.guild, filename)
 
-        with open(path, 'w') as file:
-            json.dump(data, file, indent=4, sort_keys=True)
+        # Only attempt to delete if the file exists.
+        if self.check_file_exists(path):
+
+            # Load data to memory and delete.
+            with open(path, 'r') as file:
+                data = json.load(file)
+                del data[self.subpath]
+
+            # Write the result.
+            with open(path, 'w') as file:
+                json.dump(data, file, indent=4, sort_keys=True)
 
         self.set_headers(201, 'Accepted')
 
 
-    def send_bad_request(self, content: str = None):
-        self.set_headers(400)
-        self.respond('Bad Request' if not content else content)
+    def check_file_exists(self, filename: str, default={}) -> bool:
+        """
+            Will check if a file exists and create it if it doesn't.
+        """
+
+        # Check if the directory exists.
+        directory = os.path.dirname(filename)
+        if not os.path.exists(directory):
+            try:
+                os.makedirs(directory)
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    raise
+
+        # Check if the file exists and make it if it doesn't.
+        if not os.path.exists(filename):
+            with open(filename, 'w') as file:
+                json.dump(default, file)
+            return False
+
+        return True
 
 
     def send_file(self, filename: str):
         """
             Sends the contents of a specified file.
         """
-        with open(os.path.join(self.DATA_DIR, filename), 'r') as file:
+        with open(os.path.join(self.DATA_DIR, self.guild, filename), 'r') as file:
             data = json.load(file)
             self.respond(data)
 
@@ -376,7 +412,7 @@ class BaseHandler(BaseHTTPRequestHandler):
                 # List guild roles.
                 roles = requests.get(
                     f'{self.DISCORD_API}/guilds/{self.guild}/roles'
-                )
+                ).content
 
                 # Cross-reference guild roles with listed roles.
                 # Grab their 'snowflake' ids.
@@ -388,9 +424,14 @@ class BaseHandler(BaseHTTPRequestHandler):
                 ]
 
                 # Get the user's guild roles.
-                member = requests.get(
+                memberResponse = requests.get(
                     f'{self.DISCORD_API}/guilds/{self.guild}/members/{userid}'
                 )
+
+                # Confirm the user is in the guild.
+                if memberResponse.status_code != 200:
+                    return False
+                member = memberResponse.content
 
                 # Check if there are intersections between the user's
                 # roles and the listed ones.
@@ -416,12 +457,7 @@ class BaseHandler(BaseHTTPRequestHandler):
     def check_guild(self) -> bool:
         guild = self.headers['Guild']
 
-        if not os.path.exists(self.GUILDS):
-            with open(self.GUILDS, 'w') as file:
-                json.dump(
-                    {},
-                    file
-                )
+        if not self.check_file_exists(self.GUILDS):
             return False
 
         with open(self.GUILDS, 'r') as file:
@@ -479,8 +515,6 @@ class BaseHandler(BaseHTTPRequestHandler):
             )
             return (500, 'Server Error')
 
-        #TODO: Perform user guild check.
-
         return None
 
 
@@ -509,7 +543,6 @@ class BaseHandler(BaseHTTPRequestHandler):
         
         self.set_headers(404, 'Dude, fuck off!')
         self.respond('Yo, WTF you doin here?!')
-
 
 
     def do_GET(self):

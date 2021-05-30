@@ -1,0 +1,41 @@
+#!/bin/bash
+
+method="GET"
+path=""
+token=""
+guild="837201934535360522"
+content="./content/empty"
+
+case $1 in
+    get-personas | gp)
+        path="$guild/personas"
+        ;;
+    get-reactions | gr)
+        path="$guild/reactions"
+        ;;
+    put-persona | pp)
+        method="PUT"
+        path="$guild/personas/test1"
+        content="./content/persona.json"
+        ;;
+    put-reaction | pr)
+        method="PUT"
+        path="$guild/reactions/dc0ae21a-a17c-489b-8174-9a69a3e41830"
+        content="./content/reaction.json"
+        ;;
+    delete-persona | dp)
+        method="DELETE"
+        path="$guild/personas/test1"
+        ;;
+    delete-reaction | dr)
+        method="DELETE"
+        path="$guild/reactions/dc0ae21a-a17c-489b-8174-9a69a3e41830"
+        ;;
+esac
+
+curl -i -X $method localhost:8000/$path \
+    -H "Accept: application/json"
+    -H "Content-Type: application/json" \
+    -H "Authorization: $token bearer" \
+    -H "Guild: $guild" \
+    --data-binary "@$content"
