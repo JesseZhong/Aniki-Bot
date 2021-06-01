@@ -9,7 +9,6 @@ export interface Session {
     access_token?: string;
     refresh_token?: string;
     user?: User;
-    permitted: boolean;
 }
 
 export const Sessions = {
@@ -28,8 +27,7 @@ export const Sessions = {
         if (!session?.session_id) {
 
             session = {
-                session_id: uuid.v4(),
-                permitted: false
+                session_id: uuid.v4()
             };
 
             // Put the session in local storage.
@@ -39,6 +37,9 @@ export const Sessions = {
         receive(session);
     },
 
+    /**
+     * Save the session to storage.
+     */
     set: (session: Session) => {
         ls.set(key, session);
     }

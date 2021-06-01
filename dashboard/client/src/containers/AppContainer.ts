@@ -14,12 +14,17 @@ import { Session, Sessions } from '../auth/Session';
 import SessionStore from '../stores/SessionStore';
 import SessionActions from '../actions/SessionActions';
 import AuthAPI from '../api/AuthAPI';
+import GuildAPI from '../api/GuildAPI';
+import { Guild, GuildPreview } from '../guild/GuildPreview';
+import GuildStore from '../stores/GuildStore';
+import GuildActions from '../actions/GuildActions';
 
 const url = process.env.REACT_APP_API_URL ?? '';
 
 const authApi = AuthAPI(url);
 const personaApi = PersonaAPI(url);
 const reactionApi = ReactionAPI(url);
+const guildApi = GuildAPI(url);
 
 // Load session.
 Sessions.load(
@@ -45,7 +50,15 @@ export interface AppState {
     requestAccess: (
         state: string,
         code: string,
-        received: () => void
+        received: (token: string) => void
+    ) => void,
+
+    guild: GuildPreview,
+    lookupGuild: (id: string) => void,
+    saveGuild: (guild: string) => void,
+    popGuild: (
+        token: string,
+        received: (guild: string) => void
     ) => void,
 
     personas: Personas,
@@ -56,7 +69,12 @@ export interface AppState {
     reactions: Reactions,
     receiveReactions: (reactions: Reactions) => void,
     putReaction: (key: string, reaction: Reaction) => void,
-    removeReaction: (key: string) => void
+    removeReaction: (key: string) => void,
+
+    fetchAllData: (
+        token?: string,
+        guild?: string
+    ) => void
 }
 
 function getState(): AppState {
@@ -67,34 +85,61 @@ function getState(): AppState {
         requestAccess: (
             state: string,
             code: string,
-            received: () => void
+            received: (token: string) => void
         ) => authApi.requestAccess(
             state,
             code,
             (
                 access_token: string,
-                refresh_token: string,
-                permitted: boolean
+                refresh_token: string
             ) => {
                 // Load up session info.
                 let session = SessionStore.getState();
                 session.access_token = access_token;
                 session.refresh_token = refresh_token;
-                session.permitted = permitted;
 
                 // Save it.
                 Sessions.set(session);
                 SessionActions.set(session);
 
-                // Perform a single data fetch after session update.
-                if (access_token) {
-                    personaApi.get(access_token, getState().receivePersonas);
-                    reactionApi.get(access_token, getState().receiveReactions);
-                }
-
-                received();
+                received(access_token);
             }
         ),
+
+        guild: GuildStore.getState(),
+        lookupGuild: (id: string) => {
+            const token = SessionStore.getState().access_token;
+            if (token) {
+                guildApi.get(
+                    token,
+                    id,
+                    GuildActions.recieve
+                );
+            }
+        },
+        saveGuild: (guild: string) => {
+            if (guild) {
+                Guild.set(guild);
+            }
+        },
+        popGuild: (
+            token: string,
+            received: (guild: string) => void
+        ) => {
+            Guild.load(
+                (guild: string) => {
+                    guildApi.get(
+                        token,
+                        guild,
+                        (guildPreview: GuildPreview) => {
+                            GuildActions.recieve(guildPreview);
+                            //Guild.remove();
+                            received(guild);
+                        }
+                    )
+                }
+            );
+        },
 
         personas: PersonaStore.getState(),
         receivePersonas: PersonaActions.receive,
@@ -106,9 +151,20 @@ function getState(): AppState {
         putReaction: ReactionActions.put,
         removeReaction: (key: string) => {
             const token = SessionStore.getState().access_token;
+            const guild = GuildStore.getState().id;
             if (token) {
-                reactionApi.remove(token, key);
+                reactionApi.remove(token, guild, key);
                 ReactionActions.remove(key);
+            }
+        },
+
+        fetchAllData: (
+            token?: string,
+            guild?: string
+        ) => {
+            if (token && guild) {
+                personaApi.get(token, guild, getState().receivePersonas);
+                reactionApi.get(token, guild, getState().receiveReactions);
             }
         }
     }
@@ -116,9 +172,7 @@ function getState(): AppState {
 
 // Fetch data if existing session is valid.
 const token = getState().session.access_token;
-if (token) {
-    personaApi.get(token, getState().receivePersonas);
-    reactionApi.get(token, getState().receiveReactions);
-}
+const guild = getState().guild.id;
+getState().fetchAllData(token, guild)
 
 export default Container.createFunctional(App, getStores, getState);

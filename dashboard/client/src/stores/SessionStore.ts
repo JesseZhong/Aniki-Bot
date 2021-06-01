@@ -12,8 +12,7 @@ class SessionStore extends ReduceStore<Session, ActionPayload> {
 
     public getInitialState(): Session {
         return {
-            session_id: '',
-            permitted: false
+            session_id: ''
         };
     }
 

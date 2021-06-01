@@ -36,6 +36,6 @@ esac
 curl -i -X $method localhost:8000/$path \
     -H "Accept: application/json"
     -H "Content-Type: application/json" \
-    -H "Authorization: $token bearer" \
+    -H "Authorization: Bearer $token" \
     -H "Guild: $guild" \
     --data-binary "@$content"

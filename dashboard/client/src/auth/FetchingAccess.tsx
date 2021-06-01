@@ -7,10 +7,18 @@ import { Session } from './Session';
 const AwaitAccess = (
     props: {
         session: Session,
+        popGuild: (
+            token: string,
+            received: (guild: string) => void
+        ) => void,
         requestAccess: (
             state: string,
             code: string,
-            received: () => void
+            received: (token: string) => void
+        ) => void,
+        fetchAllData: (
+            token?: string,
+            guild?: string
         ) => void
     }
 ) => {
@@ -89,7 +97,16 @@ const AwaitAccess = (
     props.requestAccess(
         state,
         code,
-        () => history.push('/')
+        (token: string) => {
+            // Load guild info back from storage.
+            props.popGuild(
+                token,
+                (guild: string) => {
+                    props.fetchAllData(token, guild);
+                    history.push(`/${guild}`)
+                }
+            )
+        }
     );
 
     return (

@@ -6,10 +6,12 @@ const PersonaAPI = (
 ) => ({
     get(
         token: string,
+        guild: string,
         received: (personas: Personas) => void
     ): void {
         request.get(`${url}/personas`)
             .set('Accept', 'application/json')
+            .set('Guild', guild)
             .auth(token, { type: 'bearer' })
             .end((error: any, response: Response) => {
                 if (error) {
@@ -23,10 +25,12 @@ const PersonaAPI = (
     put(
         token: string,
         key: string,
+        guild: string,
         persona: Persona
     ): void {
         request.put(`${url}/personas/${key}`)
             .set('Accept', 'application/json')
+            .set('Guild', guild)
             .auth(token, { type: 'bearer' })
             .send(persona)
             .end((error: any) => {
@@ -38,11 +42,13 @@ const PersonaAPI = (
 
     remove(
         token: string,
+        guild: string,
         key: string
     ): void {
 
         request.delete(`${url}/personas/${key}`)
             .set('Accept', 'application/json')
+            .set('Guild', guild)
             .auth(token, { type: 'bearer' })
             .end((error: any) => {
                 if (error) {

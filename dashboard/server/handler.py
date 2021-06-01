@@ -2,6 +2,7 @@
 
 import os
 import json
+import requests
 from typing import Dict, OrderedDict
 from .basehandler import BaseHandler
 
@@ -18,6 +19,7 @@ class ServerHandler(BaseHandler):
             self.put_reaction_schema = json.load(file)
 
         get_routes=[
+            ('/guild', self.get_guild),
             ('/personas', self.get_personas),
             ('/reactions', self.get_reactions),
             ('/favicon.ico', self.get_favicon),
@@ -50,7 +52,29 @@ class ServerHandler(BaseHandler):
 
     def get_favicon(self):
         return
-        
+
+
+    def get_guild(self):
+        if hasattr(self, 'guild'):
+            response = requests.get(
+                f'{self.DISCORD_API}/guilds/{self.guild}/preview',
+                headers={
+                    'Authorization': f'Bot {self.DISCORD_TOKEN}'
+                }
+            )
+
+            if response.status_code == 200:
+                self.set_headers(200)
+                self.wfile.write(response.content)
+            else:
+                self.send_bad_request({
+                    'message': 'Guild doesn''t exist'
+                })
+        else:
+            self.send_bad_request({
+                'message': 'Must include guild id.'
+            })
+
 
     def get_personas(self):
         self.set_headers(200)

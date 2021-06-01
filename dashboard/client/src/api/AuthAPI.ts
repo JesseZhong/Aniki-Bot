@@ -5,7 +5,6 @@ interface TokenResponse {
     access_token: string;
     refresh_token: string;
     scope: string;
-    permitted: boolean;
 }
 
 
@@ -41,8 +40,7 @@ const AuthAPI = (
         code: string,
         received: (
             access_token: string,
-            refresh_token: string,
-            permitted: boolean
+            refresh_token: string
         ) => void
     ): void {
         request.get(`${url}/access`)
@@ -56,14 +54,12 @@ const AuthAPI = (
 
                 const {
                     access_token,
-                    refresh_token,
-                    permitted
+                    refresh_token
                 } = response.body as TokenResponse;
 
                 received(
                     access_token,
-                    refresh_token,
-                    permitted
+                    refresh_token
                 );
             });
     }

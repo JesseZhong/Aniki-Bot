@@ -19,7 +19,6 @@ const MainPage = (
         removeReaction: (key: string) => void
     }
 ) => {
-
     const personas = props.personas;
     const reactions = props.reactions;
 

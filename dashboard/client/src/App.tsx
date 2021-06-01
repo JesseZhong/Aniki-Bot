@@ -31,14 +31,18 @@ const App = (state: AppState) => (
                         render={(props: any) =>
                             <FetchingAccess {...props}
                                 session={state.session}
+                                popGuild={state.popGuild}
                                 requestAccess={state.requestAccess}
+                                fetchAllData={state.fetchAllData}
                             />
                         }
                     />
                     <PrivateRoute
-                        exact
-                        path='/'
+                        path='/:guild'
                         session={state.session}
+                        guild={state.guild}
+                        saveGuild={state.saveGuild}
+                        lookupGuild={state.lookupGuild}
                         render={(props: any) =>
                             <MainPage {...props}
                                 personas={state.personas}
@@ -56,5 +60,6 @@ const App = (state: AppState) => (
         </div>
     </div>
 )
+
 
 export default App;
