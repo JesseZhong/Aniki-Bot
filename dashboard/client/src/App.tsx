@@ -17,29 +17,32 @@ const App = (state: AppState) => {
             return (
                 <Switch>
                     <Route
-                        path='/:guild'
+                        exact
+                        path='/:guild([0-9]{5,19})'
                         render={(props: any) => {
-                                state.lookupGuild(
-                                    props,
-                                    (guild: GuildPreview) => {
-                                        state.fetchAllData(
-                                            state.session.access_token,
-                                            guild.id
-                                        );
-                                    }
-                                );
-                                return (
-                                    <MainPage {...props}
-                                        personas={state.personas}
-                                        reactions={state.reactions}
-                                        setPersona={state.putPersona}
-                                        setReaction={state.putReaction}
-                                        removePersona={state.removePersona}
-                                        removeReaction={state.removeReaction}
-                                    />
-                                )
-                            }
-                        }
+
+                            // Fetch data if guild specified is different.
+                            state.lookupGuild(
+                                props,
+                                (guild: GuildPreview) => {
+                                    state.fetchAllData(
+                                        state.session.access_token,
+                                        guild.id
+                                    );
+                                }
+                            );
+
+                            return (
+                                <MainPage {...props}
+                                    personas={state.personas}
+                                    reactions={state.reactions}
+                                    setPersona={state.putPersona}
+                                    setReaction={state.putReaction}
+                                    removePersona={state.removePersona}
+                                    removeReaction={state.removeReaction}
+                                />
+                            )
+                        }}
                     />
                     <Route path='*' component={PageNotFound} />
                 </Switch>
@@ -76,7 +79,8 @@ const App = (state: AppState) => {
                         }
                     />
                     <Route
-                        path='/:guild'
+                        exact
+                        path='/:guild([0-9]{5,19})'
                         render={(props: any) =>
                             <Landing {...props}
                                 lookupGuild={state.lookupGuild}

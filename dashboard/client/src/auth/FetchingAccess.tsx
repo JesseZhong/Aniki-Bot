@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Redirect, RouteComponentProps, useHistory, useLocation } from 'react-router-dom';
+import { Link, RouteComponentProps, useHistory, useLocation } from 'react-router-dom';
 import { faCircleNotch, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Session } from './Session';
@@ -28,12 +28,31 @@ const AwaitAccess = (
     const history = useHistory();
     const location = useLocation();
 
+    const goMain = () => {
+        props.lookupGuild(
+            undefined,
+            (guild: GuildPreview) => {
+                props.fetchAllData(
+                    props.session?.access_token,
+                    guild.id
+                );
+                history.push(`/${guild.id}`);
+            }
+        );
+    }
+
     // NOTE: Discord OAuth service seems to call this route twice,
     // causing a second post to the API and therefore the Discord
     // token endpoint again. This causes both the API and site to error.
     // Check if the session already has a token before proceeding.
-    if (props.session.access_token) {
-        return (<Redirect to='/' />);
+    if (props.session?.access_token) {
+        goMain();
+        return <div>
+            <img
+                src='https://media1.tenor.com/images/bf327be1ebbde7f32baf5136042bf118/tenor.gif?itemid=14563637'
+                alt='To the moon!'
+            />
+        </div>
     };
 
     // When the user authorizes or denies Discord access
@@ -100,16 +119,7 @@ const AwaitAccess = (
     props.requestAccess(
         state,
         code,
-        () => {
-            // Load guild info back from storage.
-            props.lookupGuild(
-                undefined,
-                undefined,
-                (guild: string) => {
-                    history.push(`/${guild}`)
-                }
-            );
-        }
+        goMain
     );
 
     return (

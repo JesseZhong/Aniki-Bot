@@ -31,6 +31,7 @@ const Landing = (props: {
                         }
                     },
                     (id: string) => {
+
                         // Punt user through Discord OAuth.
                         // Save guild prior so it can be returned to after OAuth process.
                         history.push('/requestauth');
