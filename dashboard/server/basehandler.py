@@ -491,7 +491,7 @@ class BaseHandler(BaseHTTPRequestHandler):
 
         # Check if user is from an allowed guild.
         if not self.check_guild():
-            return (403, 'Forbidden')
+            return (403, 'Forbidden Guild')
 
         try:
             auth_type, token = self.headers['Authorization'].split(' ')
@@ -500,7 +500,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             return (400, 'Bad Request - Invalid Authorization')
 
         if auth_type.lower() != 'bearer':
-            return (403, 'Forbidden')
+            return (403, 'Forbidden Auth Type')
 
         # Check if the token is valid.
         response = self.get_user(token)
@@ -512,7 +512,7 @@ class BaseHandler(BaseHTTPRequestHandler):
 
         try:
             if not self.permitted(user):
-                return (403, 'Forbidden')
+                return (403, 'Forbidden User')
         except OSError:
             print('Could not open or read the permissions file.')
             return (403, 'Forbidden')
