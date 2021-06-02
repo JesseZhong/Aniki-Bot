@@ -383,7 +383,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         if not hasattr(self, 'guild'):
             return False
 
-        username = user['username'],
+        username = user['username']
         discriminator = user['discriminator']
         userid = user['id']
 
