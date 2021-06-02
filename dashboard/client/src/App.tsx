@@ -1,24 +1,61 @@
 import * as React from 'react';
 import { AppState } from "./containers/AppContainer";
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, Redirect } from 'react-router-dom';
 import PageNotFound from './not-found/PageNotFound';
-import PrivateRoute from './auth/PrivateRoute';
 import Denied from './auth/Denied';
 import FetchingAccess from './auth/FetchingAccess';
 import RequestAuthorization from './auth/RequestAuth';
 import MainPage from './main/MainPage';
+import Landing from './auth/Landing';
+import { GuildPreview } from './guild/GuildPreview';
 
 
-const App = (state: AppState) => (
-    <div className='container'>
-        <div className='container-area'>
-            <div className='page'>
+const App = (state: AppState) => {
+
+    const route = () => {
+        if (state.session?.access_token) {
+            return (
                 <Switch>
                     <Route
+                        path='/:guild'
+                        render={(props: any) => {
+                                state.lookupGuild(
+                                    props,
+                                    (guild: GuildPreview) => {
+                                        state.fetchAllData(
+                                            state.session.access_token,
+                                            guild.id
+                                        );
+                                    }
+                                );
+                                return (
+                                    <MainPage {...props}
+                                        personas={state.personas}
+                                        reactions={state.reactions}
+                                        setPersona={state.putPersona}
+                                        setReaction={state.putReaction}
+                                        removePersona={state.removePersona}
+                                        removeReaction={state.removeReaction}
+                                    />
+                                )
+                            }
+                        }
+                    />
+                    <Route path='*' component={PageNotFound} />
+                </Switch>
+            )
+        }
+
+        else {
+            return (
+                <Switch>
+                    <Route
+                        exact
                         path='/denied'
-                        render={() => <Denied />}
+                        component={Denied}
                     />
                     <Route
+                        exact
                         path='/requestauth'
                         render={(props: any) =>
                             <RequestAuthorization {...props}
@@ -27,39 +64,40 @@ const App = (state: AppState) => (
                             />}
                     />
                     <Route
+                        exact
                         path='/authorized'
                         render={(props: any) =>
                             <FetchingAccess {...props}
                                 session={state.session}
-                                popGuild={state.popGuild}
+                                lookupGuild={state.lookupGuild}
                                 requestAccess={state.requestAccess}
                                 fetchAllData={state.fetchAllData}
                             />
                         }
                     />
-                    <PrivateRoute
+                    <Route
                         path='/:guild'
-                        session={state.session}
-                        guild={state.guild}
-                        saveGuild={state.saveGuild}
-                        lookupGuild={state.lookupGuild}
                         render={(props: any) =>
-                            <MainPage {...props}
-                                personas={state.personas}
-                                reactions={state.reactions}
-                                setPersona={state.putPersona}
-                                setReaction={state.putReaction}
-                                removePersona={state.removePersona}
-                                removeReaction={state.removeReaction}
+                            <Landing {...props}
+                                lookupGuild={state.lookupGuild}
                             />
                         }
                     />
-                    <Route path='*' component={PageNotFound} />
+                    <Route path='*' render={() => <Redirect to='/denied' />} />
                 </Switch>
+            )
+        }
+    }
+
+    return (
+        <div className='container'>
+            <div className='container-area'>
+                <div className='page'>
+                    {route()}
+                </div>
             </div>
         </div>
-    </div>
-)
-
+    )
+}
 
 export default App;

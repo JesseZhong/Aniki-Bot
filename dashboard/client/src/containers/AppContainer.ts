@@ -18,6 +18,7 @@ import GuildAPI from '../api/GuildAPI';
 import { Guild, GuildPreview } from '../guild/GuildPreview';
 import GuildStore from '../stores/GuildStore';
 import GuildActions from '../actions/GuildActions';
+import { RouteComponentProps } from 'react-router-dom';
 
 const url = process.env.REACT_APP_API_URL ?? '';
 
@@ -54,11 +55,11 @@ export interface AppState {
     ) => void,
 
     guild: GuildPreview,
-    lookupGuild: (id: string) => void,
-    saveGuild: (guild: string) => void,
-    popGuild: (
-        token: string,
-        received: (guild: string) => void
+    lookupGuild: (
+        props?: RouteComponentProps,
+        received?: (guild: GuildPreview) => void,
+        pulled?: (id: string) => void,
+        error?: () => void
     ) => void,
 
     personas: Personas,
@@ -107,36 +108,56 @@ function getState(): AppState {
         ),
 
         guild: GuildStore.getState(),
-        lookupGuild: (id: string) => {
-            const token = SessionStore.getState().access_token;
-            if (token) {
-                guildApi.get(
-                    token,
-                    id,
-                    GuildActions.recieve
-                );
-            }
-        },
-        saveGuild: (guild: string) => {
-            if (guild) {
-                Guild.set(guild);
-            }
-        },
-        popGuild: (
-            token: string,
-            received: (guild: string) => void
-        ) => {
-            Guild.load(
-                (guild: string) => {
+        lookupGuild: (
+            props?: RouteComponentProps,
+            received?: (guild: GuildPreview) => void,
+            pulled?: (id: string) => void,
+            error?: () => void
+        ): void => {
+            const guild = GuildStore.getState();
+            const session = SessionStore.getState();
+
+            const process = (id: string) => {
+                if (session?.access_token) {
                     guildApi.get(
-                        token,
-                        guild,
-                        (guildPreview: GuildPreview) => {
-                            GuildActions.recieve(guildPreview);
-                            //Guild.remove();
-                            received(guild);
+                        session.access_token,
+                        id,
+                        (guild: GuildPreview) => {
+                            GuildActions.recieve(guild);
+                            received?.(guild);
                         }
-                    )
+                    );
+                }
+                else {
+                    pulled?.(id);
+                    Guild.set(id);
+                }
+            }
+
+            // Try to pop it from storage if it's there.
+            Guild.load(
+                (id: string) => {
+                    Guild.remove();
+                    process(id);
+                },
+                () => {
+    
+                    // Track the guild being accessed
+                    // for each request. Change the tracked
+                    // guild if the slug changes.
+                    const params = props?.match?.params;
+                    let id = '';
+        
+                    if (params && 'guild' in params) {
+                        id = params['guild'];
+        
+                        if (id && id !== guild.id) {
+                            process(id)
+                        }
+                    }
+                    else {
+                        error?.();
+                    }
                 }
             );
         },
@@ -169,10 +190,5 @@ function getState(): AppState {
         }
     }
 }
-
-// Fetch data if existing session is valid.
-const token = getState().session.access_token;
-const guild = getState().guild.id;
-getState().fetchAllData(token, guild)
 
 export default Container.createFunctional(App, getStores, getState);

@@ -28,6 +28,14 @@ const MainPage = (
         onConfirm: () => {}
     });
 
+    if (!personas.size && !reactions) {
+        return (
+            <div>
+                Waiting for data.
+            </div>
+        )
+    }
+
     const removeReaction = (
         key: string,
         reaction: Reaction
@@ -90,6 +98,7 @@ const MainPage = (
                 [...personas].map(
                     (persona) =>
                         <PersonaReactions
+                            key={persona[0]}
                             persona={persona}
                             reactions={
                                 [...reactions]

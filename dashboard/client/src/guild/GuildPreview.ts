@@ -15,12 +15,16 @@ export const Guild = {
      * @param receive 
      */
     load: (
-        receive: (guild: string) => void
+        receive: (guild: string) => void,
+        error: () => void
     ) => {
         const guild = ls.get(key) as string;
 
         if (guild) {
             receive(guild);
+        }
+        else {
+            error();
         }
     },
 

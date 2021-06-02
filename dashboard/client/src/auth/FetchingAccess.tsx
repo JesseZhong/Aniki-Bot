@@ -1,16 +1,19 @@
 import React from 'react';
-import { Link, Redirect, useHistory, useLocation } from 'react-router-dom';
+import { Link, Redirect, RouteComponentProps, useHistory, useLocation } from 'react-router-dom';
 import { faCircleNotch, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Session } from './Session';
+import { GuildPreview } from '../guild/GuildPreview';
 
 const AwaitAccess = (
     props: {
         session: Session,
-        popGuild: (
-            token: string,
-            received: (guild: string) => void
-        ) => void,
+        lookupGuild: (
+            props?: RouteComponentProps,
+            received?: (guild: GuildPreview) => void,
+            pulled?: (id: string) => void,
+            error?: () => void
+        ) => void
         requestAccess: (
             state: string,
             code: string,
@@ -97,15 +100,15 @@ const AwaitAccess = (
     props.requestAccess(
         state,
         code,
-        (token: string) => {
+        () => {
             // Load guild info back from storage.
-            props.popGuild(
-                token,
+            props.lookupGuild(
+                undefined,
+                undefined,
                 (guild: string) => {
-                    props.fetchAllData(token, guild);
                     history.push(`/${guild}`)
                 }
-            )
+            );
         }
     );
 
