@@ -8,14 +8,27 @@ import RequestAuthorization from './auth/RequestAuth';
 import MainPage from './main/MainPage';
 import Landing from './auth/Landing';
 import { GuildPreview } from './guild/GuildPreview';
+import Vanity from './guild/Vanity';
 
 
 const App = (state: AppState) => {
+
+    const vanity = <Route
+        exact
+        path='/g/:vanity([a-zA-Z0-9_]{2,100})'
+        render={(props: any) =>
+            <Vanity
+                {...props}
+                lookupVanity={state.lookupVanity}
+            />
+        }
+    />
 
     const route = () => {
         if (state.session?.access_token) {
             return (
                 <Switch>
+                    {vanity}
                     <Route
                         exact
                         path='/:guild([0-9]{5,19})'
@@ -52,6 +65,7 @@ const App = (state: AppState) => {
         else {
             return (
                 <Switch>
+                    {vanity}
                     <Route
                         exact
                         path='/denied'

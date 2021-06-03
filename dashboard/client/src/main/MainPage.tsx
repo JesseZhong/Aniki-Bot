@@ -28,10 +28,18 @@ const MainPage = (
         onConfirm: () => {}
     });
 
-    if (!personas.size && !reactions) {
+    if (!personas.size && !reactions.size) {
         return (
-            <div>
-                Waiting for data.
+            <div
+                className='d-flex justify-content-center align-items-center'
+                style={{
+                    height: '100vh'
+                }}
+            >
+                <img
+                    src='https://i.imgur.com/KTnfQcq.gif'
+                    alt='Loading my dudes~'
+                />
             </div>
         )
     }

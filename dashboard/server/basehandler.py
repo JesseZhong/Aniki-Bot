@@ -36,6 +36,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         self.CLIENT_SECRET = os.getenv('CLIENT_SECRET')
         self.DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
         self.GUILDS =  os.path.join(self.DATA_DIR, 'guilds.json')
+        self.VANITY = os.path.join(self.DATA_DIR, 'vanity.json')
         self.PERMITTED_USERS = 'permitted.json'
         self.DISCORD_API = 'https://discord.com/api'
         self.DISCORD_OAUTH_API = f'{self.DISCORD_API}/oauth2'
@@ -105,7 +106,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         return self.headers[key]
 
 
-    def respond(self, content: {}):
+    def send_content(self, content: {}):
         """
             Sends a response with the provided content.
         """
@@ -116,7 +117,7 @@ class BaseHandler(BaseHTTPRequestHandler):
 
     def send_bad_request(self, content: str = None):
         self.set_headers(400)
-        self.respond('Bad Request' if not content else content)
+        self.send_content('Bad Request' if not content else content)
 
     
     def get_content(self):
@@ -234,7 +235,34 @@ class BaseHandler(BaseHTTPRequestHandler):
         """
         with open(os.path.join(self.DATA_DIR, self.guild, filename), 'r') as file:
             data = json.load(file)
-            self.respond(data)
+            self.send_content(data)
+
+    
+    def handle_vanity(self) -> bool:
+        """
+            Handles vanity check requests.
+            Checks if a special name exists for a guild.
+            Returns the mapping if it does.
+        """
+
+        if not self.check_file_exists(self.VANITY):
+            return False
+
+        match = re.match(r'^/vanity/(?P<guild>[a-zA-Z0-9_]{2,100})$', self.path)
+        if match:
+            guild = match.group('guild')
+            with open(self.VANITY, 'r') as file:
+                data = json.load(file)
+                print(data)
+                if guild in data:
+                    self.set_headers(200)
+                    self.send_content({
+                        'id': data[guild]
+                    })
+                    return True
+
+            self.send_bad_request()
+            return True
 
 
     def handle_oauth_request(self) -> bool:
@@ -272,7 +300,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             f'&redirect_uri={redirect}&prompt={prompt}'
 
         self.set_headers(200)
-        self.respond({
+        self.send_content({
             'auth_url': auth_url,
             'state': state
         })
@@ -338,7 +366,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         user = json.loads(self.get_user(self.token).content)['user']
 
         self.set_headers(200)
-        self.respond(tokens)
+        self.send_content(tokens)
 
 
     def refresh_access(self):
@@ -368,7 +396,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         )
 
         self.set_headers(200)
-        self.respond(response)
+        self.send_content(response)
 
 
     def revoke_access(self):
@@ -537,7 +565,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         # Deny the user access if verification failed.
         if result is not None:
            self.set_headers(*result)
-           self.respond('Nope')
+           self.send_content('Nope')
            return
 
         # Handle a request based off path.
@@ -550,13 +578,17 @@ class BaseHandler(BaseHTTPRequestHandler):
                 return
         
         self.set_headers(404, 'Dude, fuck off!')
-        self.respond('Yo, WTF you doin here?!')
+        self.send_content('Yo, WTF you doin here?!')
 
 
     def do_GET(self):
         """
             Handle all incoming GET requests.
         """
+
+        # Handle guild vanity lookups.
+        if self.handle_vanity():
+            return
 
         # Check for OAuth2 stuffs.
         # If an OAuth2 request was made,

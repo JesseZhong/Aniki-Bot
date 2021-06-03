@@ -47,7 +47,7 @@ class ServerHandler(BaseHandler):
 
     def get_root(self):
         self.set_headers(200)
-        self.respond('Nothing to see here!')
+        self.send_content('Nothing to see here!')
 
 
     def get_favicon(self):

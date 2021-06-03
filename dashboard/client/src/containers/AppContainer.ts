@@ -61,6 +61,11 @@ export interface AppState {
         pulled?: (id: string) => void,
         error?: () => void
     ) => void,
+    lookupVanity: (
+        name: string,
+        received: (id: string) => void,
+        error: (err: any) => void
+    ) => void,
 
     personas: Personas,
     receivePersonas: (personas: Personas) => void,
@@ -118,7 +123,14 @@ function getState(): AppState {
             const session = SessionStore.getState();
 
             const process = (id: string) => {
-                if (session?.access_token) {
+                if (
+                    (
+                        !id ||
+                        !guild ||
+                        id !== guild.id
+                    ) &&
+                    session?.access_token
+                ) {
                     guildApi.get(
                         session.access_token,
                         id,
@@ -150,16 +162,24 @@ function getState(): AppState {
         
                     if (params && 'guild' in params) {
                         id = params['guild'];
-        
-                        if (id && id !== guild.id) {
-                            process(id)
-                        }
+                        process(id);
                     }
                     else {
                         error?.();
                     }
                 }
             );
+        },
+        lookupVanity: (
+            name: string,
+            received: (id: string) => void,
+            error: (err: any) => void
+        ) => {
+            guildApi.vanity(
+                name,
+                received,
+                error
+            )
         },
 
         personas: PersonaStore.getState(),
