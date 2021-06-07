@@ -2,12 +2,16 @@
 
 $size: 4em
 
-div.persona-card
+@mixin persona-card()
     margin: 0.1em
     width: 100%
     background-color: $background2
     border-radius: 7px
     padding: 1em
+    position: relative
+
+div.persona-card
+    @include persona-card()
 
     img.avatar
         border-radius: 50%
@@ -23,3 +27,8 @@ div.persona-card
         
         > div.children
             width: 100%
+    
+    button.remove
+        color: $color1
+        background-color: $background2
+        border: 1px solid $border1

@@ -1,24 +1,44 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Persona } from './Personas';
 import './PersonaCard.sass';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrashAlt } from '@fortawesome/free-regular-svg-icons';
+import PersonaNameEdit from './PersonaNameEdit';
+import HoverButtonGroup from '../common/HoverButtonGroup';
 
 const PersonaCard = (props: {
     persona: Persona,
+    set: (persona: Persona) => void,
+    remove: () => void,
     className?: string,
     children?: React.ReactNode,
     affixedChild?: JSX.Element
 }) => {
-
+    const [nameEdit, setNameEdit] = useState(false);
     const persona = props.persona;
     const children = props.children;
+    const affixedChild = props.affixedChild;
+    const cardRef = React.createRef<HTMLDivElement>();
+    const nameRef = React.createRef<HTMLDivElement>()
 
     return (
         <div
+            ref={cardRef}
             className={
                 'persona-card d-flex flex-row' +
                 (props.className ? ` ${props.className}` : '')
             }
         >
+            <HoverButtonGroup owner={cardRef}>
+                <button
+                    className='btn btn-sm remove'
+                    data-bs-toggle='modal'
+                    data-bs-target='#remove-dialog'
+                    onClick={props.remove}
+                >
+                    <FontAwesomeIcon icon={faTrashAlt} />
+                </button>
+            </HoverButtonGroup>
             <img
                 className='avatar'
                 src={persona.avatar}
@@ -26,13 +46,47 @@ const PersonaCard = (props: {
             />
             <div className='ms-3 content'>
                 <div className='d-flex flex-row justify-content-between'>
-                    <h3 className='align-top'>
-                        {persona.name}
-                    </h3>
+                    <div
+                        ref={nameRef}
+                        style={{
+                            position: 'relative',
+                            paddingRight: nameEdit ? '0' : '2.1em',
+                            width: nameEdit ? '100%' : 'inherit'
+                        }}
+                    >
+                        {
+                            nameEdit
+                            ? <PersonaNameEdit
+                                persona={persona}
+                                set={props.set}
+                                finishedEdit={() => setNameEdit(false)}
+                            />
+                            : <>
+                                <h3 className='align-top'>
+                                    {persona.name}
+                                </h3>
+                                <HoverButtonGroup
+                                    owner={nameRef}
+                                    style={{
+                                        top: '-0.4em',
+                                        right: '0.2em'
+                                    }}
+                                >
+                                    <button
+                                        type='button'
+                                        className='btn btn-sm'
+                                        onClick={() => setNameEdit(true)}
+                                    >
+                                        <FontAwesomeIcon icon={faEdit} />
+                                    </button>
+                                </HoverButtonGroup>
+                            </>
+                        }
+                    </div>
                     {
                         props.affixedChild &&
                         <div className='align-self-center'>
-                            {props.affixedChild}
+                            {affixedChild}
                         </div>
                     }
                 </div>

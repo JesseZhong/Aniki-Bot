@@ -15,6 +15,7 @@ const PersonaReactions = (
         persona: [string, Persona],
         reactions: Array<[string, Reaction]>,
         setPersona: (key: string, persona: Persona) => void,
+        removePersona: () => void,
         setReaction: (key: string, reaction: Reaction) => void,
         removeReaction: (key: string, reaction: Reaction) => void
     }
@@ -28,11 +29,13 @@ const PersonaReactions = (
         <PersonaCard
             persona={persona}
             key={key}
+            set={(p: Persona) => props.setPersona(key, p)}
+            remove={props.removePersona}
             className='mb-4'
             affixedChild={
                 <button
                     type='button'
-                    className='btn btn-outline-white text-secondary'
+                    className='btn btn-outline-white text-secondary text-nowrap'
                     onClick={() => setAddNew(true)}
                 >
                     <FontAwesomeIcon icon={faPlus} /> reaction

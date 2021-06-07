@@ -6,7 +6,7 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ReactionCard from '../reactions/ReactionCard';
 import PersonaReactions from './PersonaReactions';
-import Dialog from '../embeds/Dialog';
+import Dialog from '../common/Dialog';
 import './MainPage.sass';
 
 const MainPage = (
@@ -60,6 +60,22 @@ const MainPage = (
         });
     }
 
+    const removePersona = (
+        key: string,
+        persona: Persona
+    ) => {
+        setDiagFields({
+            title: 'Remove Persona?',
+            body:
+            <div>
+                <p>
+                    Are you sure you want to remove <b></b>
+                </p>
+            </div>,
+            onConfirm: () => props.removePersona(key)
+        });
+    }
+
     return (
         <div>
             <div className='d-flex flex-row justify-content-between'>
@@ -100,7 +116,6 @@ const MainPage = (
                 </div>
             </div>
             <div>
-
             {
                 personas &&
                 [...personas].map(
@@ -115,6 +130,7 @@ const MainPage = (
                                     )
                             }
                             setPersona={props.setPersona}
+                            removePersona={() => removePersona(...persona)}
                             setReaction={props.setReaction}
                             removeReaction={removeReaction}
                         />

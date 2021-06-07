@@ -1,9 +1,11 @@
+import React from 'react';
 import { Reaction } from './Reactions';
 import { useState } from 'react';
 import ReactionCardView from './ReactionCardView';
 import ReactionCardEdit from './ReactionCardEdit';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faEdit } from '@fortawesome/free-regular-svg-icons';
+import HoverButtonGroup from '../common/HoverButtonGroup';
 import './ReactionCard.sass';
 
 
@@ -16,7 +18,7 @@ const ReactionCard = (props: {
 }) => {
     const reaction = props.reaction;
     const [edit, setEdit] = useState(!!props.edit);
-    const [hovered, setHovered] = useState(false);
+    const cardRef = React.createRef<HTMLDivElement>();
 
     return (
         <div
@@ -24,12 +26,11 @@ const ReactionCard = (props: {
                 'reaction-card' +
                 (props.className ? ` ${props.className}` : '')
             }
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
+            ref={cardRef}
         >
             {
-                !edit && hovered &&
-                <div className='btn-group edit'>
+                !edit &&
+                <HoverButtonGroup owner={cardRef}>
                     <button
                         type='button'
                         className='btn btn-sm'
@@ -45,7 +46,7 @@ const ReactionCard = (props: {
                     >
                         <FontAwesomeIcon icon={faTrashAlt} />
                     </button>
-                </div>
+                </HoverButtonGroup>
             }
             {
                 edit
