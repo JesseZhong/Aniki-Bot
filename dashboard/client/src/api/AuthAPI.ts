@@ -1,4 +1,5 @@
 import request, { Response } from "superagent";
+import { ErrorResponse } from "./ErrorResponse";
 
 
 interface TokenResponse {
@@ -62,6 +63,64 @@ const AuthAPI = (
                     refresh_token
                 );
             });
+    },
+
+    /**
+     * Access an endpoint that requires authorization.
+     * Handles token refreshes.
+     * @param access_token
+     * @param refresh_token 
+     * @param action 
+     * @param tokensReceived 
+     */
+    access(
+        access_token: string,
+        refresh_token: string,
+        action: (
+            access_token: string,
+            errorHandler?: (response: ErrorResponse) => boolean
+        ) => void,
+        tokensReceived: (
+            access_token: string,
+            refresh_token: string
+        ) => void
+    ): void {
+        action(
+            access_token,
+            (response: ErrorResponse): boolean => {
+                if (
+                    response.statusCode === 401 &&
+                    response.statusText === 'Unauthorized - Invalid Token'
+                ) {
+                    request.get(`${url}/refresh`)
+                        .set('Accept', 'application/json')
+                        .set('Refresh', refresh_token)
+                        .end((error: any, response: Response) => {
+                            if (error) {
+                                return console.error(error);
+                            }
+
+                            const {
+                                access_token,
+                                refresh_token
+                            } = response.body as TokenResponse;
+
+                            tokensReceived(
+                                access_token,
+                                refresh_token
+                            );
+
+                            // Attempt action again.
+                            action(access_token)
+                        });
+
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        )
     }
 });
 

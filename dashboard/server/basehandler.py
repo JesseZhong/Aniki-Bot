@@ -89,6 +89,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.send_header("Access-Control-Allow-Headers", "Accept")
         self.send_header("Access-Control-Allow-Headers", "Authorization")
+        self.send_header("Access-Control-Allow-Headers", "Refresh")
         self.send_header("Access-Control-Allow-Headers", "State")
         self.send_header("Access-Control-Allow-Headers", "Code")
         self.send_header("Access-Control-Allow-Headers", "Guild")
@@ -253,7 +254,6 @@ class BaseHandler(BaseHTTPRequestHandler):
             guild = match.group('guild')
             with open(self.VANITY, 'r') as file:
                 data = json.load(file)
-                print(data)
                 if guild in data:
                     self.set_headers(200)
                     self.send_content({
@@ -396,7 +396,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         )
 
         self.set_headers(200)
-        self.send_content(response)
+        self.send_content(json.loads(response.content))
 
 
     def revoke_access(self):

@@ -1,27 +1,37 @@
 import request, { Response } from 'superagent';
 import { GuildPreview } from '../guild/GuildPreview';
+import { Access } from './Access';
+import { ErrorResponse } from './ErrorResponse';
 
 const GuildAPI = (
-    url: string
+    url: string,
+    access: Access
 ) => ({
     get(
-        token: string,
         guild: string,
         received: (guild: GuildPreview) => void,
         error?: (error: any) => void
     ): void {
-        request.get(`${url}/guild`)
-            .set('Accept', 'application/json')
-            .set('Guild', guild)
-            .auth(token, { type: 'bearer' })
-            .end((err: any, response: Response) => {
-                if (err) {
-                    error?.(err);
-                    return;
-                }
+        access(
+            (
+                token: string,
+                errorHandler?: (response: ErrorResponse) => boolean
+            ) =>
+                request.get(`${url}/guild`)
+                    .set('Accept', 'application/json')
+                    .set('Guild', guild)
+                    .auth(token, { type: 'bearer' })
+                    .end((err: any, response: Response) => {
+                        if (err) {
+                            if (!errorHandler?.(response as ErrorResponse)) {
+                                error?.(err);
+                            }
+                            return;
+                        }
 
-                received(response.body as GuildPreview);
-            });
+                        received(response.body as GuildPreview);
+                    })
+        );
     },
 
     vanity(

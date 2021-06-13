@@ -1,4 +1,5 @@
 import { Container } from 'flux/utils';
+import { RouteComponentProps } from 'react-router-dom';
 import App from '../App';
 
 import { Persona, Personas } from '../personas/Personas';
@@ -10,22 +11,58 @@ import { Reaction, Reactions } from '../reactions/Reactions';
 import ReactionActions from '../actions/ReactionActions';
 import ReactionStore from '../stores/ReactionStore';
 import ReactionAPI from '../api/ReactionAPI';
+
 import { Session, Sessions } from '../auth/Session';
 import SessionStore from '../stores/SessionStore';
 import SessionActions from '../actions/SessionActions';
 import AuthAPI from '../api/AuthAPI';
-import GuildAPI from '../api/GuildAPI';
+
 import { Guild, GuildPreview } from '../guild/GuildPreview';
-import GuildStore from '../stores/GuildStore';
 import GuildActions from '../actions/GuildActions';
-import { RouteComponentProps } from 'react-router-dom';
+import GuildStore from '../stores/GuildStore';
+import GuildAPI from '../api/GuildAPI';
+
+import { Access } from '../api/Access';
+import { ErrorResponse } from '../api/ErrorResponse';
+
 
 const url = process.env.REACT_APP_API_URL ?? '';
 
+const saveSession = (
+    access_token: string,
+    refresh_token: string
+) => {
+    // Load up session info.
+    let session = SessionStore.getState();
+    session.access_token = access_token;
+    session.refresh_token = refresh_token;
+
+    // Save it.
+    Sessions.set(session);
+    SessionActions.set(session);
+}
+
 const authApi = AuthAPI(url);
-const personaApi = PersonaAPI(url);
-const reactionApi = ReactionAPI(url);
-const guildApi = GuildAPI(url);
+const access: Access = (
+    action: (
+        access_token: string,
+        errorHandler?: (response: ErrorResponse) => boolean
+    ) => void
+) => {
+    const session = SessionStore.getState();
+    if (session.access_token && session.refresh_token) {
+        authApi.access(
+            session.access_token,
+            session.refresh_token,
+            action,
+            saveSession
+        )
+    }
+}
+
+const personaApi = PersonaAPI(url, access);
+const reactionApi = ReactionAPI(url, access);
+const guildApi = GuildAPI(url, access);
 
 // Load session.
 Sessions.load(
@@ -99,15 +136,7 @@ function getState(): AppState {
                 access_token: string,
                 refresh_token: string
             ) => {
-                // Load up session info.
-                let session = SessionStore.getState();
-                session.access_token = access_token;
-                session.refresh_token = refresh_token;
-
-                // Save it.
-                Sessions.set(session);
-                SessionActions.set(session);
-
+                saveSession(access_token, refresh_token);
                 received(access_token);
             }
         ),
@@ -132,7 +161,6 @@ function getState(): AppState {
                     session?.access_token
                 ) {
                     guildApi.get(
-                        session.access_token,
                         id,
                         (guild: GuildPreview) => {
                             GuildActions.recieve(guild);
@@ -194,7 +222,7 @@ function getState(): AppState {
             const token = SessionStore.getState().access_token;
             const guild = GuildStore.getState().id;
             if (token) {
-                reactionApi.remove(token, guild, key);
+                reactionApi.remove(guild, key);
                 ReactionActions.remove(key);
             }
         },
@@ -204,8 +232,13 @@ function getState(): AppState {
             guild?: string
         ) => {
             if (token && guild) {
-                personaApi.get(token, guild, getState().receivePersonas);
-                reactionApi.get(token, guild, getState().receiveReactions);
+                personaApi.get(
+                    guild,
+                    (personas: Personas) => {
+                        getState().receivePersonas(personas);
+                        reactionApi.get(guild, getState().receiveReactions);
+                    }
+                );
             }
         }
     }
