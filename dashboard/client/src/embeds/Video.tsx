@@ -12,6 +12,10 @@ const Video = (
 ) => {
     const PARENT_DOMAIN = process.env.REACT_APP_SITE_DOMAIN;
     const url = props.url;
+    if (!url) {
+        return (<></>);
+    }
+
     let src = '';
     let title = '';
 

@@ -9,11 +9,13 @@
             "items": {
                 "type": "string",
                 "minLength": 3,
-                "maxLength": 100
+                "maxLength": 100,
+                "pattern": "^[^\"']*$"
             }
         },
         "audio_url": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^https:\/\/www\\.(?:(?:youtube\\.com\/(?:[^/\n]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\\.be\/)[^\"&?/\\s\n]{11}|(?:twitch\\.tv\/[a-zA-Z0-9_]{4,25}\/clip\/[a-zA-Z0-9-]*)(?:$|\/.*$|\\?.*$))"
         },
         "start": {
             "type": "string",

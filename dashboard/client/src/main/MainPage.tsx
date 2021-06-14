@@ -1,11 +1,13 @@
 import React from 'react';
+import uuid from 'node-uuid';
 import { useState } from 'react';
 import { Persona, Personas } from '../personas/Personas';
 import { Reaction, Reactions } from '../reactions/Reactions';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import ReactionCard from '../reactions/ReactionCard';
 import PersonaReactions from './PersonaReactions';
+import ReactionCard from '../reactions/ReactionCard';
+import ReactionCardEdit from '../reactions/ReactionCardEdit';
 import Dialog from '../common/Dialog';
 import './MainPage.sass';
 
@@ -27,6 +29,8 @@ const MainPage = (
         body: <></>,
         onConfirm: () => {}
     });
+
+    const [addNew, setAddNew] = useState(false);
 
     if (!personas.size && !reactions.size) {
         return (
@@ -83,12 +87,30 @@ const MainPage = (
                     Reactions
                 </h1>
                 <div className='align-self-center'>
-                    <button className='btn btn-outline-white text-primary'>
+                    <button
+                        type='button'
+                        className='btn btn-outline-white text-primary'
+                        onClick={() => setAddNew(true)}
+                    >
                         <FontAwesomeIcon icon={faPlus} /> Reaction
                     </button>
                 </div>
             </div>
             <div className='mb-5'>
+            {
+                addNew &&
+                <div className='reaction-add my-2'>
+                    <ReactionCardEdit
+                        set={
+                            (reaction: Reaction) => {
+                                props.setReaction(uuid.v4(), reaction);
+                                setAddNew(false);
+                            }
+                        }
+                        finishedEdit={() => setAddNew(false)}
+                    />
+                </div>
+            }
             {
                 reactions &&
                 [...reactions]

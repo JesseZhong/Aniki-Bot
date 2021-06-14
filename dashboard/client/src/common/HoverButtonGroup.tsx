@@ -6,18 +6,24 @@ const HoverButtonGroup = (props: {
     children?: React.ReactElement<HTMLButtonElement>[] | React.ReactElement<HTMLButtonElement>,
     style?: React.CSSProperties
 }) => {
+    const [hovered, setHovered] = useState(false);
+
     useEffect(
         () => {
             const owner = props.owner?.current;
-            if (owner) {
+            if (owner && setHovered) {
                 owner.onmouseenter = () => setHovered(true);
                 owner.onmouseleave = () => setHovered(false);
+            }
+            return () => {
+                if (owner && setHovered) {
+                    owner.onmouseenter = null;
+                    owner.onmouseleave = null;
+                }
             }
         },
         [props.owner]
     )
-
-    const [hovered, setHovered] = useState(false);
 
     return (
         <>

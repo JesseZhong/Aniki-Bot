@@ -23,7 +23,7 @@ const PersonaNameEdit = (props: {
                 finishedEdit();
             }}
         >
-            {({ submitForm }) => (
+            {({ submitForm, values, initialValues }) => (
                 <Form>
                     <div className='persona-name-edit-group'>
                         <Field
@@ -39,7 +39,10 @@ const PersonaNameEdit = (props: {
                                 }
                             }}
                             onBlur={() => {
-                                finishedEdit();
+                                // It's okay to close out of editting if nothing has changed.
+                                if (values.name === initialValues.name) {
+                                    finishedEdit();
+                                }
                             }}
                         />
                         <ErrorMessage

@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Reaction } from "./Reactions";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import VideoClipper from '../embeds/VideoClipper';
-import VolumeControl from '../embeds/VolumeControl';
+import VideoEditor from '../embeds/VideoEditor';
+import ReactionValidation from './ReactionValidation';
 import './ReactionCardEdit.sass';
 
 const ReactionCardEdit = (props: {
@@ -32,13 +32,15 @@ const ReactionCardEdit = (props: {
                         
                     } as Reaction
                 }
+                
+                validationSchema={ReactionValidation}
 
                 onSubmit={(reaction, { setSubmitting }) => {
                     props.set(reaction);
                     setSubmitting(false);
                 }}
             >
-                {({ isSubmitting, values }) => (
+                {({ isSubmitting, values, setFieldValue }) => (
                     <Form className='mx-4'>
                         <div className='input-group input-group-sm flex-nowrap pe-5'>
                             <span className='input-group-text'>
@@ -48,13 +50,22 @@ const ReactionCardEdit = (props: {
                                 name='triggers'
                                 placeholder='List trigger words, separated by commas'
                                 className='form-control'
-                            />
-                            <ErrorMessage
-                                name='triggers'
-                                component='div'
-                                className='text-danger'
+                                value={values?.triggers?.join(', ') ?? ''}
+                                onChange={(event: React.FormEvent<HTMLInputElement>) => {
+                                    const value: string = event.currentTarget.value;
+                                    setFieldValue(
+                                        'triggers',
+                                        value.split(',').map((trigger: string) => trigger.trim()),
+                                        true
+                                    );
+                                }}
                             />
                         </div>
+                        <ErrorMessage
+                            name='triggers'
+                            component='div'
+                            className='text-danger ms-2'
+                        />
                         <div className='form-floating mt-3'>
                             <Field
                                 id='content'
@@ -66,12 +77,12 @@ const ReactionCardEdit = (props: {
                             <label htmlFor='content'>
                                 Message
                             </label>
-                            <ErrorMessage
-                                name='content'
-                                component='div'
-                                className='text-danger'
-                            />
                         </div>
+                        <ErrorMessage
+                            name='content'
+                            component='div'
+                            className='text-danger ms-2'
+                        />
                         <div className='input-group input-group-sm flex-nowrap mt-3'>
                             <span className='input-group-text'>
                                 Audio URL
@@ -85,44 +96,31 @@ const ReactionCardEdit = (props: {
                                     setShowAudioFields(!!value);
                                 }}
                             />
-                            <ErrorMessage
-                                name='audio_url'
-                                component='div'
-                                className='text-danger'
-                            />
                         </div>
+                        <ErrorMessage
+                            name='audio_url'
+                            component='div'
+                            className='text-danger ms-2'
+                        />
                         {
                             showAudioFields &&
-                            <div className='d-flex flex-row mt-3'>
-                                <div className='form-group'>
-                                    <Field name='clip'>
-                                        {() => (
-                                            <VideoClipper
-                                                video_url={values.audio_url}
-                                                clip_range={values.clip}
-                                                width={500}
-                                                set={
-                                                    (range?: [number, number]) => {
-                                                        values.clip = range;
-                                                    }
-                                                }
-                                            />
-                                        )}
-                                    </Field>
-                                    <ErrorMessage
-                                        name='start'
-                                        component='div'
-                                        className='text-danger'
-                                    />
-                                </div>
-                                <div className='ms-3 d-flex flex-column justify-content-end'>
-                                    <Field name='volume'>
-                                        {() => (
-                                            <VolumeControl volume={values.volume} />
-                                        )}
-                                    </Field>
-                                </div>
-                            </div>
+                            <VideoEditor
+                                className='mt-3d-flex flex-row mt-3'
+                                video_url={values.audio_url}
+                                clip_range={values.clip}
+                                volume={values.volume}
+                                width={500}
+                                setClipRange={
+                                    (range?: [number, number]) => {
+                                        setFieldValue('clip', range);
+                                    }
+                                }
+                                setVolume={
+                                    (volume?: number) => {
+                                        setFieldValue('volume', volume);
+                                    }
+                                }
+                            />
                         }
                         <div className='mt-3'>
                             <button
