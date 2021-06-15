@@ -15,7 +15,7 @@
         },
         "audio_url": {
             "type": "string",
-            "pattern": "^https:\/\/www\\.(?:(?:youtube\\.com\/(?:[^/\n]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\\.be\/)[^\"&?/\\s\n]{11}|(?:twitch\\.tv\/[a-zA-Z0-9_]{4,25}\/clip\/[a-zA-Z0-9-]*)(?:$|\/.*$|\\?.*$))"
+            "pattern": "^https:\/\/(?:www\\.|)(?:(?:youtube\\.com\/(?:[^/\n]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\\.be\/)[^\"&?/\\s\n]{11}|(?:twitch\\.tv\/[a-zA-Z0-9_]{4,25}\/clip\/[a-zA-Z0-9-]*)(?:$|\/.*$|\\?.*$))"
         },
         "start": {
             "type": "string",
@@ -70,7 +70,6 @@
         "start": ["audio_url"],
         "end": ["audio_url"],
         "clip": ["audio_url"],
-        "volume": ["audio_url"],
-        "content": ["persona"]
+        "volume": ["audio_url"]
     }
 }

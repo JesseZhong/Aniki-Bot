@@ -34,9 +34,10 @@ const ReactionAPI = (
     },
 
     put(
-        key: string,
         guild: string,
-        reaction: Reaction
+        key: string,
+        reaction: Reaction,
+        onSuccess?: () => void
     ): void {
         access(
             (
@@ -55,13 +56,18 @@ const ReactionAPI = (
                             }
                             return;
                         }
+
+                        if (response.status === 201) {
+                            onSuccess?.();
+                        }
                     })
         );
     },
 
     remove(
         guild: string,
-        key: string
+        key: string,
+        onSuccess?: () => void
     ): void {
         access(
             (
@@ -78,6 +84,10 @@ const ReactionAPI = (
                                 console.error(error)
                             }
                             return;
+                        }
+
+                        if (response.status === 201) {
+                            onSuccess?.();
                         }
                     })
         );

@@ -20,7 +20,6 @@ const AwaitAccess = (
             received: (token: string) => void
         ) => void,
         fetchAllData: (
-            token?: string,
             guild?: string
         ) => void
     }
@@ -32,10 +31,7 @@ const AwaitAccess = (
         props.lookupGuild(
             undefined,
             (guild: GuildPreview) => {
-                props.fetchAllData(
-                    props.session?.access_token,
-                    guild.id
-                );
+                props.fetchAllData(guild.id);
                 history.push(`/${guild.id}`);
             }
         );

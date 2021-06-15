@@ -114,10 +114,7 @@ export interface AppState {
     putReaction: (key: string, reaction: Reaction) => void,
     removeReaction: (key: string) => void,
 
-    fetchAllData: (
-        token?: string,
-        guild?: string
-    ) => void
+    fetchAllData: (guild?: string) => void
 }
 
 function getState(): AppState {
@@ -212,25 +209,64 @@ function getState(): AppState {
 
         personas: PersonaStore.getState(),
         receivePersonas: PersonaActions.receive,
-        putPersona: PersonaActions.put,
-        removePersona: PersonaActions.remove,
+        putPersona: (
+            key: string,
+            persona: Persona
+        ) => {
+            const guild = GuildStore.getState()?.id;
+            if (guild) {
+                personaApi.put(
+                    guild,
+                    key,
+                    persona,
+                    () => PersonaActions.put(key, persona)
+                );
+            }
+        },
+        removePersona: (
+            key: string
+        ) => {
+            const guild = GuildStore.getState()?.id;
+            if (guild) {
+                personaApi.remove(
+                    guild,
+                    key,
+                    () => PersonaActions.remove(key)
+                )
+            }
+        },
 
         reactions: ReactionStore.getState(),
         receiveReactions: ReactionActions.recieve,
-        putReaction: ReactionActions.put,
+        putReaction: (
+            key: string,
+            reaction: Reaction
+        ) => {
+            const guild = GuildStore.getState()?.id;
+            if (guild) {
+                reactionApi.put(
+                    guild,
+                    key,
+                    reaction,
+                    () => ReactionActions.put(key, reaction)
+                )
+            }
+        },
         removeReaction: (key: string) => {
-            const token = SessionStore.getState().access_token;
-            const guild = GuildStore.getState().id;
-            if (token) {
-                reactionApi.remove(guild, key);
-                ReactionActions.remove(key);
+            const guild = GuildStore.getState()?.id;
+            if (guild) {
+                reactionApi.remove(
+                    guild,
+                    key,
+                    () => ReactionActions.remove(key)
+                );
             }
         },
 
         fetchAllData: (
-            token?: string,
             guild?: string
         ) => {
+            const token = SessionStore.getState()?.access_token;
             if (token && guild) {
                 personaApi.get(
                     guild,

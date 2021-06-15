@@ -38,10 +38,7 @@ const App = (state: AppState) => {
                             state.lookupGuild(
                                 props,
                                 (guild: GuildPreview) => {
-                                    state.fetchAllData(
-                                        state.session.access_token,
-                                        guild.id
-                                    );
+                                    state.fetchAllData(guild.id);
                                 }
                             );
 

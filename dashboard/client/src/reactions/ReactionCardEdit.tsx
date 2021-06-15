@@ -14,7 +14,7 @@ const ReactionCardEdit = (props: {
     finishedEdit: () => void
 }) => {
 
-    const reaction = props.reaction;
+    const reaction = props.reaction ?? { } as Reaction;
     const [showAudioFields, setShowAudioFields] = useState(!!reaction?.audio_url);
 
     return (
@@ -27,16 +27,11 @@ const ReactionCardEdit = (props: {
                 <FontAwesomeIcon icon={faTimes} />
             </button>
             <Formik
-                initialValues={
-                    reaction ?? {
-                        
-                    } as Reaction
-                }
-                
+                initialValues={reaction}
                 validationSchema={ReactionValidation}
-
                 onSubmit={(reaction, { setSubmitting }) => {
                     props.set(reaction);
+                    props.finishedEdit();
                     setSubmitting(false);
                 }}
             >
@@ -93,6 +88,7 @@ const ReactionCardEdit = (props: {
                                 className='form-control'
                                 onChange={(event: React.FormEvent<HTMLInputElement>) => {
                                     const value = event.currentTarget.value;
+                                    setFieldValue('audio_url', value);
                                     setShowAudioFields(!!value);
                                 }}
                             />
@@ -103,7 +99,7 @@ const ReactionCardEdit = (props: {
                             className='text-danger ms-2'
                         />
                         {
-                            showAudioFields &&
+                            showAudioFields && values.audio_url &&
                             <VideoEditor
                                 className='mt-3d-flex flex-row mt-3'
                                 video_url={values.audio_url}

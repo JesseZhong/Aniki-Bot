@@ -23,6 +23,9 @@ const AudioCard = (props: {
             audioSource = 'Twitch';
         }
     }
+    else {
+        return (<></>);
+    }
 
     return (
         <div

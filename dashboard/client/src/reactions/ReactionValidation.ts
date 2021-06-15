@@ -11,15 +11,15 @@ const Validation = Yup.object().shape({
         .min(1, 'Need at least 1.'),
     content:
         Yup.string()
-            .max(2000, 'Messages can\'t be longer than 2000 characters.'),
+            .max(2000, 'Messages can\'t be longer than 2000 characters.')
+            .notRequired(),
     audio_url:
         Yup.string()
             .matches(
-                /^https:\/\/www\.(?:(?:youtube\.com\/(?:[^/\n]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)[^"&?/\s\n]{11}|(?:twitch\.tv\/[a-zA-Z0-9_]{4,25}\/clip\/[a-zA-Z0-9-]*)(?:$|\/.*$|\?.*$))/,
+                /^https:\/\/(?:www\.|)(?:(?:youtube\.com\/(?:[^/\n]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)[^"&?/\s\n]{11}|(?:twitch\.tv\/[a-zA-Z0-9_]{4,25}\/clip\/[a-zA-Z0-9-]*)(?:$|\/.*$|\?.*$))/,
                 'Not a valid Youtube or Twitch video.'
             )
-            .notRequired(),
-    
+            .notRequired()
 });
 
 export default Validation;

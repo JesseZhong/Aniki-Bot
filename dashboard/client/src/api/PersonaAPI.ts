@@ -34,9 +34,10 @@ const PersonaAPI = (
     },
 
     put(
-        key: string,
         guild: string,
-        persona: Persona
+        key: string,
+        persona: Persona,
+        onSuccess?: () => void
     ): void {
         access(
             (
@@ -55,13 +56,18 @@ const PersonaAPI = (
                             }
                             return;
                         }
+
+                        if (response.status === 201) {
+                            onSuccess?.();
+                        }
                     })
         );
     },
 
     remove(
         guild: string,
-        key: string
+        key: string,
+        onSuccess?: () => void
     ): void {
         access(
             (
@@ -78,6 +84,10 @@ const PersonaAPI = (
                                 console.error(error)
                             }
                             return;
+                        }
+
+                        if (response.status === 201) {
+                            onSuccess?.();
                         }
                     })
         );
