@@ -14,8 +14,8 @@
         "avatar": {
             "description": "The URL for the display image.",
             "type": "string",
-            "pattern": "^(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)",
-            "maxLength": 2000
+            "pattern": "^(http(s?):)([/|.|\\w|\\s|-])*\\.(?:gif|png|bmp|jpeg|jpg|webm)",
+            "maxLength": 2048
         }
     },
     "required": [

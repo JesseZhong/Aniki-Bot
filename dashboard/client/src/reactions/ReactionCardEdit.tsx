@@ -37,67 +37,73 @@ const ReactionCardEdit = (props: {
             >
                 {({ isSubmitting, values, setFieldValue }) => (
                     <Form className='mx-4'>
-                        <div className='input-group input-group-sm flex-nowrap pe-5'>
-                            <span className='input-group-text'>
-                                Triggers
-                            </span>
-                            <Field
+                        <div className='d-flex flex-column'>
+                            <div className='input-group input-group-sm flex-nowrap pe-5'>
+                                <span className='input-group-text'>
+                                    Triggers
+                                </span>
+                                <Field
+                                    name='triggers'
+                                    placeholder='List trigger words, separated by commas'
+                                    className='form-control'
+                                    value={values?.triggers?.join(', ') ?? ''}
+                                    onChange={(event: React.FormEvent<HTMLInputElement>) => {
+                                        const value: string = event.currentTarget.value;
+                                        setFieldValue(
+                                            'triggers',
+                                            value.split(',').map((trigger: string) => trigger.trim()),
+                                            true
+                                        );
+                                    }}
+                                />
+                            </div>
+                            <ErrorMessage
                                 name='triggers'
-                                placeholder='List trigger words, separated by commas'
-                                className='form-control'
-                                value={values?.triggers?.join(', ') ?? ''}
-                                onChange={(event: React.FormEvent<HTMLInputElement>) => {
-                                    const value: string = event.currentTarget.value;
-                                    setFieldValue(
-                                        'triggers',
-                                        value.split(',').map((trigger: string) => trigger.trim()),
-                                        true
-                                    );
-                                }}
+                                component='div'
+                                className='text-danger ms-2'
                             />
                         </div>
-                        <ErrorMessage
-                            name='triggers'
-                            component='div'
-                            className='text-danger ms-2'
-                        />
-                        <div className='form-floating mt-3'>
-                            <Field
-                                id='content'
-                                as='textarea'
+                        <div className='d-flex flex-column mt-3'>
+                            <div className='form-floating'>
+                                <Field
+                                    id='content'
+                                    as='textarea'
+                                    name='content'
+                                    placeholder='Write a message that will automatically be sent'
+                                    className='form-control'
+                                />
+                                <label htmlFor='content'>
+                                    Message
+                                </label>
+                            </div>
+                            <ErrorMessage
                                 name='content'
-                                placeholder='Write a message that will automatically be sent'
-                                className='form-control'
+                                component='div'
+                                className='text-danger ms-2'
                             />
-                            <label htmlFor='content'>
-                                Message
-                            </label>
                         </div>
-                        <ErrorMessage
-                            name='content'
-                            component='div'
-                            className='text-danger ms-2'
-                        />
-                        <div className='input-group input-group-sm flex-nowrap mt-3'>
-                            <span className='input-group-text'>
-                                Audio URL
-                            </span>
-                            <Field
+                        <div className='d-flex flex-column mt-3'>
+                            <div className='input-group input-group-sm flex-nowrap'>
+                                <span className='input-group-text'>
+                                    Audio URL
+                                </span>
+                                <Field
+                                    name='audio_url'
+                                    placeholder='YouTube or Twitch Clip'
+                                    className='form-control'
+                                    onChange={(event: React.FormEvent<HTMLInputElement>) => {
+                                        const value = event.currentTarget.value;
+                                        setFieldValue('audio_url', value);
+                                        setShowAudioFields(!!value);
+                                    }}
+                                />
+                            </div>
+                            <ErrorMessage
                                 name='audio_url'
-                                placeholder='YouTube or Twitch Clip'
-                                className='form-control'
-                                onChange={(event: React.FormEvent<HTMLInputElement>) => {
-                                    const value = event.currentTarget.value;
-                                    setFieldValue('audio_url', value);
-                                    setShowAudioFields(!!value);
-                                }}
+                                component='div'
+                                className='text-danger ms-2'
                             />
                         </div>
-                        <ErrorMessage
-                            name='audio_url'
-                            component='div'
-                            className='text-danger ms-2'
-                        />
                         {
                             showAudioFields && values.audio_url &&
                             <VideoEditor

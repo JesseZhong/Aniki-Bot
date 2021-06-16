@@ -90,7 +90,7 @@ class ServerHandler(BaseHandler):
         self.put_item(
             self.put_persona_schema,
             'personas.json',
-            '^[a-zA-Z0-9-_.]{3,25}$'
+            '^([a-zA-Z0-9-_.]{3,25}|[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12})$'
         )
 
 
@@ -105,7 +105,7 @@ class ServerHandler(BaseHandler):
     def delete_persona(self):
         self.delete_item(
             'personas.json',
-            '^[a-zA-Z0-9-_.]{3,25}$'
+            '^([a-zA-Z0-9-_.]{3,25}|[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12})$'
         )
 
 

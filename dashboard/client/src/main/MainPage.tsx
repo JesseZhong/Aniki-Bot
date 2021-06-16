@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PersonaReactions from './PersonaReactions';
 import ReactionCard from '../reactions/ReactionCard';
 import ReactionCardEdit from '../reactions/ReactionCardEdit';
+import PersonaCreate from '../personas/PersonaCreate';
 import Dialog from '../common/Dialog';
 import './MainPage.sass';
 
@@ -30,7 +31,8 @@ const MainPage = (
         onConfirm: () => {}
     });
 
-    const [addNew, setAddNew] = useState(false);
+    const [addNewReaction, setAddNewReaction] = useState(false);
+    const [addNewPersona, setAddNewPersona] = useState(false);
 
     if (!personas.size && !reactions.size) {
         return (
@@ -80,6 +82,8 @@ const MainPage = (
         });
     }
 
+    const existingNames = new Set([...personas].map(([_key, persona]) => persona.name));
+
     return (
         <div>
             <div className='d-flex flex-row justify-content-between'>
@@ -90,7 +94,7 @@ const MainPage = (
                     <button
                         type='button'
                         className='btn btn-outline-white text-primary'
-                        onClick={() => setAddNew(true)}
+                        onClick={() => setAddNewReaction(true)}
                     >
                         <FontAwesomeIcon icon={faPlus} /> Reaction
                     </button>
@@ -98,16 +102,16 @@ const MainPage = (
             </div>
             <div className='mb-5'>
             {
-                addNew &&
+                addNewReaction &&
                 <div className='reaction-add my-2'>
                     <ReactionCardEdit
                         set={
                             (reaction: Reaction) => {
                                 props.setReaction(uuid.v4(), reaction);
-                                setAddNew(false);
+                                setAddNewReaction(false);
                             }
                         }
-                        finishedEdit={() => setAddNew(false)}
+                        finishedEdit={() => setAddNewReaction(false)}
                     />
                 </div>
             }
@@ -132,12 +136,31 @@ const MainPage = (
             <div className='d-flex flex-row justify-content-between'>
                 <h2>Bot Personas</h2>
                 <div className='align-self-center'>
-                    <button className='btn btn-outline-white text-primary'>
+                    <button
+                        type='button'
+                        className='btn btn-outline-white text-primary'
+                        onClick={() => setAddNewPersona(true)}
+                    >
                         <FontAwesomeIcon icon={faPlus} /> Persona
                     </button>
                 </div>
             </div>
             <div>
+            {
+                addNewPersona &&
+                <div className='mb-4'>
+                    <PersonaCreate
+                        set={
+                            (persona: Persona) => {
+                                props.setPersona(uuid.v4(), persona);
+                                setAddNewPersona(false);
+                            }
+                        }
+                        finishedEdit={() => setAddNewPersona(false)}
+                        existingNames={existingNames}
+                    />
+                </div>
+            }
             {
                 personas &&
                 [...personas].map(

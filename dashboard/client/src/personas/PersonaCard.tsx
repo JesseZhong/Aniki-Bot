@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Persona } from './Personas';
-import './PersonaCard.sass';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 import PersonaNameEdit from './PersonaNameEdit';
 import HoverButtonGroup from '../common/HoverButtonGroup';
+import Avatar from '../common/Avatar';
+import './PersonaCard.sass';
 
 const PersonaCard = (props: {
     persona: Persona,
@@ -39,8 +40,7 @@ const PersonaCard = (props: {
                     <FontAwesomeIcon icon={faTrashAlt} />
                 </button>
             </HoverButtonGroup>
-            <img
-                className='avatar'
+            <Avatar
                 src={persona.avatar}
                 alt={persona.name}
             />

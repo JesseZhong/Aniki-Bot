@@ -1,4 +1,14 @@
 @import "./PersonaCard"
 
-div.persona-card
+div.persona-create
     @include persona-card()
+
+    span.input-group-text
+        background-color: $background3
+        border-color: $border1
+        color: $color1
+
+    input:not([type=range]), textarea
+        background-color: $background2
+        border-color: $border1
+        color: white

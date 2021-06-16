@@ -1,7 +1,5 @@
 @import "../theme"
 
-$size: 4em
-
 @mixin persona-card()
     margin: 0.1em
     width: 100%
@@ -12,15 +10,6 @@ $size: 4em
 
 div.persona-card
     @include persona-card()
-
-    img.avatar
-        border-radius: 50%
-        overflow: hidden
-        width: $size
-        height: $size
-        min-width: $size
-        min-height: $size
-        object-fit: cover
 
     > div.content
         width: 100%
