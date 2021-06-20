@@ -114,9 +114,9 @@ class Audio(PCMVolumeTransformer):
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT
                 )
-                duration = float(result.stdout)
-                startTime = from_seconds(clip[0] * duration)
-                endTime = from_seconds(clip[1] * duration)
+                pulledDuration = float(result.stdout)
+                startTime = from_seconds(clip[0] * pulledDuration)
+                endTime = from_seconds(clip[1] * pulledDuration)
 
             # Order matters for cutting speed.
             # https://stackoverflow.com/a/42827058/10167844
