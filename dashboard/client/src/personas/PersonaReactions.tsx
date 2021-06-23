@@ -48,6 +48,7 @@ const PersonaReactions = (
                     <ReactionCardEdit
                         set={
                             (reaction: Reaction) => {
+                                reaction.persona = key;
                                 props.setReaction(uuid.v4(), reaction);
                                 setAddNew(false);
                             }
