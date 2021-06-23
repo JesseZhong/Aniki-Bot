@@ -5,7 +5,7 @@ import { Persona, Personas } from '../personas/Personas';
 import { Reaction, Reactions } from '../reactions/Reactions';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import PersonaReactions from './PersonaReactions';
+import PersonaReactions from '../personas/PersonaReactions';
 import ReactionCard from '../reactions/ReactionCard';
 import ReactionCardEdit from '../reactions/ReactionCardEdit';
 import PersonaCreate from '../personas/PersonaCreate';

@@ -113,7 +113,7 @@ class Bot(Client):
 
         # Attempts to play a YouTube audio.
         if content.startswith('!play '):
-            url = content[6:]
+            url, *params = content[6:].split(' ', 3)
 
             if not url:
                 await message.reply('Please pass a valid url.')
