@@ -57,20 +57,22 @@ const PersonaReactions = (
                     />
                 </div>
             }
-            {
-                reactions &&
-                reactions
-                    .map(
-                        ([key, reaction]) => 
-                            <ReactionCard
-                                key={key}
-                                reaction={reaction}
-                                set={(reaction: Reaction) => props.setReaction(key, reaction)}
-                                remove={() => props.removeReaction(key, reaction)}
-                                className='mb-2'
-                            />
-                    )
-            }
+            <div className='d-flex justify-content-between flex-wrap'>
+                {
+                    reactions &&
+                    reactions
+                        .map(
+                            ([key, reaction]) => 
+                                <ReactionCard
+                                    key={key}
+                                    reaction={reaction}
+                                    set={(reaction: Reaction) => props.setReaction(key, reaction)}
+                                    remove={() => props.removeReaction(key, reaction)}
+                                    className='mb-2 compartment'
+                                />
+                        )
+                }
+            </div>
         </PersonaCard>
     )
 }

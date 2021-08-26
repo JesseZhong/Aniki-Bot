@@ -2,8 +2,15 @@
 $orderedList: orderedList
 $size: 1.2rem
 
+@mixin contain-content-area($padding-x)
+  padding-left: $padding-x
 
-html, body, div#root > div.container, .vh-100
+  > div.page
+    max-width: calc(100% - #{$padding-x})
+    min-height: 100vh 
+
+
+html, body, div#root > div.content, .vh-100
   min-height: 100vh
 
 div.content
@@ -11,10 +18,22 @@ div.content
 
   > div.content-area
     min-width: 100%
+    @include contain-content-area($padding-x: 4rem)
 
-    > div.page
-      min-width: calc(100% - 4rem)
-      min-height: 100vh 
+    @media screen and ( max-width: $large )
+      @include contain-content-area($padding-x: 2rem)
+
+    @media screen and ( max-width: $medium )
+      @include contain-content-area($padding-x: 1rem)
+
+    @media screen and ( max-width: $small )
+      @include contain-content-area($padding-x: 0.5rem)
+
+    div.compartment
+      max-width: calc(50% - 0.5em)
+
+      @media screen and ( max-width: $medium )
+        max-width: 100%
 
 
 body

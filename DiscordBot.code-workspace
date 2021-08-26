@@ -8,7 +8,7 @@
 		"files.exclude": {
 			"**/.git": true,
 			"**/.DS_Store": true,
-			".vscode/**": true,
+			".vscode/**": false,
 			"**/.gitignore": true,
 
 			"**/env/**": true,
@@ -20,6 +20,7 @@
 			"**/browserslist": true,
 			"**/tsconfig.json": true,
 			"**/webpack.config.js": true
-		}
+		},
+		"python.defaultInterpreterPath": "./env/bin/python3"
 	}
 }

@@ -85,7 +85,7 @@ const MainPage = (
     const existingNames = new Set([...personas].map(([_key, persona]) => persona.name));
 
     return (
-        <div>
+        <div className='main-page'>
             <div className='d-flex flex-row justify-content-between'>
                 <h1>
                     Reactions
@@ -101,37 +101,39 @@ const MainPage = (
                 </div>
             </div>
             <div className='mb-5'>
-            {
-                addNewReaction &&
-                <div className='reaction-add my-2'>
-                    <ReactionCardEdit
-                        set={
-                            (reaction: Reaction) => {
-                                props.setReaction(uuid.v4(), reaction);
-                                setAddNewReaction(false);
+                {
+                    addNewReaction &&
+                    <div className='reaction-add my-2'>
+                        <ReactionCardEdit
+                            set={
+                                (reaction: Reaction) => {
+                                    props.setReaction(uuid.v4(), reaction);
+                                    setAddNewReaction(false);
+                                }
                             }
-                        }
-                        finishedEdit={() => setAddNewReaction(false)}
-                    />
+                            finishedEdit={() => setAddNewReaction(false)}
+                        />
+                    </div>
+                }
+                <div className='d-flex justify-content-between flex-wrap'>
+                    {
+                        reactions &&
+                        [...reactions]
+                            .filter(
+                                ([_key, reaction]) => !reaction.persona
+                            )
+                            .map(
+                                ([key, reaction]) =>
+                                    <ReactionCard
+                                        key={key}
+                                        reaction={reaction}
+                                        set={(reaction: Reaction) => props.setReaction(key, reaction)}
+                                        remove={() => removeReaction(key, reaction)}
+                                        className='mb-3 compartment'
+                                    />
+                            )
+                    }
                 </div>
-            }
-            {
-                reactions &&
-                [...reactions]
-                    .filter(
-                        ([_key, reaction]) => !reaction.persona
-                    )
-                    .map(
-                        ([key, reaction]) =>
-                            <ReactionCard
-                                key={key}
-                                reaction={reaction}
-                                set={(reaction: Reaction) => props.setReaction(key, reaction)}
-                                remove={() => removeReaction(key, reaction)}
-                                className='mb-3'
-                            />
-                    )
-            }
             </div>
             <div className='d-flex flex-row justify-content-between'>
                 <h2>Bot Personas</h2>
@@ -146,41 +148,41 @@ const MainPage = (
                 </div>
             </div>
             <div>
-            {
-                addNewPersona &&
-                <div className='mb-4'>
-                    <PersonaCreate
-                        set={
-                            (persona: Persona) => {
-                                props.setPersona(uuid.v4(), persona);
-                                setAddNewPersona(false);
+                {
+                    addNewPersona &&
+                    <div className='mb-4'>
+                        <PersonaCreate
+                            set={
+                                (persona: Persona) => {
+                                    props.setPersona(uuid.v4(), persona);
+                                    setAddNewPersona(false);
+                                }
                             }
-                        }
-                        finishedEdit={() => setAddNewPersona(false)}
-                        existingNames={existingNames}
-                    />
-                </div>
-            }
-            {
-                personas &&
-                [...personas].map(
-                    (persona) =>
-                        <PersonaReactions
-                            key={persona[0]}
-                            persona={persona}
-                            reactions={
-                                [...reactions]
-                                    .filter(
-                                        ([_rKey, reaction]) => reaction.persona === persona[0]
-                                    )
-                            }
-                            setPersona={props.setPersona}
-                            removePersona={() => removePersona(...persona)}
-                            setReaction={props.setReaction}
-                            removeReaction={removeReaction}
+                            finishedEdit={() => setAddNewPersona(false)}
+                            existingNames={existingNames}
                         />
-                )
-            }
+                    </div>
+                }
+                {
+                    personas &&
+                    [...personas].map(
+                        (persona) =>
+                            <PersonaReactions
+                                key={persona[0]}
+                                persona={persona}
+                                reactions={
+                                    [...reactions]
+                                        .filter(
+                                            ([_rKey, reaction]) => reaction.persona === persona[0]
+                                        )
+                                }
+                                setPersona={props.setPersona}
+                                removePersona={() => removePersona(...persona)}
+                                setReaction={props.setReaction}
+                                removeReaction={removeReaction}
+                            />
+                    )
+                }
             </div>
             <Dialog
                 id='remove-dialog'

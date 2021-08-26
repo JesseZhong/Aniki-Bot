@@ -105,8 +105,8 @@ const App = (state: AppState) => {
     }
 
     return (
-        <div className='container'>
-            <div className='container-area'>
+        <div className='content'>
+            <div className='content-area'>
                 <div className='page'>
                     {route()}
                 </div>
