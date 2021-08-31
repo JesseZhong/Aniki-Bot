@@ -111,7 +111,7 @@ const ReactionCardEdit = (props: {
                                 video_url={values.audio_url}
                                 clip_range={values.clip}
                                 volume={values.volume}
-                                width={500}
+                                width={400}
                                 setClipRange={
                                     (range?: [number, number]) => {
                                         setFieldValue('clip', range);

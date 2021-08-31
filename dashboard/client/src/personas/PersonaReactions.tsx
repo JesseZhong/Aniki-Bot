@@ -1,12 +1,12 @@
+import React from 'react';
 import PersonaCard from '../personas/PersonaCard';
-import { Persona } from '../personas/Personas';
 import ReactionCard from '../reactions/ReactionCard';
-import { Reaction } from '../reactions/Reactions';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useState } from 'react';
 import ReactionCardEdit from '../reactions/ReactionCardEdit';
 import uuid from 'node-uuid';
+import { Persona } from '../personas/Personas';
+import { Reaction } from '../reactions/Reactions';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import './PersonaReactions.sass';
 
 
@@ -17,21 +17,37 @@ const PersonaReactions = (
         setPersona: (key: string, persona: Persona) => void,
         removePersona: () => void,
         setReaction: (key: string, reaction: Reaction) => void,
-        removeReaction: (key: string, reaction: Reaction) => void
+        removeReaction: (key: string, reaction: Reaction) => void,
+        onResize?: () => void
     }
 ) => {
-
-    const [addNew, setAddNew] = useState(false);
+    const [addNew, setAddNew] = React.useState(false);
+    const [height, setHeight] = React.useState(0);
     const [key, persona] = props.persona;
     const reactions = props.reactions;
+    const cardRef = React.createRef<HTMLDivElement>();
+
+    React.useLayoutEffect(
+        () => {
+            if (cardRef?.current) {
+                console.log(`${cardRef.current.offsetHeight} vs ${height}`)
+                if (cardRef.current.offsetHeight !== height) {
+                    props.onResize?.();
+                }
+
+                setHeight(cardRef.current.offsetHeight);
+            }
+        },
+        [cardRef]
+    );
 
     return (
         <PersonaCard
+            ref={cardRef}
             persona={persona}
             key={key}
             set={(p: Persona) => props.setPersona(key, p)}
             remove={props.removePersona}
-            className='mb-4'
             affixedChild={
                 <button
                     type='button'
@@ -57,7 +73,7 @@ const PersonaReactions = (
                     />
                 </div>
             }
-            <div className='d-flex justify-content-between flex-wrap'>
+            <div className='d-flex flex-column'>
                 {
                     reactions &&
                     reactions
@@ -68,7 +84,7 @@ const PersonaReactions = (
                                     reaction={reaction}
                                     set={(reaction: Reaction) => props.setReaction(key, reaction)}
                                     remove={() => props.removeReaction(key, reaction)}
-                                    className='mb-2 compartment'
+                                    className='mb-2'
                                 />
                         )
                 }

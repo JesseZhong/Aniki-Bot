@@ -1,16 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import uuid from 'node-uuid';
-import { useState } from 'react';
 import { Persona, Personas } from '../personas/Personas';
 import { Reaction, Reactions } from '../reactions/Reactions';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import StackGrid, { Grid } from 'react-stack-grid';
 import PersonaReactions from '../personas/PersonaReactions';
 import ReactionCard from '../reactions/ReactionCard';
 import ReactionCardEdit from '../reactions/ReactionCardEdit';
 import PersonaCreate from '../personas/PersonaCreate';
 import Dialog from '../common/Dialog';
 import './MainPage.sass';
+
+const reactionCardWidth = 520;
+const personaCardWidth = 630;
+const gutter = 12;
 
 const MainPage = (
     props: {
@@ -31,8 +35,42 @@ const MainPage = (
         onConfirm: () => {}
     });
 
+    const pageRef = React.createRef<HTMLDivElement>();
+
+    const [reactionGridRef, setReactionGridRef] = useState<Grid | undefined>(undefined);
+    const [personaGridRef, setPersonaGridRef] = useState<Grid | undefined>(undefined);
+    const [reactionCols, setReactionCols] = useState(0);
+    const [personaCols, setPersonaCols] = useState(0);
     const [addNewReaction, setAddNewReaction] = useState(false);
     const [addNewPersona, setAddNewPersona] = useState(false);
+
+    useEffect(
+        () => {
+            const calcCols = () => {
+                if (pageRef.current) {
+                    const pageWidth = pageRef.current.offsetWidth || 0;
+                    setReactionCols(Math.floor(pageWidth / reactionCardWidth));
+                    setPersonaCols(Math.floor(pageWidth / personaCardWidth));
+                }
+            }
+
+            // Run on first render.
+            calcCols();
+    
+            window.addEventListener(
+                'resize',
+                calcCols
+            );
+
+            return () => {
+                window.addEventListener(
+                    'resize',
+                    calcCols
+                )
+            }
+        },
+        [pageRef]
+    );
 
     if (!personas.size && !reactions.size) {
         return (
@@ -85,7 +123,10 @@ const MainPage = (
     const existingNames = new Set([...personas].map(([_key, persona]) => persona.name));
 
     return (
-        <div className='main-page'>
+        <div
+            ref={pageRef}
+            className='main-page'
+        >
             <div className='d-flex flex-row justify-content-between'>
                 <h1>
                     Reactions
@@ -103,7 +144,12 @@ const MainPage = (
             <div className='mb-5'>
                 {
                     addNewReaction &&
-                    <div className='reaction-add my-2'>
+                    <div
+                        className='reaction-add my-3 mx-auto'
+                        style={{
+                            maxWidth: `${reactionCols * reactionCardWidth + ((reactionCols - 1) * gutter)}px`
+                        }}
+                    >
                         <ReactionCardEdit
                             set={
                                 (reaction: Reaction) => {
@@ -115,7 +161,12 @@ const MainPage = (
                         />
                     </div>
                 }
-                <div className='d-flex justify-content-between flex-wrap'>
+                <StackGrid
+                    columnWidth={reactionCardWidth}
+                    gutterWidth={gutter}
+                    gutterHeight={gutter}
+                    gridRef={grid => setReactionGridRef(grid)}
+                >
                     {
                         reactions &&
                         [...reactions]
@@ -129,11 +180,11 @@ const MainPage = (
                                         reaction={reaction}
                                         set={(reaction: Reaction) => props.setReaction(key, reaction)}
                                         remove={() => removeReaction(key, reaction)}
-                                        className='mb-3 compartment'
+                                        onResize={() => reactionGridRef?.updateLayout()}
                                     />
                             )
                     }
-                </div>
+                </StackGrid>
             </div>
             <div className='d-flex flex-row justify-content-between'>
                 <h2>Bot Personas</h2>
@@ -150,7 +201,12 @@ const MainPage = (
             <div>
                 {
                     addNewPersona &&
-                    <div className='mb-4'>
+                    <div
+                        className='my-3 mx-auto'
+                        style={{
+                            maxWidth: `${personaCols * personaCardWidth + ((personaCols - 1) * gutter)}px`
+                        }}
+                    >
                         <PersonaCreate
                             set={
                                 (persona: Persona) => {
@@ -163,26 +219,34 @@ const MainPage = (
                         />
                     </div>
                 }
-                {
-                    personas &&
-                    [...personas].map(
-                        (persona) =>
-                            <PersonaReactions
-                                key={persona[0]}
-                                persona={persona}
-                                reactions={
-                                    [...reactions]
-                                        .filter(
-                                            ([_rKey, reaction]) => reaction.persona === persona[0]
-                                        )
-                                }
-                                setPersona={props.setPersona}
-                                removePersona={() => removePersona(...persona)}
-                                setReaction={props.setReaction}
-                                removeReaction={removeReaction}
-                            />
-                    )
-                }
+                <StackGrid
+                    columnWidth={personaCardWidth}
+                    gutterWidth={gutter}
+                    gutterHeight={gutter}
+                    gridRef={grid => setPersonaGridRef(grid)}
+                >
+                    {
+                        personas &&
+                        [...personas].map(
+                            (persona) =>
+                                <PersonaReactions
+                                    key={persona[0]}
+                                    persona={persona}
+                                    reactions={
+                                        [...reactions]
+                                            .filter(
+                                                ([_rKey, reaction]) => reaction.persona === persona[0]
+                                            )
+                                    }
+                                    setPersona={props.setPersona}
+                                    removePersona={() => removePersona(...persona)}
+                                    setReaction={props.setReaction}
+                                    removeReaction={removeReaction}
+                                    onResize={() => personaGridRef?.updateLayout()}
+                                />
+                        )
+                    }
+                </StackGrid>
             </div>
             <Dialog
                 id='remove-dialog'

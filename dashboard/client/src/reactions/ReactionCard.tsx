@@ -1,10 +1,9 @@
 import React from 'react';
 import { Reaction } from './Reactions';
-import { useState } from 'react';
-import ReactionCardView from './ReactionCardView';
-import ReactionCardEdit from './ReactionCardEdit';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faEdit } from '@fortawesome/free-regular-svg-icons';
+import ReactionCardView from './ReactionCardView';
+import ReactionCardEdit from './ReactionCardEdit';
 import HoverButtonGroup from '../common/HoverButtonGroup';
 import './ReactionCard.sass';
 
@@ -13,12 +12,27 @@ const ReactionCard = (props: {
     reaction: Reaction,
     set: (reaction: Reaction) => void,
     remove: () => void,
+    onResize?: () => void,
     className?: string,
     edit?: boolean
 }) => {
     const reaction = props.reaction;
-    const [edit, setEdit] = useState(!!props.edit);
+    const [edit, setEdit] = React.useState(!!props.edit);
+    const [height, setHeight] = React.useState(0);
     const cardRef = React.createRef<HTMLDivElement>();
+
+    React.useLayoutEffect(
+        () => {
+            if (cardRef?.current) {
+                if (cardRef.current.offsetHeight !== height) {
+                    props.onResize?.();
+                }
+
+                setHeight(cardRef.current.offsetHeight);
+            }
+        },
+        [cardRef]
+    );
 
     return (
         <div
