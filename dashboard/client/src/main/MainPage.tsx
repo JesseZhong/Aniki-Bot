@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import uuid from 'node-uuid';
 import { Persona, Personas } from '../personas/Personas';
 import { Reaction, Reactions } from '../reactions/Reactions';
@@ -44,7 +44,7 @@ const MainPage = (
     const [addNewReaction, setAddNewReaction] = useState(false);
     const [addNewPersona, setAddNewPersona] = useState(false);
 
-    useEffect(
+    useLayoutEffect(
         () => {
             const calcCols = () => {
                 if (pageRef.current) {
@@ -135,7 +135,7 @@ const MainPage = (
                     <button
                         type='button'
                         className='btn btn-outline-white text-primary'
-                        onClick={() => setAddNewReaction(true)}
+                        onClick={() => setAddNewReaction(!addNewReaction)}
                     >
                         <FontAwesomeIcon icon={faPlus} /> Reaction
                     </button>
@@ -192,7 +192,7 @@ const MainPage = (
                     <button
                         type='button'
                         className='btn btn-outline-white text-primary'
-                        onClick={() => setAddNewPersona(true)}
+                        onClick={() => setAddNewPersona(!addNewPersona)}
                     >
                         <FontAwesomeIcon icon={faPlus} /> Persona
                     </button>

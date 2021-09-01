@@ -26,9 +26,9 @@ const ReactionCard = (props: {
             if (cardRef?.current) {
                 if (cardRef.current.offsetHeight !== height) {
                     props.onResize?.();
-                }
 
-                setHeight(cardRef.current.offsetHeight);
+                    setHeight(cardRef.current.offsetHeight);
+                }
             }
         },
         [cardRef]

@@ -30,9 +30,15 @@ const ReactionCardEdit = (props: {
                 initialValues={reaction}
                 validationSchema={ReactionValidation}
                 onSubmit={(reaction, { setSubmitting }) => {
+
+                    // Clean up triggers after submission.
+                    reaction.triggers = reaction.triggers
+                        .filter((item: string) => item)
+                        .map((trigger: string) => trigger.trim());
+
                     props.set(reaction);
-                    props.finishedEdit();
                     setSubmitting(false);
+                    props.finishedEdit();
                 }}
             >
                 {({ isSubmitting, values, setFieldValue }) => (
@@ -43,15 +49,16 @@ const ReactionCardEdit = (props: {
                                     Triggers
                                 </span>
                                 <Field
+                                    as='input'
                                     name='triggers'
                                     placeholder='List trigger words, separated by commas'
                                     className='form-control'
-                                    value={values?.triggers?.join(', ') ?? ''}
+                                    value={values?.triggers?.join(',') ?? ''}
                                     onChange={(event: React.FormEvent<HTMLInputElement>) => {
                                         const value: string = event.currentTarget.value;
                                         setFieldValue(
                                             'triggers',
-                                            value.split(',').map((trigger: string) => trigger.trim()),
+                                            value.split(/, */),
                                             true
                                         );
                                     }}

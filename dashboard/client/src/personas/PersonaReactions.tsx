@@ -30,12 +30,11 @@ const PersonaReactions = (
     React.useLayoutEffect(
         () => {
             if (cardRef?.current) {
-                console.log(`${cardRef.current.offsetHeight} vs ${height}`)
                 if (cardRef.current.offsetHeight !== height) {
                     props.onResize?.();
-                }
 
-                setHeight(cardRef.current.offsetHeight);
+                    setHeight(cardRef.current.offsetHeight);
+                }
             }
         },
         [cardRef]
@@ -52,7 +51,7 @@ const PersonaReactions = (
                 <button
                     type='button'
                     className='btn btn-outline-white text-secondary text-nowrap'
-                    onClick={() => setAddNew(true)}
+                    onClick={() => setAddNew(!addNew)}
                 >
                     <FontAwesomeIcon icon={faPlus} /> reaction
                 </button>
@@ -78,13 +77,14 @@ const PersonaReactions = (
                     reactions &&
                     reactions
                         .map(
-                            ([key, reaction]) => 
+                            ([key, reaction]) =>
                                 <ReactionCard
                                     key={key}
                                     reaction={reaction}
                                     set={(reaction: Reaction) => props.setReaction(key, reaction)}
                                     remove={() => props.removeReaction(key, reaction)}
                                     className='mb-2'
+                                    onResize={() => props.onResize?.()}
                                 />
                         )
                 }
