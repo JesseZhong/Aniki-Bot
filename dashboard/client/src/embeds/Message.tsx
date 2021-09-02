@@ -2,6 +2,7 @@ import React from 'react';
 import { ErrorMessage, FieldHookConfig, useField } from 'formik';
 import Tenor, { Result } from 'react-tenor';
 import './Message.sass';
+import './ReactTenor.sass';
 
 const tenorKey = 'LVMDW1I5XR7G';
 
@@ -22,7 +23,7 @@ const Message = (
             if (textRef.current) {
                 const text = textRef.current;
                 text.style.height = 'inherit';
-                text.style.height = `${text.scrollHeight}px`;
+                text.style.height = `${text.scrollHeight + 10}px`;
             }
         },
         [field.value]
