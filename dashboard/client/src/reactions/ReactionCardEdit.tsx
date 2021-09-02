@@ -11,14 +11,33 @@ import './ReactionCardEdit.sass';
 const ReactionCardEdit = (props: {
     reaction?: Reaction,
     set: (reaction: Reaction) => void,
-    finishedEdit: () => void
+    finishedEdit: () => void,
+    onResize?: () => void
 }) => {
 
     const reaction = props.reaction ?? { } as Reaction;
     const [showAudioFields, setShowAudioFields] = useState(!!reaction?.audio_url);
+    const [height, setHeight] = React.useState(0);
+    const cardRef = React.createRef<HTMLDivElement>();
+
+    React.useLayoutEffect(
+        () => {
+            if (cardRef?.current) {
+                if (cardRef.current.offsetHeight !== height) {
+                    props.onResize?.();
+
+                    setHeight(cardRef.current.offsetHeight);
+                }
+            }
+        },
+        [cardRef]
+    );
 
     return (
-        <div className='reaction-edit'>
+        <div
+            className='reaction-edit'
+            ref={cardRef}
+        >
             <button
                 type='button'
                 className='btn close-btn'
@@ -98,6 +117,7 @@ const ReactionCardEdit = (props: {
                                     name='audio_url'
                                     placeholder='YouTube or Twitch Clip'
                                     className='form-control'
+                                    value={values.audio_url ?? ''}
                                     onChange={(event: React.FormEvent<HTMLInputElement>) => {
                                         const value = event.currentTarget.value;
                                         setFieldValue('audio_url', value);

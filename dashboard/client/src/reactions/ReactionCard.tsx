@@ -68,6 +68,7 @@ const ReactionCard = (props: {
                     reaction={reaction}
                     set={props.set}
                     finishedEdit={() => setEdit(false)}
+                    onResize={() => props.onResize?.()}
                 />
                 : <ReactionCardView reaction={reaction} />
             }
