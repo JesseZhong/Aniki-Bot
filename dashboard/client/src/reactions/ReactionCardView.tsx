@@ -11,14 +11,21 @@ const ReactionCardView = (props: {
     const audio = reaction.audio_url;
 
     // Split content by words and replace GIF links with img elements.
+    // Also, newlines.
     const gifRegex = /(https{0,1}:\/\/[^\s]+\.gif[^\s]*)/;
-    const contentParts = reaction.content?.split(gifRegex).filter(w => w);
-    const content = contentParts?.map(
-        (part, index) =>
-            part.match(gifRegex)
-            ? <img key={index} src={part} alt={part} />
-            : <span key={index}>{part}</span>
-    )
+    const newLineRegex = /(\n)/;
+    const contentParts = reaction.content
+        ?.split(new RegExp(`${gifRegex.source}|${newLineRegex.source}`))
+        .filter(w => w);
+    const content = 
+        contentParts?.map(
+            (part, index) =>
+                part.match(gifRegex)
+                ? <img key={index} src={part} alt={part} />
+                : part.match(newLineRegex)
+                    ? <br key={index} />
+                    : <span key={index}>{part}</span>
+        );
 
     return (
         <div className='reaction-view'>

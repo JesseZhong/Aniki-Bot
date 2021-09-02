@@ -5,6 +5,7 @@ import { Reaction } from "./Reactions";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import VideoEditor from '../embeds/VideoEditor';
+import Message from '../embeds/Message';
 import ReactionValidation from './ReactionValidation';
 import './ReactionCardEdit.sass';
 
@@ -89,25 +90,10 @@ const ReactionCardEdit = (props: {
                                 className='text-danger ms-2'
                             />
                         </div>
-                        <div className='d-flex flex-column mt-3'>
-                            <div className='form-floating'>
-                                <Field
-                                    id='content'
-                                    as='textarea'
-                                    name='content'
-                                    placeholder='Write a message that will automatically be sent'
-                                    className='form-control'
-                                />
-                                <label htmlFor='content'>
-                                    Message
-                                </label>
-                            </div>
-                            <ErrorMessage
-                                name='content'
-                                component='div'
-                                className='text-danger ms-2'
-                            />
-                        </div>
+                        <Message
+                            className='mt-3'
+                            name='content'
+                        />
                         <div className='d-flex flex-column mt-3'>
                             <div className='input-group input-group-sm flex-nowrap'>
                                 <span className='input-group-text'>
