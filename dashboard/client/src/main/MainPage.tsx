@@ -4,6 +4,7 @@ import { Persona, Personas } from '../personas/Personas';
 import { Reaction, Reactions } from '../reactions/Reactions';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FetchMetadataHandler } from '../api/Metadata';
 import StackGrid, { Grid } from 'react-stack-grid';
 import PersonaReactions from '../personas/PersonaReactions';
 import ReactionCard from '../reactions/ReactionCard';

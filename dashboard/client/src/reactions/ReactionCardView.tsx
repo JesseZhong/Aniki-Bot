@@ -1,9 +1,10 @@
 import { Reaction } from './Reactions';
 import AudioCard from '../embeds/AudioCard';
+import Media, { mediaRegex } from '../embeds/Media';
 import './ReactionCardView.sass';
 
 const ReactionCardView = (props: {
-    reaction: Reaction,
+    reaction: Reaction
 }) => {
 
     const reaction = props.reaction;
@@ -12,16 +13,18 @@ const ReactionCardView = (props: {
 
     // Split content by words and replace GIF links with img elements.
     // Also, newlines.
-    const gifRegex = /(https{0,1}:\/\/[^\s]+\.gif[^\s]*)/;
     const newLineRegex = /(\n)/;
     const contentParts = reaction.content
-        ?.split(new RegExp(`${gifRegex.source}|${newLineRegex.source}`))
+        ?.split(new RegExp(`${mediaRegex.source}|${newLineRegex.source}`))
         .filter(w => w);
     const content = 
         contentParts?.map(
             (part, index) =>
-                part.match(gifRegex)
-                ? <img key={index} src={part} alt={part} />
+                part.match(mediaRegex)
+                ? <Media
+                    key={index}
+                    url={part}
+                />
                 : part.match(newLineRegex)
                     ? <br key={index} />
                     : <span key={index}>{part}</span>
@@ -59,7 +62,9 @@ const ReactionCardView = (props: {
                 <>
                     <hr />
                     <div className='mx-4'>
-                        <b>Message</b>
+                        <div className='mb-2'>
+                            <b>Message</b>
+                        </div>
                         <div className='d-flex flex-column message-content'>
                             {content}
                         </div>
@@ -70,10 +75,12 @@ const ReactionCardView = (props: {
                 audio &&
                 <>
                     <hr />
-                    <AudioCard
-                        className='mx-4'
-                        reaction={reaction}
-                    />
+                    <div className='mx-4'>
+                        <div className='mb-2'>
+                            <b>Audio</b>
+                        </div>
+                        <AudioCard reaction={reaction} />
+                    </div>
                 </>
             }
         </div>

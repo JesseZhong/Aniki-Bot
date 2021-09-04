@@ -3,6 +3,7 @@
 import os
 import json
 import requests
+from bs4 import BeautifulSoup
 from typing import Dict, OrderedDict
 from .basehandler import BaseHandler
 
@@ -25,7 +26,9 @@ class ServerHandler(BaseHandler):
             ('/favicon.ico', self.get_favicon),
             ('/', self.get_root)
         ]
-        post_routes=[]
+        post_routes=[
+            ('/metadata', self.post_metadata)
+        ]
         put_routes=[
             ('/personas', self.put_persona),
             ('/reactions', self.put_reaction)
@@ -114,3 +117,31 @@ class ServerHandler(BaseHandler):
             'reactions.json',
             '^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$'
         )
+
+    
+    def post_metadata(self):
+        content = self.get_content()
+
+        if 'url' not in content or not content['url']:
+            self.send_bad_request('Invalid URL.')
+            return
+
+        response = requests.get(
+            content['url'].format(1),
+            headers={'User-Agent': 'Mozilla/5.0'}
+        )
+
+        if not response.ok:
+            self.send_bad_request('Unreachable URL.')
+            return
+
+        soup = BeautifulSoup(response.text, features='html.parser')
+        metas = soup.find_all('meta', {'property': True, 'content': True})
+
+        metadata = {
+            meta.attrs['property']: meta.attrs['content']
+            for meta in metas
+        }
+
+        self.set_headers(200)
+        self.send_content(metadata)

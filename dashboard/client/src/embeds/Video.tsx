@@ -3,6 +3,11 @@ import './Video.sass';
 
 const aspect_ratio = 0.5625;
 
+export const youtubeRegex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)(?<id>[^"&?/\s]{11})/;
+export const twitchRegex = /^https:\/\/www\.twitch\.tv\/(?<channel>[a-zA-Z0-9_]{4,25})\/clip\/(?<clip>[a-zA-Z0-9-]*)(?:$|\?.*$)/;
+
+export const videoRegex = new RegExp(`${youtubeRegex.source}|${twitchRegex.source}`);
+
 const Video = (
     props: {
         url: string,
@@ -19,8 +24,8 @@ const Video = (
     let src = '';
     let title = '';
 
-    const ytMatch = url.match(/(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)(?<id>[^"&?/\s]{11})/);
-    const twMatch = url.match(/^https:\/\/www\.twitch\.tv\/(?<channel>[a-zA-Z0-9_]{4,25})\/clip\/(?<clip>[a-zA-Z0-9-]*)(?:$|\?.*$)/);
+    const ytMatch = url.match(youtubeRegex);
+    const twMatch = url.match(twitchRegex);
 
     // Check if it's a Youtube video.
     if (ytMatch?.groups) {

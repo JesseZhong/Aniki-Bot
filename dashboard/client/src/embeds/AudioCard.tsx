@@ -1,6 +1,7 @@
 import React from "react";
 import { Reaction } from "../reactions/Reactions";
 import Video from "./Video";
+import MediaCard, { MediaType } from "./MediaCard";
 import './AudioCard.sass';
 
 
@@ -11,16 +12,13 @@ const AudioCard = (props: {
     const reaction = props.reaction;
     const audio = reaction.audio_url;
 
-    let edgeColor = 'black';
-    let audioSource = '';
+    let source: MediaType = 'other';
     if (audio) {
         if (audio?.match(/.*youtu.*/)) {
-            edgeColor = '#FF0000';
-            audioSource = 'YouTube';
+            source = 'youtube';
         }
         else if (audio?.match(/.*\.twitch\.tv.*/)) {
-            edgeColor = '#471a90';
-            audioSource = 'Twitch';
+            source = 'twitch';
         }
     }
     else {
@@ -28,37 +26,16 @@ const AudioCard = (props: {
     }
 
     return (
-        <div
-            className={
-                'audio-card d-flex flex-column' +
-                (props.className ? ` ${props.className}` : '')
-            }
-            style={{
-                borderLeft: `4px solid ${edgeColor}`
-            }}
+        <MediaCard
+            source={source}
+            url={audio}
+            className={props.className}
         >
-            <span>
-                <b>Audio</b>
-                {
-                    audioSource &&
-                    <span
-                        style={{ fontSize: 'smaller' }}
-                    >
-                        {` (${audioSource})`}
-                    </span>
-                }
-            </span>
-            <a
-                className='text-info mt-2 mb-3 overflow-hidden'
-                href={audio}
-            >
-                {audio}
-            </a>
             <div className='d-flex flex-row flex-wrap overflow-hidden'>
-                <Video className='me-2' url={audio} width={400} />
+                <Video className='me-auto' url={audio} width={400} />
                 {
                     (reaction.start || reaction.end || reaction.volume) &&
-                    <div className='audio-info d-flex flex-column'>
+                    <div className='audio-info d-flex flex-column mt-2'>
                         {
                             reaction.start &&
                             <span className='audio-setting mb-2'>
@@ -83,7 +60,7 @@ const AudioCard = (props: {
                     </div>
                     }
             </div>
-        </div>
+        </MediaCard>
     )
 }
 

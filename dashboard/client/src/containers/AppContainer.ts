@@ -22,6 +22,9 @@ import GuildActions from '../actions/GuildActions';
 import GuildStore from '../stores/GuildStore';
 import GuildAPI from '../api/GuildAPI';
 
+import { FetchMetadataHandler, Metadata } from '../api/Metadata';
+import MetadataAPI from '../api/MetadataAPI';
+
 import { Access } from '../api/Access';
 import { ErrorResponse } from '../api/ErrorResponse';
 
@@ -63,6 +66,7 @@ const access: Access = (
 const personaApi = PersonaAPI(url, access);
 const reactionApi = ReactionAPI(url, access);
 const guildApi = GuildAPI(url, access);
+const metadataApi = MetadataAPI(url, access);
 
 // Load session.
 Sessions.load(
@@ -114,10 +118,12 @@ export interface AppState {
     putReaction: (key: string, reaction: Reaction) => void,
     removeReaction: (key: string) => void,
 
-    fetchAllData: (guild?: string) => void
+    fetchAllData: (guild?: string) => void,
+
+    fetchMetadata: FetchMetadataHandler
 }
 
-function getState(): AppState {
+export function getState(): AppState {
     return {
         session: SessionStore.getState(),
 
@@ -274,6 +280,21 @@ function getState(): AppState {
                         getState().receivePersonas(personas);
                         reactionApi.get(guild, getState().receiveReactions);
                     }
+                );
+            }
+        },
+
+        fetchMetadata: (
+            meta_url: string,
+            received: (metadata: Metadata) => void
+        ) => {
+            const guild = GuildStore.getState()?.id;
+            const token = SessionStore.getState()?.access_token;
+            if (token && guild) {
+                metadataApi.post(
+                    guild,
+                    meta_url,
+                    received
                 );
             }
         }
