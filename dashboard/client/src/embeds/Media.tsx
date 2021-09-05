@@ -69,7 +69,6 @@ const Media = (
                 getState().fetchMetadata(
                     url,
                     (meta: Metadata) => {
-                        console.log(meta)
                         setMetadata(meta);
                     }
                 )
