@@ -1,5 +1,7 @@
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
-import { FetchMetadataHandler, Metadata } from '../api/Metadata';
+import { Metadata } from '../api/Metadata';
 import { getState } from '../containers/AppContainer';
 import MediaCard, { MediaType } from './MediaCard';
 import Video, { videoRegex } from './Video';
@@ -46,7 +48,13 @@ const Media = (
         }
     }
     else {
-        let content: React.ReactNode;
+        let content: React.ReactNode = <div>
+            <FontAwesomeIcon
+                icon={faSpinner}
+                spin
+                pulse
+            />
+        </div>;
         let source: MediaType = 'other';
 
         if (videoRegex.test(url)) {
@@ -75,14 +83,13 @@ const Media = (
                 setRetreiving(true);
             }
 
-            content = <div>
-                <img
-                    src={metadata?.['og:image']}
-                />
-            </div>;
-
             if (redditRegex.test(url)) {
                 source = 'reddit';
+                content = <div>
+                    <img
+                        src={metadata?.['og:image']}
+                    />
+                </div>;
             }
             else if (twitterRegex.test(url)) {
                 source = 'twitter';

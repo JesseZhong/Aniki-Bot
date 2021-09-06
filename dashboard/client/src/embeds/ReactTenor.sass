@@ -1,6 +1,8 @@
+@import "../theme"
+  
 .react-tenor
-  background-color: #f7f7f7
-  border: 1px solid #ccc
+  background-color: $background3
+  border: 1px solid $border1
   max-width: 480px
 
 
@@ -13,8 +15,8 @@
 
 
 .react-tenor--search
-  background-color: white
-  border: 1px solid #f7f7f7
+  background-color: $background1
+  border: 1px solid $border1
   box-sizing: border-box
   color: #555
   font-family: Arial
@@ -26,7 +28,7 @@
 
 
 .react-tenor--search:focus
-  box-shadow: 0 0 2px 2px #6a89af
+  box-shadow: 0 0 2px 2px $secondary
   outline: none
 
 
@@ -64,13 +66,14 @@
   overflow-x: auto
   padding: .5em .5em
   white-space: nowrap
+  z-index: 2000
 
 
 .react-tenor--suggestions button
-  background: #6a89af
-  border: 1px solid #f7f7f7
+  background: $secondary
+  border: 1px solid $border1
   border-radius: 5px
-  color: white
+  color: black
   cursor: pointer
   display: inline-block
   font-size: 1em
@@ -78,7 +81,7 @@
 
 
 .react-tenor--suggestions button:focus
-  box-shadow: 0 0 2px 2px #6a89af
+  box-shadow: 0 0 2px 2px darken($secondary, 10%)
   outline: none
 
 
@@ -90,10 +93,11 @@
   display: flex
   flex-wrap: wrap
   position: relative
+  z-index: 2000
 
 
 .react-tenor--result
-  background: #6a89af
+  background: $background3
   background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .1) 15px, transparent 0, transparent 30px)
   border: 0
   cursor: pointer
@@ -115,8 +119,8 @@
 
 
 .react-tenor--result:focus
-  box-shadow: 0 0 2px 2px #6a89af
-  border: 1px solid #f7f7f7
+  box-shadow: 0 0 2px 2px $secondary
+  border: 1px solid $border1
   outline: none
   z-index: 1
 
@@ -133,7 +137,7 @@
 
 .react-tenor--page-left,
 .react-tenor--page-right
-  background: #6a89af
+  background: $secondary
   border: 0
   cursor: pointer
   height: 1.8em

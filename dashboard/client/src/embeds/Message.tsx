@@ -52,7 +52,7 @@ const Message = (
                             : gif
                         helpers.setValue(text, true);
                     }}
-                    searchPlaceholder='Search GIFs'
+                    searchPlaceholder='Search Tenor'
                 />
                 <ErrorMessage
                     name={field.name}
