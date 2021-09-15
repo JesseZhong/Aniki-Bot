@@ -83,38 +83,45 @@ const AuthAPI = (
         tokensReceived: (
             access_token: string,
             refresh_token: string
-        ) => void
+        ) => void,
+        tokenRevoked: () => void
     ): void {
         action(
             access_token,
             (response: ErrorResponse): boolean => {
-                if (
-                    response.statusCode === 401 &&
-                    response.statusText === 'Unauthorized - Invalid Token'
-                ) {
-                    request.get(`${url}/refresh`)
-                        .set('Accept', 'application/json')
-                        .set('Refresh', refresh_token)
-                        .end((error: any, response: Response) => {
-                            if (error) {
-                                return console.error(error);
-                            }
+                if (response.statusCode === 401) {
+                    if (response.statusText === 'Unauthorized - Invalid Token.') {
+                        request.get(`${url}/refresh`)
+                            .set('Accept', 'application/json')
+                            .set('Refresh', refresh_token)
+                            .end((error: any, response: Response) => {
+                                if (error) {
+                                    return console.error(error);
+                                }
 
-                            const {
-                                access_token,
-                                refresh_token
-                            } = response.body as TokenResponse;
+                                const {
+                                    access_token,
+                                    refresh_token
+                                } = response.body as TokenResponse;
 
-                            tokensReceived(
-                                access_token,
-                                refresh_token
-                            );
+                                tokensReceived(
+                                    access_token,
+                                    refresh_token
+                                );
 
-                            // Attempt action again.
-                            action(access_token)
-                        });
+                                // Attempt action again.
+                                action(access_token)
+                            });
 
-                    return true;
+                        return true;
+                    }
+                    else if (response.text === 'Unauthorized - New Token Required.') {
+                        tokenRevoked();
+                        return false;
+                    }
+                    else {
+                        return false;
+                    }
                 }
                 else {
                     return false;

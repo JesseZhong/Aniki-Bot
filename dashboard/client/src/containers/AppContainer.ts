@@ -27,6 +27,10 @@ import MetadataAPI from '../api/MetadataAPI';
 
 import { Access } from '../api/Access';
 import { ErrorResponse } from '../api/ErrorResponse';
+import EmojisAPI from '../api/EmojisAPI';
+import EmojiStore from '../stores/EmojiStore';
+import { Emojis } from '../emojis/Emojis';
+import EmojiActions from '../actions/EmojiActions';
 
 
 const url = process.env.REACT_APP_API_URL ?? '';
@@ -39,6 +43,17 @@ const saveSession = (
     let session = SessionStore.getState();
     session.access_token = access_token;
     session.refresh_token = refresh_token;
+
+    // Save it.
+    Sessions.set(session);
+    SessionActions.set(session);
+}
+
+const resetSession = () => {
+    // Clear out the existing token.
+    let session = SessionStore.getState();
+    delete session.access_token;
+    delete session.refresh_token;
 
     // Save it.
     Sessions.set(session);
@@ -58,7 +73,8 @@ const access: Access = (
             session.access_token,
             session.refresh_token,
             action,
-            saveSession
+            saveSession,
+            resetSession
         )
     }
 }
@@ -67,6 +83,7 @@ const personaApi = PersonaAPI(url, access);
 const reactionApi = ReactionAPI(url, access);
 const guildApi = GuildAPI(url, access);
 const metadataApi = MetadataAPI(url, access);
+const emojisApi = EmojisAPI(url, access);
 
 // Load session.
 Sessions.load(
@@ -77,7 +94,8 @@ function getStores() {
     return [
         SessionStore,
         PersonaStore,
-        ReactionStore
+        ReactionStore,
+        EmojiStore
     ]
 }
 
@@ -118,8 +136,10 @@ export interface AppState {
     putReaction: (key: string, reaction: Reaction) => void,
     removeReaction: (key: string) => void,
 
-    fetchAllData: (guild?: string) => void,
+    emojis: Emojis,
+    receiveEmojis: (emojis: Emojis) => void,
 
+    fetchAllData: (guild?: string) => void,
     fetchMetadata: FetchMetadataHandler
 }
 
@@ -269,6 +289,9 @@ export function getState(): AppState {
             }
         },
 
+        emojis: EmojiStore.getState(),
+        receiveEmojis: EmojiActions.recieve,
+
         fetchAllData: (
             guild?: string
         ) => {
@@ -279,6 +302,7 @@ export function getState(): AppState {
                     (personas: Personas) => {
                         getState().receivePersonas(personas);
                         reactionApi.get(guild, getState().receiveReactions);
+                        emojisApi.get(guild, getState().receiveEmojis);
                     }
                 );
             }

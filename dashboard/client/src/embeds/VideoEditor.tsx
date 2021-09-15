@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { TwoThumbInputRange } from 'react-two-thumb-input-range';
 import Video from './Video';
-import './VideoEditor.sass'
 import VolumeControl from './VolumeControl';
+import './VideoEditor.sass'
 
 const VideoEditor = (props: {
     video_url: string,
@@ -92,7 +92,7 @@ const VideoEditor = (props: {
                 </div>
             </div>
             <div className='ms-3 mb-3 d-flex flex-column justify-content-end'>
-                <VolumeControl volume={props.volume ?? 0} />
+                <VolumeControl volume={props.volume ?? 100} />
             </div>
             
         </div>

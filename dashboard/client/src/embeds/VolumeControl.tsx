@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import './VolumeControl.sass';
 import { faVolumeDown, faVolumeOff, faVolumeUp } from '@fortawesome/free-solid-svg-icons';
+import './VolumeControl.sass';
 
 const VolumeControl = (props: {
     volume: number

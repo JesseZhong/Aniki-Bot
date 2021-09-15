@@ -64,7 +64,8 @@ class BaseHandler(BaseHTTPRequestHandler):
         self.oauth_routes: Dict[str, Callable[[], None]] = {
             '/authorize': self.request_authorization,
             '/access': self.request_access,
-            '/refresh': self.refresh_access
+            '/refresh': self.refresh_access,
+            '/revoke': self.revoke_access
         } 
 
         super().__init__( *args, **kwargs)
@@ -76,9 +77,10 @@ class BaseHandler(BaseHTTPRequestHandler):
             result.append((rf'^{re.escape(key)}(?:|/|/(?P<stub>.+))$', handler))
         return result
 
-    def set_headers(self, code: int, message: str = None):
+    def send_headers(self, code: int, message: str = None):
         """
-            Set a response's headers.
+            Set the necessary headers for a response,
+            as well as sending the status code and message.
         """
         self.send_response(code, message)
         origin = self.get_header('Origin')
@@ -107,7 +109,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         return self.headers[key]
 
 
-    def send_content(self, content: {}):
+    def send_content(self, content: Dict):
         """
             Sends a response with the provided content.
         """
@@ -117,7 +119,7 @@ class BaseHandler(BaseHTTPRequestHandler):
 
 
     def send_bad_request(self, content: str = None):
-        self.set_headers(400)
+        self.send_headers(400)
         self.send_content('Bad Request' if not content else content)
 
     
@@ -133,7 +135,7 @@ class BaseHandler(BaseHTTPRequestHandler):
 
     def put_item(
         self,
-        schema: {},
+        schema: Dict,
         filename: str,
         key_regex: str
     ):
@@ -172,7 +174,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             with open(path, 'w') as file:
                 json.dump(data, file, indent=4, sort_keys=True)
 
-        self.set_headers(201, 'Accepted')
+        self.send_headers(201, 'Accepted')
 
 
     def delete_item(
@@ -204,7 +206,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             with open(path, 'w') as file:
                 json.dump(data, file, indent=4, sort_keys=True)
 
-        self.set_headers(201, 'Accepted')
+        self.send_headers(201, 'Accepted')
 
 
     def check_file_exists(self, filename: str, default={}) -> bool:
@@ -255,7 +257,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             with open(self.VANITY, 'r') as file:
                 data = json.load(file)
                 if guild in data:
-                    self.set_headers(200)
+                    self.send_headers(200)
                     self.send_content({
                         'id': data[guild]
                     })
@@ -286,7 +288,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         if not state:
             self.send_bad_request('Missing state.')
             return
-        scope = 'identify'
+        scope = 'identify guilds'
 
         global states
         states.add(state)
@@ -299,7 +301,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             f'&client_id={self.CLIENT_ID}&state={state}&scope={scope}' + \
             f'&redirect_uri={redirect}&prompt={prompt}'
 
-        self.set_headers(200)
+        self.send_headers(200)
         self.send_content({
             'auth_url': auth_url,
             'state': state
@@ -356,7 +358,7 @@ class BaseHandler(BaseHTTPRequestHandler):
             self.log_error(msg)
             print(msg)
 
-            self.set_headers(500)
+            self.send_headers(500)
             return
 
         tokens = json.loads(response.content)
@@ -365,7 +367,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         # Grab the access_token and grab the user.
         user = json.loads(self.get_user(self.token).content)['user']
 
-        self.set_headers(200)
+        self.send_headers(200)
         self.send_content(tokens)
 
 
@@ -395,12 +397,38 @@ class BaseHandler(BaseHTTPRequestHandler):
             headers=headers
         )
 
-        self.set_headers(200)
+        self.send_headers(200)
         self.send_content(json.loads(response.content))
 
 
+    def revoke_token(self, token) -> bool:
+        '''
+            Invalidates the passed Discord token.
+        '''
+        response = requests.post(
+            f'{self.DISCORD_OAUTH_API}/token/revoke',
+            headers={
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            data=f'client_id={self.CLIENT_ID}&client_secret={self.CLIENT_SECRET}&token={token}'
+        )
+        
+        return response.ok
+
+
     def revoke_access(self):
-        return
+        '''
+            Revokes the user's passed Discord token.
+            Sends back an OK if revoke was successful.
+        '''
+        if not self.token:
+            self.send_bad_request('Token Missing.')
+            return
+
+        if self.revoke_token(self.token):
+            self.send_headers(200, 'Token Revoked.')
+        else:
+            self.send_bad_request('Failed to Revoke.')
 
 
     def permitted(self, user) -> bool:
@@ -515,17 +543,17 @@ class BaseHandler(BaseHTTPRequestHandler):
         """
 
         if 'Authorization' not in self.headers or 'Guild' not in self.headers:
-            return (401, 'Unauthorized')
+            return (401, 'Unauthorized.')
 
         # Check if user is from an allowed guild.
         if not self.check_guild():
-            return (403, 'Forbidden Guild')
+            return (403, 'Forbidden Guild.')
 
         try:
             auth_type, token = self.headers['Authorization'].split(' ')
 
         except ValueError:
-            return (400, 'Bad Request - Invalid Authorization')
+            return (400, 'Bad Request - Invalid Authorization.')
 
         if auth_type.lower() != 'bearer':
             return (403, 'Forbidden Auth Type')
@@ -534,7 +562,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         response = self.get_user(token)
 
         if response.status_code != 200:
-            return (401, 'Unauthorized - Invalid Token')
+            return (401, 'Unauthorized - Invalid Token.')
 
         user = json.loads(response.content)['user']
 
@@ -549,8 +577,10 @@ class BaseHandler(BaseHTTPRequestHandler):
                 'Unknown error when attempting to open the permissions file.\n' +
                 'Stacktrace:\n' + traceback.format_exc()
             )
-            return (500, 'Server Error')
+            return (500, 'Server Error.')
 
+        # Save token for potential later use.
+        self.token = token
         return None
 
 
@@ -564,7 +594,7 @@ class BaseHandler(BaseHTTPRequestHandler):
 
         # Deny the user access if verification failed.
         if result is not None:
-           self.set_headers(*result)
+           self.send_headers(*result)
            self.send_content('Nope')
            return
 
@@ -577,7 +607,7 @@ class BaseHandler(BaseHTTPRequestHandler):
                 handler()
                 return
         
-        self.set_headers(404, 'Dude, fuck off!')
+        self.send_headers(404, 'Dude, fuck off!')
         self.send_content('Yo, WTF you doin here?!')
 
 
@@ -621,4 +651,4 @@ class BaseHandler(BaseHTTPRequestHandler):
 
     
     def do_OPTIONS(self):
-        self.set_headers(200, 'OK')
+        self.send_headers(200, 'OK')

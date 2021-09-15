@@ -13,8 +13,8 @@ const Message = (
     } & FieldHookConfig<any>
 ) => {
     
-    const [field, meta, helpers] = useField(props);
-    const textRef = React.createRef<HTMLTextAreaElement>();
+    const [field, _meta, helpers] = useField(props);
+    const textRef = React.createRef<HTMLDivElement>();
 
     // Expand and contract the textarea to
     //  the size of the text as the user types.
@@ -33,11 +33,15 @@ const Message = (
         <div className={props.className}>
             <div className='d-flex flex-column message'>
                 <div className='form-floating'>
-                    <textarea
+                    <div
                         ref={textRef}
-                        {...field}
                         id={field.name}
-                        className='form-control'
+                        className='wysiwyg form-control'
+                        contentEditable
+                    />
+                    <textarea
+                        {...field}
+                        hidden
                     />
                     <label htmlFor={field.name}>
                         Message

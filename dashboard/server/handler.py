@@ -23,6 +23,7 @@ class ServerHandler(BaseHandler):
             ('/guild', self.get_guild),
             ('/personas', self.get_personas),
             ('/reactions', self.get_reactions),
+            ('/emojis', self.get_emojis),
             ('/favicon.ico', self.get_favicon),
             ('/', self.get_root)
         ]
@@ -49,7 +50,7 @@ class ServerHandler(BaseHandler):
 
 
     def get_root(self):
-        self.set_headers(200)
+        self.send_headers(200)
         self.send_content('Nothing to see here!')
 
 
@@ -67,7 +68,7 @@ class ServerHandler(BaseHandler):
             )
 
             if response.status_code == 200:
-                self.set_headers(200)
+                self.send_headers(200)
                 self.wfile.write(response.content)
             else:
                 self.send_bad_request({
@@ -80,12 +81,12 @@ class ServerHandler(BaseHandler):
 
 
     def get_personas(self):
-        self.set_headers(200)
+        self.send_headers(200)
         self.send_file('personas.json')
 
 
     def get_reactions(self):
-        self.set_headers(200)
+        self.send_headers(200)
         self.send_file('reactions.json')
 
 
@@ -143,5 +144,78 @@ class ServerHandler(BaseHandler):
             for meta in metas
         }
 
-        self.set_headers(200)
+        self.send_headers(200)
         self.send_content(metadata)
+
+
+    def get_emojis(self):
+
+        if not self.token:
+            self.send_bad_request('No token provided.')
+            return
+
+        # Get user's guilds.
+        userGuildsRes = requests.get(
+            f'{self.DISCORD_API}/users/@me/guilds',
+            headers={
+                'Authorization': f'Bearer {self.token}'
+            }
+        )
+
+        # For 401, assume missing 'guilds' scope.
+        # Revoke token and spit a 401 back.
+        if userGuildsRes.status_code == 401:
+            self.revoke_token(self.token)
+            self.send_headers(401, 'Unauthorized - New Token Required.')
+            return
+
+        if not userGuildsRes.ok:
+            self.send_bad_request('User guild problem.')
+            return
+
+        # Get the bot's guilds.
+        botGuildsRes = requests.get(
+            f'{self.DISCORD_API}/users/@me/guilds',
+            headers={
+                'Authorization': f'Bot {self.DISCORD_TOKEN}'
+            }
+        )
+
+        if not botGuildsRes.ok:
+            self.send_headers(500, 'Bot info problem.')
+            return
+
+        # Get the intersection (guilds in common) for the user and the bot.
+        userGuilds = json.loads(userGuildsRes.content)
+        userGuildIds = {g['id'] for g in userGuilds}
+        botGuildIds = {g['id'] for g in json.loads(botGuildsRes.content)}
+        guildIdsInCommon = userGuildIds & botGuildIds
+
+        # Grab the emojis that the user and the bot share.
+        # In other words, get the emojis that the bot has permission to see.
+        try:
+            emojis = {}
+            for id in guildIdsInCommon:
+                guild = next((g for g in userGuilds if g['id'] == id), None)
+
+                if guild:
+                    emojiRes = requests.get(
+                        f'{self.DISCORD_API}/guilds/{id}/emojis',
+                        headers={
+                            'Authorization': f'Bot {self.DISCORD_TOKEN}'
+                        }
+                    )
+
+                    if emojiRes.ok:
+                        emojis[id] = {
+                            'name': guild['name'],
+                            'icon': guild['icon'],
+                            'emojis': json.loads(emojiRes.content)
+                        }
+
+            self.send_headers(200)
+            self.send_content(emojis)
+
+        except Exception as e:
+            print(e)
+            self.send_headers(500, 'Emoji Error.')
