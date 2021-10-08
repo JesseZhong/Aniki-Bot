@@ -4,9 +4,25 @@ const Validation = Yup.object().shape({
     triggers:
         Yup.array(
             Yup.string()
-                .min(3, 'Too short! 3+ character phrases.')
                 .max(100, 'Too long! No more than 100 characters.')
-                .matches(/^[^"']*$/)
+                .matches(/^[^"']*$/, 'Cannot contain quotes.')
+                .test(
+                    'min-phrase',
+                    'Too short! 1+ emoji or 3+ character phrases.',
+                    (value?: string) => {
+                        if (!value) {
+                            return false;
+                        }
+
+                        // Only one emoji is needed.
+                        if (/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/.test(value)) {
+                            return true;
+                        }
+
+                        // Regular character phrases require at least 3 non-whitespace characters
+                        return value.trim().length >= 3;
+                    }
+                )
         )
         .min(1, 'Need at least 1.'),
     content:

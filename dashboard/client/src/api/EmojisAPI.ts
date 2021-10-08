@@ -1,6 +1,6 @@
 import request, { Response } from "superagent";
 import { Access } from "./Access";
-import { Emojis } from "../emojis/Emojis";
+import { Emoji, Emojis, GuildEmojis } from "../emojis/Emojis";
 import { ErrorResponse } from "./ErrorResponse";
 
 const EmojisAPI = (
@@ -28,8 +28,20 @@ const EmojisAPI = (
                             return;
                         }
 
-                        console.log(response.body)
-                        //received(response.body);
+                        let emojis = Object.entries(response.body as { [key: string]: GuildEmojis });
+
+                        // Tag each emoji with the id of the guild it belongs to.
+                        emojis.forEach(
+                            ([guildId, guildEmoji]) => {
+                                guildEmoji.emojis?.forEach(
+                                    (emoji: Emoji) => {
+                                        emoji.guild_id = guildId;
+                                    }
+                                );
+                            }
+                        );
+
+                        received(new Emojis(emojis));
                     })
         )
     }

@@ -2,7 +2,6 @@ import React from 'react';
 import { Reaction } from './Reactions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faEdit } from '@fortawesome/free-regular-svg-icons';
-import { FetchMetadataHandler } from '../api/Metadata';
 import ReactionCardView from './ReactionCardView';
 import ReactionCardEdit from './ReactionCardEdit';
 import HoverButtonGroup from '../common/HoverButtonGroup';
@@ -31,7 +30,7 @@ const ReactionCard = (props: {
                 }
             }
         },
-        [cardRef]
+        [height, props, cardRef]
     );
 
     return (

@@ -1,0 +1,107 @@
+@import "../theme"
+
+$size: 28px
+$info-size: 22px
+$divider-size: 12px
+
+div.emoji-picker
+    border: 1px solid $border1
+    background-color: darken($background2, 10%)
+    box-shadow: 1px 1px 3px black
+    position: relative
+    bottom: 0
+    z-index: 1
+
+    div.guild-nav
+        padding: 0.4em 0.1em
+
+        div.guild-icon
+            div, img
+                border-radius: 50%
+                will-change: border-radius
+                transition: border-radius 450ms
+                overflow: hidden
+                width: $size
+                height: $size
+                min-width: $size
+                min-height: $size
+                object-fit: cover
+                margin: 3px
+                display: block
+
+                &:hover, .selected
+                    border-radius: 20%
+                    transition: border-radius 125ms
+                    cursor: pointer
+            div
+                color: $color1
+                text-align: center
+                line-height: $size
+                background-color: $background2
+
+    div.emoji-panel
+        background-color: darken($background1, 5%)
+        padding: 0.3em
+        width: 100%
+
+        div.emoji-group
+            div.guild-divider
+                div.guild-icon
+                    img
+                        width: $divider-size
+                        height: $divider-size
+                        min-width: $divider-size
+                        min-height: $divider-size
+                        border-radius: 8%
+                        object-fit: cover
+                        overflow: hidden
+                        display: block
+            span
+                font-size: 0.8em
+
+
+        div.emoji
+            & > img
+                width: $size
+                height: $size
+                object-fit: cover
+                margin: 3px
+
+                &:hover
+                    cursor: pointer
+
+            &.selected
+                background-color: lighten($background2, 8%)
+                border-radius: 8%
+
+        div.emoji-info
+            width: 100%
+            
+            div.emoji
+                img
+                    width: $info-size
+                    height: $info-size
+                    min-width: $info-size
+                    min-height: $info-size
+                    object-fit: cover
+
+            span.name
+                font-size: 0.85em
+                color: white
+
+            span.server
+                font-size: 0.6em
+
+                span
+                    color: white
+
+            div.guild-icon
+                div, img
+                    width: $info-size
+                    height: $info-size
+                    min-width: $info-size
+                    min-height: $info-size
+                    border-radius: 20%
+                    object-fit: cover
+                    overflow: hidden
+                    display: block

@@ -1,0 +1,21 @@
+@import "../theme"
+
+$aspect-ratio: 0.5625
+
+$width: 400px
+$height: $width * $aspect-ratio
+
+div.message-preview
+    font-size: small
+    font-weight: 100
+
+    i
+        font-size: smaller
+        font-weight: 400
+
+    img
+        width: $width
+        height: $height
+        object-fit: contain
+        object-position: left top
+        border-radius: 4px

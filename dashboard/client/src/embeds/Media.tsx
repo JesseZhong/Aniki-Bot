@@ -6,7 +6,7 @@ import { getState } from '../containers/AppContainer';
 import MediaCard, { MediaType } from './MediaCard';
 import Video, { videoRegex } from './Video';
 
-const imageRegex = /(https{0,1}:\/\/[^\s]+\.(?:gif|jp[e]{0,1}g|webm|webp|png|svg)[^\s]*)/;
+export const imageRegex = /(https{0,1}:\/\/[^\s]+\.(?:gif|jp[e]{0,1}g|webm|webp|png|svg)[^\s]*)/;
 const redditRegex = /(https{0,1}:\/\/(www\.|)reddit\.com[^\s]*)/;
 const twitterRegex = /^/;
 export const mediaRegex = /(https{0,1}:\/\/[^\s]*)/;
@@ -88,6 +88,7 @@ const Media = (
                 content = <div>
                     <img
                         src={metadata?.['og:image']}
+                        alt={metadata?.['og:title']}
                     />
                 </div>;
             }

@@ -37,7 +37,7 @@ const PersonaReactions = (
                 }
             }
         },
-        [cardRef]
+        [height, props, cardRef]
     );
 
     return (

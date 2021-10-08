@@ -11,7 +11,7 @@ class EmojiStore extends ReduceStore<Emojis, ActionPayload> {
     }
 
     public getInitialState(): Emojis {
-        return new Map;
+        return new Emojis();
     }
 
     public reduce(state: Emojis, action: ActionPayload): Emojis {

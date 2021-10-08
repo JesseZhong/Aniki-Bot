@@ -207,11 +207,16 @@ class ServerHandler(BaseHandler):
                     )
 
                     if emojiRes.ok:
-                        emojis[id] = {
-                            'name': guild['name'],
-                            'icon': guild['icon'],
-                            'emojis': json.loads(emojiRes.content)
-                        }
+                        
+                        guildEmojis = json.loads(emojiRes.content)
+
+                        if guildEmojis and len(guildEmojis) > 0:
+                            emojis[id] = {
+                                'id': id,
+                                'name': guild['name'],
+                                'icon': guild['icon'],
+                                'emojis': guildEmojis
+                            }
 
             self.send_headers(200)
             self.send_content(emojis)

@@ -31,7 +31,7 @@ const ReactionCardEdit = (props: {
                 }
             }
         },
-        [cardRef]
+        [height, props, cardRef]
     );
 
     return (
@@ -93,6 +93,7 @@ const ReactionCardEdit = (props: {
                         <Message
                             className='mt-3'
                             name='content'
+                            onResize={props.onResize}
                         />
                         <div className='d-flex flex-column mt-3'>
                             <div className='input-group input-group-sm flex-nowrap'>
@@ -120,7 +121,7 @@ const ReactionCardEdit = (props: {
                         {
                             showAudioFields && values.audio_url &&
                             <VideoEditor
-                                className='mt-3d-flex flex-row mt-3'
+                                className='d-flex flex-row mt-3'
                                 video_url={values.audio_url}
                                 clip_range={values.clip}
                                 volume={values.volume}

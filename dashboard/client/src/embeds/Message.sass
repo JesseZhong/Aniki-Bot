@@ -1,11 +1,12 @@
 @import "../theme"
 
 div.message
+    position: relative
 
     div.wysiwyg
+        color: white
         min-height: 8em
         width: 100%
-        color: white
         font-size: 0.9em
         background-color: $background2
         border: 1px solid $border1
@@ -13,8 +14,57 @@ div.message
         resize: vertical
         overflow: auto
         padding: 10px
-        z-index: 3
+        white-space: pre-line;
+
+        span[data-text-type=link]
+            color: #00AFF4
+            &:hover
+                text-decoration: underline
+
+        span[data-text-type=image]
+            img
+                &.emoji
+                    width: 23px
+                &.image
+                    width: 240px
+
 
         &:focus
             outline: none
             box-shadow: 0 0 2px 2px $secondary
+
+    button
+        border: none
+        filter: none
+        will-change: filter
+        transition: filter 150ms
+
+        &:hover
+            transition: filter 125ms
+            filter: drop-shadow(0 0 1px lighten($background2, 35%))
+
+        &.gif-button
+            font-size: 1.2em
+            color: lighten($background2, 40%)
+            background: none
+            margin: 0
+            padding: 0
+            line-height: 1em
+
+            &:hover
+                color: lighten($background2, 70%)
+
+        &.emoji-button
+            background: none
+
+            img
+                max-width: 32px
+                max-height: 32px
+
+    div.main-block
+        position: relative
+
+        div.tidbits
+            position: absolute
+            bottom: 6px
+            right: 2px
