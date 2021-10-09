@@ -20,7 +20,12 @@ const Message = (
     const [field, _meta, helpers] = useField<string>(props);
     const textRef = React.createRef<HTMLDivElement>();
     const emojis = getState().emojis;
-    const defaultValue = React.useRef(field);
+    const [value, setValue] = React.useState(field.value);
+
+    const assignValue = (val: string) => {
+        helpers.setValue(val);
+        setValue(val);
+    }
 
     // Expand and contract the textarea to
     //  the size of the text as the user types.
@@ -35,8 +40,7 @@ const Message = (
         },
         [
             textRef,
-            defaultValue,
-            field.value
+            value
         ]
     );
 
@@ -61,8 +65,6 @@ const Message = (
      * @returns Stringified 
      */
     const encode = (text: string): string => {
-        console.log(text)
-
         const bodyNodes = text
             ?.split(new RegExp(`${mediaRegex.source}|${ungroupedEmojiRegex.source}`))
             .filter(w => w)
@@ -176,48 +178,105 @@ const Message = (
     const [showEmojis, setShowEmojis] = React.useState(false);
     const [emojiBtn, setEmojiBtn] = React.useState(getRandomEmoji());
 
-    const cursorInsert = (value: string) => {
-        if (textRef.current && value) {
-            const text = textRef.current;
+    const insertText = (
+        text: string
+    ) => {
+        const selection = document.getSelection();
+        if (!selection) {
+            return;
+        }
 
-            if (text) {
-                const selection = document.getSelection();
-                console.log(selection)
+        const focusNode = (selection.focusNode as Element);
+        if (!focusNode) {
+            return;
+        }
 
-                if (
-                    selection &&
-                    (
-                        text.isEqualNode(selection.focusNode) ||
-                        text.isEqualNode(selection.focusNode?.parentNode ?? null) ||
-                        text.isEqualNode(selection.focusNode?.parentNode?.parentNode ?? null)
-                    )
-                ) {
-                    const range = selection.getRangeAt(0);
-                    console.log(range)
-                    const start = range.startOffset;
-                    const end = range.endOffset;
-                    const result = (field.value?.substring(0, start) ?? '')
-                        + value
-                        + (field.value?.substring(end, field.value.length) ?? '');
-                    //helpers.setValue(result);
-                    //defaultValue.current.value = result;
-                }
-                else {
-                    
-                }
-            }
+        const current = focusNode.innerHTML;
+        const range = selection.getRangeAt(0);
+        if (!range) {
+            return;
+        }
+
+        const start = range.startOffset;
+        const end = range.endOffset;
+
+        focusNode.innerHTML = (current?.substring(0, start) ?? '')
+            + text
+            + (current?.substring(end, current.length) ?? '');
+    }
+
+    const cursorInsert = (text: string) => {
+        if (textRef.current && text) {
+            insertText(text);
+
+            const current = textRef.current;
+            const decoded = decode(current.childNodes);
+            assignValue(decoded);
         }
     }
 
-    const onChange = (event: React.FormEvent<HTMLDivElement>) => {
-        const text = event.currentTarget;
-        const decoded = decode(text.childNodes);
+    const onKeyDown = (
+        event: React.KeyboardEvent<HTMLDivElement>
+    ) => {
+        const selection = document.getSelection();
 
-        if (decoded !== field.value) {
+        if (selection && event) {
+            const range = selection.getRangeAt(0);
+            if (!range) {
+                return;
+            }
 
-            // Emit the change outside the component.
-            helpers.setValue(decoded);
-            defaultValue.current.value = decoded;
+            const start = range.startOffset;
+            const end = range.endOffset;
+
+            // Character replacements.
+            let code = '';
+            switch (event.key) {
+                case '<':
+                    code = '&lt;';
+                    break;
+                case '>':
+                    code = '&gt;';
+                    break;
+                default:
+                    code = event.key;
+                    break;
+            }
+
+            switch (event.code) {
+
+                // Backspace
+                case '0x000E':
+                    if (start === end) {
+                        if (start <= 0) {
+                            return;
+                        }
+
+
+                    }
+                    else {
+
+                    }
+                    break;
+
+                // Delete
+                case '0xE053':
+                    if (start === end) {
+                        if (end >= value.length) {
+                            return;
+                        }
+
+                    }
+                    else {
+
+                    }
+                    break;
+                default:
+                    if (start === end) {
+
+                    }
+                    break;
+            }
         }
     }
 
@@ -228,12 +287,11 @@ const Message = (
                     <div
                         ref={textRef}
                         id={field.name}
+                        onKeyDown={onKeyDown}
                         className='wysiwyg form-control'
-                        onInput={onChange}
-                        onBlur={onChange}
                         contentEditable
                         suppressContentEditableWarning
-                        dangerouslySetInnerHTML={{ __html: encode(defaultValue.current.value ?? '') }}
+                        dangerouslySetInnerHTML={{ __html: encode(value ?? '') }}
                     />
                     <label htmlFor={field.name}>
                         Message
