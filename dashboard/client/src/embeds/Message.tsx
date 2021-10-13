@@ -21,6 +21,46 @@ const Message = (
     const textRef = React.createRef<HTMLDivElement>();
     const emojis = getState().emojis;
     const [value, setValue] = React.useState(field.value);
+    const [caret, setCaret] = React.useState<number>(0);
+
+
+    const selection = document.getSelection();
+    if (
+        textRef.current &&
+        selection &&
+        selection.rangeCount > 0
+    ) {
+        const range = selection.getRangeAt(0);
+        let currentCaret = caret;
+        
+        (textRef.current.childNodes as NodeList).forEach(
+            (node: Node, index: number) => {
+                if (node instanceof Text) {
+
+                }
+                else if (node instanceof HTMLSpanElement) {
+
+                    (node.childNodes as NodeList).forEach(
+                        (textMaybe: Node) => {
+
+                            if (textMaybe instanceof Text) {
+                                const length = (textMaybe as Text).textContent?.length ?? 0;
+                                if (currentCaret < length) {
+                                    range.setStart(textMaybe, )
+                                    return;
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+        )
+
+        if (node) {
+            range.setStart(node, caret);
+            range.setEnd(node, caret);
+        }
+    }
 
     const assignValue = (val: string) => {
         helpers.setValue(val);
@@ -40,7 +80,8 @@ const Message = (
         },
         [
             textRef,
-            value
+            value,
+            props
         ]
     );
 
@@ -192,17 +233,25 @@ const Message = (
         }
 
         const current = focusNode.innerHTML;
-        const range = selection.getRangeAt(0);
-        if (!range) {
+        const currentRange = selection.getRangeAt(0);
+        if (!currentRange) {
             return;
         }
 
-        const start = range.startOffset;
-        const end = range.endOffset;
+        const start = currentRange.startOffset;
+        const end = currentRange.endOffset;
 
         focusNode.innerHTML = (current?.substring(0, start) ?? '')
             + text
             + (current?.substring(end, current.length) ?? '');
+
+        if (textRef.current) {
+            const decoded = decode(textRef.current.childNodes);
+            assignValue(decoded);
+
+            const newPos = start + text.length;
+            setCaret(newPos);
+        }
     }
 
     const cursorInsert = (text: string) => {
@@ -272,11 +321,11 @@ const Message = (
                     }
                     break;
                 default:
-                    if (start === end) {
-
-                    }
+                    insertText(code);
                     break;
             }
+
+            event.preventDefault();
         }
     }
 
