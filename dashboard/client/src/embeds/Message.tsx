@@ -18,49 +18,79 @@ const Message = (
 ) => {
     
     const [field, _meta, helpers] = useField<string>(props);
-    const textRef = React.createRef<HTMLDivElement>();
+    const textRef = React.useRef<HTMLDivElement>(null);
     const emojis = getState().emojis;
     const [value, setValue] = React.useState(field.value);
     const [caret, setCaret] = React.useState<number>(0);
 
-
-    const selection = document.getSelection();
-    if (
-        textRef.current &&
-        selection &&
-        selection.rangeCount > 0
-    ) {
-        const range = selection.getRangeAt(0);
-        let currentCaret = caret;
-        
-        (textRef.current.childNodes as NodeList).forEach(
-            (node: Node, index: number) => {
+    const atCaret = (
+        handle: (
+            node: Node,
+            caretPos: number,
+            range: Range
+        ) => void
+    ) => {
+        const selection = document.getSelection();
+        if (
+            textRef.current &&
+            selection &&
+            selection.rangeCount > 0
+        ) {
+            const range = selection.getRangeAt(0);
+            const currentText = textRef.current;
+            let currentCaret = caret;
+    
+            const handleText = (textNode: Node) => {
+                const length = (textNode as Text).textContent?.length ?? 0;
+                if (currentCaret <= length) {
+                    handle(textNode, currentCaret, range);
+                    return true;
+                }
+                else {
+                    currentCaret -= length;
+                    return false;
+                }
+            }
+            
+            // Go through children, finding a spot for the caret.
+            for (const node of (currentText.childNodes as NodeList)) {
                 if (node instanceof Text) {
-
+                    if (handleText(node)) {
+                        return;
+                    }
                 }
                 else if (node instanceof HTMLSpanElement) {
 
-                    (node.childNodes as NodeList).forEach(
-                        (textMaybe: Node) => {
-
-                            if (textMaybe instanceof Text) {
-                                const length = (textMaybe as Text).textContent?.length ?? 0;
-                                if (currentCaret < length) {
-                                    range.setStart(textMaybe, )
-                                    return;
-                                }
+                    for (const textMaybe of (node.childNodes as NodeList)) {
+                        if (textMaybe instanceof Text) {
+                            if (handleText(textMaybe)) {
+                                return;
                             }
                         }
-                    )
+                    }
                 }
             }
-        )
-
-        if (node) {
-            range.setStart(node, caret);
-            range.setEnd(node, caret);
+    
+            // Caret can't find a place? Put it at the end.
+            // "If the startNode is a Node of type Text, Comment, or CDataSection, then startOffset
+            // is the number of characters from the start of startNode. For other Node types, startOffset
+            // is the number of child nodes between the start of the startNode."
+            // From: https://developer.mozilla.org/en-US/docs/Web/API/Range/setStart
+            const end = currentText.childNodes.length;
+            handle(currentText, end, range);
         }
     }
+
+    atCaret(
+        (
+            node: Node,
+            caretPos: number,
+            range: Range
+        ) => {
+            range.setStart(node, caretPos);
+            range.setEnd(node, caretPos);
+        }
+    );
 
     const assignValue = (val: string) => {
         helpers.setValue(val);
@@ -175,10 +205,7 @@ const Message = (
         let text: string = '';
 
         (children as NodeList).forEach(
-            (item: Node, itemIndex: number) => {
-                if (itemIndex > 0) {
-                    text += ' ';
-                }
+            (item: Node) => {
 
                 if (item instanceof HTMLSpanElement) {
 
@@ -222,36 +249,26 @@ const Message = (
     const insertText = (
         text: string
     ) => {
-        const selection = document.getSelection();
-        if (!selection) {
-            return;
-        }
+        atCaret(
+            (
+                node: Node,
+                caretPos: number,
+                range: Range
+            ) => {
+                const currentText = node.textContent;
+                node.textContent = (currentText?.substring(0, range.startOffset) ?? '')
+                    + text
+                    + (currentText?.substring(range.endOffset, currentText.length) ?? '');
 
-        const focusNode = (selection.focusNode as Element);
-        if (!focusNode) {
-            return;
-        }
-
-        const current = focusNode.innerHTML;
-        const currentRange = selection.getRangeAt(0);
-        if (!currentRange) {
-            return;
-        }
-
-        const start = currentRange.startOffset;
-        const end = currentRange.endOffset;
-
-        focusNode.innerHTML = (current?.substring(0, start) ?? '')
-            + text
-            + (current?.substring(end, current.length) ?? '');
-
-        if (textRef.current) {
-            const decoded = decode(textRef.current.childNodes);
-            assignValue(decoded);
-
-            const newPos = start + text.length;
-            setCaret(newPos);
-        }
+                if (textRef.current) {
+                    const decoded = decode(textRef.current.childNodes);
+                    assignValue(decoded);
+        
+                    const newPos = caretPos + text.length;
+                    setCaret(newPos);
+                }
+            }
+        );
     }
 
     const cursorInsert = (text: string) => {
@@ -320,6 +337,13 @@ const Message = (
 
                     }
                     break;
+
+                // Arrow Left
+                case '0xE04B':
+                    break;
+                case '0xE04D':
+                    break;
+
                 default:
                     insertText(code);
                     break;
