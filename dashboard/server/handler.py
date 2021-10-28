@@ -1,10 +1,12 @@
 #!/bin/python
 
+import asyncio
 import os
 import json
 import requests
+from gremlin.discord.audio import Audio
 from bs4 import BeautifulSoup
-from typing import Dict, OrderedDict
+from typing import Any, Dict, OrderedDict
 from .basehandler import BaseHandler
 
 class ServerHandler(BaseHandler):
@@ -99,10 +101,20 @@ class ServerHandler(BaseHandler):
 
 
     def put_reaction(self):
+        def cache(reaction: Dict[str, Any]):
+            if 'audio_url' in reaction and reaction['audio_url']:
+                asyncio.run(Audio.from_url(
+                    reaction['audio_url'],
+                    start=(reaction['start'] if 'start' in reaction else None),
+                    end=(reaction['end'] if 'end' in reaction else None),
+                    clip=(reaction['clip'] if 'clip' in reaction else None)
+                ))
+
         self.put_item(
             self.put_reaction_schema,
             'reactions.json',
-            '^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$'
+            '^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$',
+            cache
         )
 
     
