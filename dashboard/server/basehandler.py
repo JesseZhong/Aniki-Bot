@@ -11,7 +11,7 @@ from jsonschema.exceptions import ValidationError
 from logging.handlers import RotatingFileHandler
 import traceback
 from http.server import BaseHTTPRequestHandler
-from typing import Tuple, Union, Dict, Callable, Set, List
+from typing import Any, Tuple, Union, Dict, Callable, Set, List
 from urllib.parse import quote
 
 
@@ -137,7 +137,8 @@ class BaseHandler(BaseHTTPRequestHandler):
         self,
         schema: Dict,
         filename: str,
-        key_regex: str
+        key_regex: str,
+        afterValidation: Callable[[Dict[str, Any]], None] = None
     ):
         # Check for path stub and its validity.
         if not self.subpath:
@@ -159,6 +160,16 @@ class BaseHandler(BaseHTTPRequestHandler):
         except ValidationError as error:
             self.send_bad_request(error.message)
             return
+
+        # Do some stuff.
+        if afterValidation:
+            try:
+                afterValidation(content)
+            except Exception:
+                self.logger.error(
+                    'Error after validation.\n' +
+                    'Stacktrace:\n' + traceback.format_exc()
+                )
 
         path = os.path.join(self.DATA_DIR, self.guild, filename)
 

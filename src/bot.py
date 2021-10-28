@@ -10,7 +10,7 @@ from discord import \
     TextChannel, VoiceChannel, AllowedMentions, Member
 from .persona import Persona
 from .reaction import Reaction
-from .audio import Audio
+from gremlin.discord.audio import Audio
 from .state import is_connected
 import asyncio
 import re
@@ -35,10 +35,10 @@ class Bot(Client):
         self.logger.addHandler(handler)
 
         # Initiate properties.
-        self.guild_data: Dict[str, {
-            personas: Dict[str, Persona],
-            reactions: Dict[str, Reaction]
-        }] = defaultdict(dict)
+        self.guild_data: Dict[str, Dict[
+            'personas': Dict[str, Persona],
+            'reactions': Dict[str, Reaction]
+        ]] = defaultdict(dict)
 
 
     def add(self, guild: str, *, personas=None, reactions=None):
