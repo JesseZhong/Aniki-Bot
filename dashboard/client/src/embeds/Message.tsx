@@ -31,14 +31,47 @@ const Message = (
         ) => void
     ) => {
         const selection = document.getSelection();
+        if (!selection) {
+            return;
+        }
+
+        // If the selection is just text, try to grab the closest span parent it belongs to.
+        const target = (selection.anchorNode instanceof Text)
+            ?
+                (
+                    selection.anchorNode.parentElement instanceof HTMLSpanElement &&
+                    selection.anchorNode.parentElement.hasAttribute('data-text-type')
+                )
+                ? selection.anchorNode.parentElement
+                : selection.anchorNode.parentElement?.closest('span[data-text-type]')
+            :
+                // If node is the text div, travel down to first span element.
+                (
+                    selection.anchorNode?.nodeType === Node.ELEMENT_NODE &&
+                    selection.anchorNode instanceof HTMLDivElement &&
+                    selection.anchorNode.id === field.name
+                )
+                ? 
+                    (
+                        selection.anchorNode.hasChildNodes() &&
+                        selection.anchorNode.childNodes[0] instanceof HTMLSpanElement
+                    )
+                    ? selection.anchorNode.childNodes[0] as HTMLSpanElement
+                    : null
+                : null;
+
+        // Localize the instance of the text box.
+        const text = target?.closest(`div#${field.name}`);
+
         if (
             textRef.current &&
-            selection &&
+            text &&
+            textRef.current.isEqualNode(text) &&
             selection.rangeCount > 0
         ) {
             const range = selection.getRangeAt(0);
-            const currentText = textRef.current;
             let currentCaret = caret;
+            console.log(caret)
     
             const handleText = (textNode: Node) => {
                 const length = (textNode as Text).textContent?.length ?? 0;
@@ -53,7 +86,7 @@ const Message = (
             }
             
             // Go through children, finding a spot for the caret.
-            for (const node of (currentText.childNodes as NodeList)) {
+            for (const node of (text.childNodes as NodeList)) {
                 if (node instanceof Text) {
                     if (handleText(node)) {
                         return;
@@ -76,8 +109,8 @@ const Message = (
             // is the number of characters from the start of startNode. For other Node types, startOffset
             // is the number of child nodes between the start of the startNode."
             // From: https://developer.mozilla.org/en-US/docs/Web/API/Range/setStart
-            const end = currentText.childNodes.length;
-            handle(currentText, end, range);
+            const end = text.childNodes.length;
+            handle(text, end, range);
         }
     }
 
@@ -126,6 +159,7 @@ const Message = (
         data-text-type={type}
         className={className}
         contentEditable={editable}
+        suppressContentEditableWarning={editable}
     >
         {content}
     </span>;
@@ -135,7 +169,9 @@ const Message = (
      * @param text 
      * @returns Stringified 
      */
-    const encode = (text: string): string => {
+    const encode = (
+        text: string | undefined
+    ): string => {
         const bodyNodes = text
             ?.split(new RegExp(`${mediaRegex.source}|${ungroupedEmojiRegex.source}`))
             .filter(w => w)
@@ -196,7 +232,8 @@ const Message = (
                         return toText();
                     }
                 }
-            ) as React.ReactNode;
+            )
+            ?? wrap('text', '', 0, undefined, true) as React.ReactNode;
 
         return ReactDOMServer.renderToString(<>{bodyNodes}</>);
     }
@@ -364,7 +401,7 @@ const Message = (
                         className='wysiwyg form-control'
                         contentEditable
                         suppressContentEditableWarning
-                        dangerouslySetInnerHTML={{ __html: encode(value ?? '') }}
+                        dangerouslySetInnerHTML={{ __html: encode(value) }}
                     />
                     <label htmlFor={field.name}>
                         Message
