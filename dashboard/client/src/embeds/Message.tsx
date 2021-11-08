@@ -21,12 +21,12 @@ const Message = (
     const textRef = React.useRef<HTMLDivElement>(null);
     const emojis = getState().emojis;
     const [value, setValue] = React.useState(field.value);
-    const [caret, setCaret] = React.useState<number>(0);
+    const [caret, setCaret] = React.useState<[number, number]>([0, 0]);
 
     const atCaret = (
         handle: (
             node: Node,
-            caretPos: number,
+            caretPos: [number, number],
             range: Range
         ) => void
     ) => {
@@ -67,20 +67,28 @@ const Message = (
             textRef.current &&
             text &&
             textRef.current.isEqualNode(text) &&
-            selection.rangeCount > 0
+            selection.rangeCount
         ) {
             const range = selection.getRangeAt(0);
-            let currentCaret = caret;
+            let [caretStart, caretEnd] = caret;
             console.log(caret)
     
             const handleText = (textNode: Node) => {
                 const length = (textNode as Text).textContent?.length ?? 0;
-                if (currentCaret <= length) {
-                    handle(textNode, currentCaret, range);
+                if (
+                    caretStart <= length &&
+                    caretEnd <= length
+                ) {
+                    handle(
+                        textNode,
+                        [caretStart, caretEnd],
+                        range
+                    );
                     return true;
                 }
                 else {
-                    currentCaret -= length;
+                    caretStart -= length;
+                    caretEnd -= length;
                     return false;
                 }
             }
@@ -110,18 +118,18 @@ const Message = (
             // is the number of child nodes between the start of the startNode."
             // From: https://developer.mozilla.org/en-US/docs/Web/API/Range/setStart
             const end = text.childNodes.length;
-            handle(text, end, range);
+            handle(text, [end, end], range);
         }
     }
 
     atCaret(
         (
             node: Node,
-            caretPos: number,
+            caretPos: [number, number],
             range: Range
         ) => {
-            range.setStart(node, caretPos);
-            range.setEnd(node, caretPos);
+            range.setStart(node, caretPos[0]);
+            range.setEnd(node, caretPos[1]);
         }
     );
 
@@ -289,7 +297,7 @@ const Message = (
         atCaret(
             (
                 node: Node,
-                caretPos: number,
+                caretPos: [number, number],
                 range: Range
             ) => {
                 const currentText = node.textContent;
@@ -301,8 +309,8 @@ const Message = (
                     const decoded = decode(textRef.current.childNodes);
                     assignValue(decoded);
         
-                    const newPos = caretPos + text.length;
-                    setCaret(newPos);
+                    const newPos = caretPos[0] + text.length;
+                    setCaret([newPos, newPos]);
                 }
             }
         );
@@ -390,6 +398,19 @@ const Message = (
         }
     }
 
+    const onSelect = (event: React.SyntheticEvent<HTMLDivElement>) => {
+        const selection = document.getSelection();
+        if (selection && selection.rangeCount) {
+            const range = selection.getRangeAt(0);
+            if (range) {
+                setCaret([
+                    range.startOffset,
+                    range.endOffset
+                ]);
+            }
+        }
+    }
+
     return (
         <div className={props.className}>
             <div className='d-flex flex-column message'>
@@ -398,6 +419,7 @@ const Message = (
                         ref={textRef}
                         id={field.name}
                         onKeyDown={onKeyDown}
+                        onSelect={onSelect}
                         className='wysiwyg form-control'
                         contentEditable
                         suppressContentEditableWarning
