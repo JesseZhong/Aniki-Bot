@@ -5,28 +5,28 @@ import logging
 import traceback
 from os import path
 from logging.handlers import RotatingFileHandler
-from discord import \
-    Client, Message, Webhook, AsyncWebhookAdapter, \
-    TextChannel, VoiceChannel, AllowedMentions, Member
+from discord import Client, Message, Member
 from .persona import Persona
 from .reaction import Reaction
 from gremlin.discord.audio import Audio
 from .state import is_connected
-import asyncio
 import re
 from collections import defaultdict
 from typing import Dict
 
 class Bot(Client):
 
-    def __init__(self):
+    def __init__(
+        self,
+        log_location: str
+    ):
         super().__init__()
 
         # Setup logging.
         self.logger = logging.getLogger('Error Log')
         self.logger.setLevel(logging.ERROR)
         handler = RotatingFileHandler(
-            'bot-error.log',
+            path.join(log_location, 'bot-error.log'),
             maxBytes=20000,
             backupCount=1
         )
