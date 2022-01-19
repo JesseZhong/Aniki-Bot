@@ -1,9 +1,9 @@
 #!/bin/python
 
 from discord import TextChannel, AllowedMentions, VoiceClient, VoiceChannel
-from .persona import Persona
+from bot.persona import Persona
+from bot.state import is_connected
 from gremlin.discord.audio import Audio
-from .state import is_connected
 from asyncio import AbstractEventLoop
 from typing import Dict, List
 

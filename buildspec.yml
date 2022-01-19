@@ -5,7 +5,8 @@ phases:
     runtime-versions:
       nodejs: 12
     commands:
-      - npm i -g serverless
+      - npm i -g yarn --unsafe-perm
+      - npm i -g serverless@2.64.1 --unsafe-perm
   build:
     commands:
-      - ./publish
+      - cd ./dashboard/client/ && ./publish

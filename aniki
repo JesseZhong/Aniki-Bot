@@ -1,0 +1,340 @@
+#!/usr/bin/env bash
+
+base=$(basename "$0")
+usage="Usage: $base [COMMAND]
+Utility to help manage the video player.
+
+COMMANDS
+
+    run | dev               Runs both the API and UI in new terminal tabs. For DEBUG USE ONLY.
+                            Subcommands:
+                                ui      Runs just the UI in another tab.
+                                api     Runs just the API in another tab.
+
+    users | user | u        Lists the allowed users for the app.
+                            Subcommands:
+                                add | update                     Adds or updates a user to the allowable list. Prompts user for username.
+                                add | update <username> admin    Adds or updates a user as an admin.
+                                remove | delete                  Removes a user from the allowable list. Prompts for username.
+                                remove | delete <username>       Removes a user from the allowable list.
+
+    roles | role | r        Lists the allowed roles for the app.
+                            Subcommands:
+                                add | update                     Adds or updates a role to the allowable list. Prompts user for guild and role.
+                                add | update <guild> <role>      Adds or updates a role to the allowable list.
+                                remove | delete                  Removes a role from the allowable list. Prompts for guild and role.
+                                remove | delete <guild> <role>   Removes a role from the allowable list.
+
+EXAMPLES
+
+    $base run               Runs both the API and UI apps in their own terminal tabs.
+    $base run api           Run just the API in a new tab.
+"
+
+script_path="$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )"
+cd $script_path
+arg1=$1
+arg2=$2
+arg3=$3
+arg4=$4
+[ -v 1 ] && unset 1
+[[ -v 2 ]] && unset 2
+[[ -v 3 ]] && unset 3
+[[ -v 4 ]] && unset 4
+
+install() {
+    virtualenv env && . env/bin/activate
+    pip3 install -r ./requirements
+}
+
+activate() {
+    # Activate and check required packages.
+    if [[ ! -e "./env/bin/activate" ]]
+    then
+        install
+    else
+        . env/bin/activate
+    fi
+}
+
+run_bot() {
+    activate
+
+    python3 bot/main.py
+
+    deactivate
+}
+
+run_api() {
+    activate
+
+    # Set necessary environmental variables.
+    [[ -e ".env" ]] && . .env
+    export FLASK_APP=api.main
+    [[ -v PORT ]] && port=$PORT || port=5102
+
+    local options=''
+
+    # Use TLS if cert provided.
+    if [[ -v CERT_FILE && -v KEY_FILE ]]
+    then
+        options="--cert=$CERT_FILE --key=$KEY_FILE"
+    fi
+    
+    # Run dev instance of the api.
+    python3 dashboard/server/
+
+    deactivate
+}
+
+run_client() {
+    cd client/
+    yarn run start
+}
+
+require_root() {
+    # Ensure that the user is running as root.
+    if [ "$EUID" -ne 0 ]
+        then echo "Please run with 'sudo'."
+        exit
+    fi
+}
+
+setup_api_nginx() {
+
+    # Set necessary environmental variables.
+    [[ -e ".env" ]] && . .env
+    [[ -v $DOMAIN ]] && domain=$DOMAIN || domain=localhost
+    [[ -v $CERT_DOMAIN ]] && cert_domain=$CERT_DOMAIN || cert_domain=$domain
+    [[ -v $API_PORT ]] && port=$API_PORT || port=5102
+
+contents="
+server {
+    listen 443 ssl;
+    listen [::]:443 ipv6only=on;
+    server_name $domain;
+
+    location / {
+	include uwsgi_params;
+        proxy_pass 127.0.0.1:$port;
+    }
+
+    ssl_certificate /etc/letsencrypt/live/$cert_domain/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$cert_domain/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+}
+"
+    sudo echo "$contents" > "$1"
+    sudo chmod +x "$1"
+}
+
+setup_api_service() {
+
+contents="[Unit]
+Description=Aniki API Service
+After=network.target
+
+[Service]
+User=$USER
+WorkingDirectory=$script_path
+Environment='PATH=$script_path/env/bin'
+ExecStart=env/bin/python3 dashboard/server/main.py
+
+[Install]
+WantedBy=multi-user.target
+"
+    location="/etc/systemd/system/$1"
+    sudo echo "$contents" > "$location"
+    sudo chmod +x "$location"
+}
+
+setup_bot_service() {
+
+contents="[Unit]
+Description=Aniki Bot Service
+After=network.target
+
+[Service]
+User=$USER
+WorkingDirectory=$script_path
+Environment='PATH=$script_path/env/bin'
+ExecStart=env/bin/python3 src/bot.py
+
+[Install]
+WantedBy=multi-user.target
+"
+    location="/etc/systemd/system/$1"
+    sudo echo "$contents" > "$location"
+    sudo chmod +x "$location"
+}
+
+deploy() {
+    require_root
+
+    # Check if Debian installation.
+    if [ -f "/etc/debian_version" ]
+    then
+        # Check if nginx is installed.
+        if ! [ "$(apt-cache policy nginx | grep -P 'Installed: ((?!\(none\)).*)')" ]
+        then
+            sudo apt-get install nginx
+        fi
+
+        # Remove the default site.
+        sudo rm /etc/nginx/sites-enabled/default
+
+        # Setup proxy for api.
+        setup_api_nginx /etc/nginx/sites-available/aniki-api
+
+        # Enabled the proxy.
+        sudo ln -f -s /etc/nginx/sites-available/aniki-api /etc/nginx/sites-enabled
+    
+    # Check if RedHat derivatives.
+    elif [ "$(grep -Ei 'fedora|redhat' /etc/*release)" ]
+    then
+        # Check if nginx is installed.
+        if [ "$(rpm -q nginx | grep 'not installed')" ]
+        then
+            sudo yum install nginx
+        fi
+
+        # Setup proxy for the api.
+        setup_api_nginx /etc/nginx/conf.d/aniki-api.conf
+    fi
+
+    # Restart NGINX
+    sudo systemctl restart nginx
+
+    # Setup services.
+    apiserv='aniki-api.service'
+    botserv='aniki-bot.service'
+    setup_api_service "$apiserv"
+    setup_bot_service "$botserv"
+    sudo systemctl daemon-reload
+
+    # Start service and enable for restart.
+    sudo systemctl start "$apiserv"
+    sudo systemctl start "$botserv"
+    sudo systemctl enable "$apiserv"
+    sudo systemctl enable "$botserv"
+}
+
+exec_util() {
+    activate
+
+    python3 -c "import api.utility as u; $1"
+
+    deactivate
+}
+
+command_exists() {
+    echo "$(type $1 >/dev/null 2>&1 && echo 'y')"
+}
+
+prompt() {
+    local val
+    if [[ -v 2 ]]
+    then
+        val="$2"
+    else
+        echo -n "$1: " >&2
+        read val
+    fi
+
+    echo "$val"
+}
+
+
+case "$arg1" in
+    install | setup)
+        install
+        hash -p "$script_path/$base" "$base"
+    ;;
+    dev | run)
+        # GNOME desktop environment.
+        if [[ -n $(command_exists "gnome-terminal") ]]
+        then
+            go() {
+                # Make functions available in bash for new gnome tabs.
+                export -f install
+                export -f activate
+                export -f run_api
+                export -f run_client
+                export -f run_bot
+                
+                gnome-terminal --tab -q -- bash -c "$1; bash"
+            }
+
+        # MacOS.
+        elif [[ -n $(command_exists "osascript") ]]
+        then
+            go() {
+                osascript -e 'tell application "Terminal" to activate' \
+                          -e 'tell application "System Events" to tell process "Terminal" to keystroke "t" using command down' \
+                          -e "tell application \"Terminal\" to do script \"$script_path/$base self-run $1\" in selected tab of the front window"
+            }
+
+        # Unsupported.
+        else
+            echo "No supported terminal available."
+            exit
+        fi
+
+        # Attempt to perform action.
+        case "$arg2" in
+            api)
+                go 'run_api'
+            ;;
+            ui)
+                go 'run_client'
+            ;;
+            bot)
+                go 'run_bot'
+            ;;
+            *)
+                go 'run_api'
+                go 'run_client'
+            ;;
+        esac
+    ;;
+    self-run)
+        case "$arg2" in
+            api | run_api)
+                run_api
+            ;;
+            ui | run_client)
+                run_client
+            ;;
+            bot)
+                run_bot
+            ;;
+        esac
+    ;;
+    users | user | u)
+        case "$arg2" in
+            add | update)
+                username=$(prompt "username" $arg3)
+                [[ "$arg4" == "admin" ]] && admin="True" || admin="False"
+                func="u.put_user('$username', $admin)"
+            ;;
+            delete | remove)
+                username=$(prompt "username" $arg3)
+                func="u.delete_user('$username')"
+            ;;
+            *)
+                func="u.list_users()"
+            ;;
+        esac
+    ;;
+    roles | role | r)
+
+    ;;
+    *)
+        echo "$usage"
+        exit
+    ;;
+esac
+
+# Execute any requested commands.
+[[ -v func ]] && exec_util "$func"

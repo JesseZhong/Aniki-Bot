@@ -6,13 +6,13 @@ import traceback
 from os import path
 from logging.handlers import RotatingFileHandler
 from discord import Client, Message, Member
-from .persona import Persona
-from .reaction import Reaction
+from bot.persona import Persona
+from bot.reaction import Reaction
+from bot.state import is_connected
 from gremlin.discord.audio import Audio
-from .state import is_connected
-import re
 from collections import defaultdict
 from typing import Dict
+import re
 
 class Bot(Client):
 
