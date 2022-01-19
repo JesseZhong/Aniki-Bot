@@ -9,15 +9,14 @@ from pathlib import Path
 
 load_dotenv()
 API_TOKEN = os.getenv('DISCORD_TOKEN')
-DATA_DIR = os.getenv('DATA_DIR')
-LOG_DIR = os.getenv('LOG_DIR')
+DATA_DIR = os.getenv('DATA_DIR', './db')
+LOG_DIR = os.getenv('LOG_DIR', './logs')
 
 # Setup the bot.
 bot = Bot(LOG_DIR)
 
 # Load data.
-for file in list(Path(DATA_DIR).rglob('*.json')):
-    bot.load(file)
+bot.load()
 
 # Setup file watcher to reload data when it changes.
 watcher = FileWatcher(DATA_DIR, bot.load)

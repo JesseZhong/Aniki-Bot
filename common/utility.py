@@ -1,62 +1,152 @@
 from typing import Dict, Set
 from datetime import datetime
-from api.db import get, update
+from operator import itemgetter
+from gremlin.db.lmdb import get, update
 
 TIME_FORMAT = '%Y.%m.%d %H:%M:%S'
 
-def list_users():
+
+def get_guild(
+    guild: str
+):
     """
-        Prints all allowed users.
+        Gets a guild's data, if available.
     """
-    users = get('users')
+    guild_id = None
 
-    user_list = []
-    for username, user in users.items():
-        if 'is_admin' in user and user['is_admin']:
-            user_list.append(f'{username} [admin]')
-        else:
-            user_list.append(username)
-    print('Users: ' + ', '.join(user_list))
+    # Look up id if vanity was passed.
+    vanity = get('vanity')
+    if guild in vanity:
+        guild_id = vanity[guild]
+
+    # Use passed id or vanity id.
+    guild_id = guild_id if guild_id else guild
+
+    # Guild not allowed? Get out!
+    guilds = get('guilds')
+    if guild_id not in guilds:
+        print('Guild not allowed.')
+        return None
+    else:
+        return {
+            'id': guild_id,
+            'data': get(guild_id)
+        }
 
 
-def delete_user(
+def get_permitted(
+    guild: str
+):
+    """
+        Gets a guild's permitted users and roles, if available.
+    """
+
+    # Get guild data.
+    guild_stuff = get_guild(guild)
+    if not guild_stuff:
+        return
+    guild_data = guild_stuff['data']
+
+    # Check if there are any permitted users or roles.
+    if 'permitted' not in guild_data or not guild_data['permitted']:
+        print('No users or roles.')
+        return None
+
+    return guild_data['permitted']
+
+
+def update_permitted(
+    guild: str,
+    permitted: Dict
+):
+    """
+        Updates a guild's permitted users and roles.
+    """
+
+    # Get guild data.
+    guild_stuff = get_guild(guild)
+    if not guild_stuff:
+        return
+
+    guild_id, guild_data = itemgetter(
+        'id',
+        'data'
+    )
+
+    guild_data['permitted'] = permitted
+    update(
+        guild_id,
+        guild_data
+    )
+
+
+def list_permitted(
+    guild: str
+):
+    """
+        Prints all allowed users and roles for a guild.
+    """
+    permitted = get_permitted(guild)
+    if not permitted:
+        return
+
+    # List users if available.
+    if 'users' in permitted:
+        print('Users: ' + ', '.join(permitted['users']))
+
+    # List roles if available.
+    if 'roles' in permitted:
+        print('Roles: ' + ', '.join(permitted['roles']))
+
+
+def remove_user(
+    guild: str,
     username: str
 ):
     """
-        Attempts to delete a user from the db.
+        Attempts to remove a user from a guild's permissions.
     """
-    users = get('users')
+    permitted = get_permitted(guild)
+    if not permitted:
+        return
 
-    if username in users:
-        del users[username]
-        update('users', users)
+    if 'users' not in permitted or username not in permitted['users']:
+        print('User does not exist. Nothing to remove.')
+        return
+
+    permitted['users'].remove(username)
+    update_permitted(
+        guild,
+        permitted
+    )
 
 
 def put_user(
-    username: str,
-    is_admin: bool = False
+    guild: str,
+    username: str
 ):
     """
-        Add a user and maybe a role.
+        Add a user.
     """
-    users = get('users')
-    users[username] = {
-        'is_admin': is_admin
-    }
-    update('users', users)
+    guild_stuff = get_guild(guild)
+    if not guild_stuff:
+        return
 
+    guild_id, guild_data = itemgetter(
+        'id',
+        'data'
+    )
 
-def list_roles():
-    """
-        Prints all allowed guild roles.
-    """
-    roles = get('roles')
-    
-    role_list = []
-    for guild, role in roles.items():
-        role_list.append(f'{role} [{guild}]')
+    # Add user. Create necessary structures if they don't exist.
+    permitted = guild_data['permitted'] if 'permitted' in guild_data else {}
+    users: Set = set(permitted['users'] if 'users' in permitted else [])
+    users.add(username)
+    permitted['users'] = users
 
-    print('Roles [Guild]: ' + ', '.join(role_list))
+    update_permitted(
+        guild,
+        permitted
+    )
 
 
 def delete_guild(
@@ -69,39 +159,6 @@ def delete_guild(
 
     if guild in roles:
         del roles[guild]
-
-        update('roles', roles)
-
-
-def delete_role(
-    guild: str,
-    role: str
-):
-    """
-        Deletes an allowed role.
-    """
-    roles = get('roles')
-
-    if guild in roles:
-        guild_roles: Set = roles[guild]
-        del guild_roles[role]
-
-        update('roles', roles)
-
-
-def put_role(
-    guild: str,
-    role: str
-):
-    """
-        Add an allowable guild role.
-    """
-    roles = get('roles')
-
-    if guild in roles:
-        guild_roles: Set = roles[guild]
-        guild_roles.add(role)
-        roles[guild] = guild_roles
 
         update('roles', roles)
 
