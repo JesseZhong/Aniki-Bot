@@ -1,18 +1,20 @@
 #!/bin/python
 
-import os
-import errno
 import json
 import requests
 import logging
 import re
+import traceback
+from os import getenv
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from logging.handlers import RotatingFileHandler
-import traceback
 from http.server import BaseHTTPRequestHandler
 from typing import Any, Tuple, Union, Dict, Callable, Set, List
+from gremlin.db.lmdb import open_db, transact_get, transact_update, get
 from urllib.parse import quote
+
+from common.utility import get_guild
 
 
 states: Set[str] = set()
@@ -29,15 +31,11 @@ class BaseHandler(BaseHTTPRequestHandler):
         *args,
         **kwargs
     ):
-        self.DATA_DIR = os.getenv('DATA_DIR')
-        self.SITE_URL = os.getenv('SITE_URL')
+        self.SITE_URL = getenv('SITE_URL')
         self.REDIRECT_URL = f'{self.SITE_URL}/authorized'
-        self.CLIENT_ID = os.getenv('CLIENT_ID')
-        self.CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-        self.DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-        self.GUILDS =  os.path.join(self.DATA_DIR, 'guilds.json')
-        self.VANITY = os.path.join(self.DATA_DIR, 'vanity.json')
-        self.PERMITTED_USERS = 'permitted.json'
+        self.CLIENT_ID = getenv('CLIENT_ID')
+        self.CLIENT_SECRET = getenv('CLIENT_SECRET')
+        self.DISCORD_TOKEN = getenv('DISCORD_TOKEN')
         self.DISCORD_API = 'https://discord.com/api'
         self.DISCORD_OAUTH_API = f'{self.DISCORD_API}/oauth2'
 
@@ -136,10 +134,14 @@ class BaseHandler(BaseHTTPRequestHandler):
     def put_item(
         self,
         schema: Dict,
-        filename: str,
+        item_name: str,
         key_regex: str,
         afterValidation: Callable[[Dict[str, Any]], None] = None
     ):
+        """
+            Add or updates an entry for an item belonging to a guild.
+        """
+
         # Check for path stub and its validity.
         if not self.subpath:
             self.send_bad_request('Key must be specified.')
@@ -171,28 +173,53 @@ class BaseHandler(BaseHTTPRequestHandler):
                     'Stacktrace:\n' + traceback.format_exc()
                 )
 
-        path = os.path.join(self.DATA_DIR, self.guild, filename)
+        db = open_db()
 
-        # Only attempt to put if the file exists.
-        if self.check_file_exists(path):
+        try:
+            # Atomically update the db with the new item.
+            with db.begin(write=True) as trnx:
 
-            # Load the data and put the new item.
-            with open(path, 'r') as file:
-                data = json.load(file)
-                data[self.subpath] = content
+                # Grab the data for the guild.
+                guild_data = transact_get(trnx, self.guild)
 
-            # Save the data.
-            with open(path, 'w') as file:
-                json.dump(data, file, indent=4, sort_keys=True)
+                # Grab or make item collection, if it doesn't exist.
+                item_data = guild_data[item_name] if item_name in guild_data else {}
+
+                # Add or update item entry.
+                item_data[self.subpath] = content
+                guild_data[item_name] = item_data
+
+                # Update the data for the guild.
+                transact_update(
+                    trnx,
+                    self.guild,
+                    guild_data
+                )
+
+        except Exception:
+            self.logger.error(
+                'Item update error.'
+                'Stacktrace:\n' + traceback.format_exc()
+            )
+            self.send_headers(500, 'Internal Error')
+            return
+
+        finally:
+            db.close()
 
         self.send_headers(201, 'Accepted')
+        self.send_content(content)
 
 
     def delete_item(
         self,
-        filename: str,
+        item_name: str,
         key_regex: str
     ):
+        """
+            Removes an entry for an item that belongs to a guild.
+        """
+
         # Check for path stub and its validity.
         if not self.subpath:
             self.send_bad_request('Key must be specified.')
@@ -203,53 +230,58 @@ class BaseHandler(BaseHTTPRequestHandler):
             self.send_bad_request('Invalid key.')
             return
 
-        path = os.path.join(self.DATA_DIR, self.guild, filename)
+        db = open_db()
 
-        # Only attempt to delete if the file exists.
-        if self.check_file_exists(path):
+        try:
+            # Atomically update the db.
+            with db.begin(write=True) as trnx:
 
-            # Load data to memory and delete.
-            with open(path, 'r') as file:
-                data = json.load(file)
-                del data[self.subpath]
+                # Grab the data for the guild.
+                guild_data = transact_get(trnx, self.guild)
 
-            # Write the result.
-            with open(path, 'w') as file:
-                json.dump(data, file, indent=4, sort_keys=True)
+                # Check if the item collection exists.
+                if item_name not in guild_data:
+                    self.send_bad_request(f'No {item_name} to remove.')
+                    return
+
+                item_data = guild_data[item_name]
+
+                # Remove the entry if it exists.
+                if self.subpath in item_data:
+                    del item_data[self.subpath]
+
+                    guild_data[item_name] = item_data
+
+                    # Update the data for the guild.
+                    transact_update(
+                        trnx,
+                        self.guild,
+                        guild_data
+                    )
+
+        except Exception:
+            self.logger.error(
+                'Item delete error.'
+                'Stacktrace:\n' + traceback.format_exc()
+            )
+            self.send_headers(500, 'Internal Error')
+            return
+
+        finally:
+            db.close()
 
         self.send_headers(201, 'Accepted')
 
 
-    def check_file_exists(self, filename: str, default={}) -> bool:
+    def send_item(
+        self,
+        item_name
+    ):
         """
-            Will check if a file exists and create it if it doesn't.
+            Returns an item for a guild.
         """
-
-        # Check if the directory exists.
-        directory = os.path.dirname(filename)
-        if not os.path.exists(directory):
-            try:
-                os.makedirs(directory)
-            except OSError as e:
-                if e.errno != errno.EEXIST:
-                    raise
-
-        # Check if the file exists and make it if it doesn't.
-        if not os.path.exists(filename):
-            with open(filename, 'w') as file:
-                json.dump(default, file)
-            return False
-
-        return True
-
-
-    def send_file(self, filename: str):
-        """
-            Sends the contents of a specified file.
-        """
-        with open(os.path.join(self.DATA_DIR, self.guild, filename), 'r') as file:
-            data = json.load(file)
-            self.send_content(data)
+        guild_data = get(self.guild)
+        self.send_content(guild_data[item_name] if item_name in guild_data else {})
 
     
     def handle_vanity(self) -> bool:
@@ -265,14 +297,13 @@ class BaseHandler(BaseHTTPRequestHandler):
         match = re.match(r'^/vanity/(?P<guild>[a-zA-Z0-9_]{2,100})$', self.path)
         if match:
             guild = match.group('guild')
-            with open(self.VANITY, 'r') as file:
-                data = json.load(file)
-                if guild in data:
-                    self.send_headers(200)
-                    self.send_content({
-                        'id': data[guild]
-                    })
-                    return True
+            vanities = get('vanity')
+            if guild in vanities:
+                self.send_headers(200)
+                self.send_content({
+                    'id': vanities[guild]
+                })
+                return True
 
             self.send_bad_request()
             return True
@@ -294,7 +325,11 @@ class BaseHandler(BaseHTTPRequestHandler):
 
     
     def request_authorization(self):
-
+        """
+            Request an authorization URL from Discord.
+            The user can then use said URL to authenticate
+            with Discord.
+        """
         state = self.get_header('State')
         if not state:
             self.send_bad_request('Missing state.')
@@ -454,67 +489,53 @@ class BaseHandler(BaseHTTPRequestHandler):
         discriminator = user['discriminator']
         userid = user['id']
 
-        permFilename = os.path.join(self.DATA_DIR, self.guild, self.PERMITTED_USERS)
+        permitted = get_guild(self.guild)
 
-        # Create permissions file if it doesn't exist.
-        if not self.check_file_exists(
-            permFilename,
-            {
-                'user': [],
-                'roles': []
-            },
-        ):
-            return False
+        # Check if the user is simply listed.
+        if 'users' in permitted and \
+            f'{username}#{discriminator}' in permitted['users']:
+                return True
+        
+        # Try to resolve permissions for the user based of their guild role.
+        if 'roles' in permitted:
 
-        # Begin checking permissions.
-        with open(permFilename, 'r') as file:
-            permittedPeeps = json.load(file)
+            # List guild roles.
+            roles = json.loads(requests.get(
+                f'{self.DISCORD_API}/guilds/{self.guild}/roles',
+                headers={
+                    'Authorization': f'Bot {self.DISCORD_TOKEN}'
+                }
+            ).content)
 
-            # Check if the user is simply listed.
-            if 'users' in permittedPeeps and \
-                f'{username}#{discriminator}' in permittedPeeps['users']:
+            # Cross-reference guild roles with listed roles.
+            # Grab their 'snowflake' ids.
+            allowedRoles = [
+                role['id']
+                for roleName in permitted['roles']
+                for role in roles
+                if role['name'] == roleName
+            ]
+
+            # Get the user's guild roles.
+            memberResponse = requests.get(
+                f'{self.DISCORD_API}/guilds/{self.guild}/members/{userid}',
+                headers={
+                    'Authorization': f'Bot {self.DISCORD_TOKEN}'
+                }
+            )
+
+            # Confirm the user is in the guild.
+            if memberResponse.status_code != 200:
+                return False
+            member = json.loads(memberResponse.content)
+
+            # Check if there are intersections between the user's
+            # roles and the listed ones.
+            if 'roles' in member and \
+                any(set(allowedRoles) & set(member['roles'])):
                     return True
-            
-            # Try to resolve permissions for the user based of their guild role.
-            if 'roles' in permittedPeeps:
 
-                # List guild roles.
-                roles = json.loads(requests.get(
-                    f'{self.DISCORD_API}/guilds/{self.guild}/roles',
-                    headers={
-                        'Authorization': f'Bot {self.DISCORD_TOKEN}'
-                    }
-                ).content)
-
-                # Cross-reference guild roles with listed roles.
-                # Grab their 'snowflake' ids.
-                allowedRoles = [
-                    role['id']
-                    for roleName in permittedPeeps['roles']
-                    for role in roles
-                    if role['name'] == roleName
-                ]
-
-                # Get the user's guild roles.
-                memberResponse = requests.get(
-                    f'{self.DISCORD_API}/guilds/{self.guild}/members/{userid}',
-                    headers={
-                        'Authorization': f'Bot {self.DISCORD_TOKEN}'
-                    }
-                )
-
-                # Confirm the user is in the guild.
-                if memberResponse.status_code != 200:
-                    return False
-                member = json.loads(memberResponse.content)
-
-                # Check if there are intersections between the user's
-                # roles and the listed ones.
-                if 'roles' in member and \
-                    any(set(allowedRoles) & set(member['roles'])):
-                        return True
-
-            return False
+        return False
 
 
     def get_user(self, access_token: str) -> requests.Response:
@@ -530,14 +551,13 @@ class BaseHandler(BaseHTTPRequestHandler):
 
 
     def check_guild(self) -> bool:
+        """
+            Check if an allowed guild was included in the request.
+        """
         self.guild = self.get_header('Guild')
 
-        if not self.guild or not self.check_file_exists(self.GUILDS):
-            return False
-
-        with open(self.GUILDS, 'r') as file:
-            guilds: Dict[str, int] = json.load(file)
-            return self.guild in guilds
+        guilds = get('guilds')
+        return self.guild and guilds or self.guilds in guilds
 
 
     def verify(self) -> Union[Tuple[int, str], None]:
@@ -583,7 +603,7 @@ class BaseHandler(BaseHTTPRequestHandler):
         except OSError:
             print('Could not open or read the permissions file.')
             return (403, 'Forbidden')
-        except Exception as e:
+        except Exception:
             self.logger.error(
                 'Unknown error when attempting to open the permissions file.\n' +
                 'Stacktrace:\n' + traceback.format_exc()

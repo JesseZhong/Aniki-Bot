@@ -49,8 +49,7 @@ def get_permitted(
 
     # Check if there are any permitted users or roles.
     if 'permitted' not in guild_data or not guild_data['permitted']:
-        print('No users or roles.')
-        return None
+        return {}
 
     return guild_data['permitted']
 
@@ -87,8 +86,6 @@ def list_permitted(
         Prints all allowed users and roles for a guild.
     """
     permitted = get_permitted(guild)
-    if not permitted:
-        return
 
     # List users if available.
     if 'users' in permitted:
@@ -107,8 +104,6 @@ def remove_user(
         Attempts to remove a user from a guild's permissions.
     """
     permitted = get_permitted(guild)
-    if not permitted:
-        return
 
     if 'users' not in permitted or username not in permitted['users']:
         print('User does not exist. Nothing to remove.')
@@ -144,7 +139,7 @@ def put_user(
     permitted['users'] = users
 
     update_permitted(
-        guild,
+        guild_id,
         permitted
     )
 

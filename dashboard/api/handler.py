@@ -84,18 +84,18 @@ class ServerHandler(BaseHandler):
 
     def get_personas(self):
         self.send_headers(200)
-        self.send_file('personas.json')
+        self.send_item('personas')
 
 
     def get_reactions(self):
         self.send_headers(200)
-        self.send_file('reactions.json')
+        self.send_item('reactions')
 
 
     def put_persona(self):
         self.put_item(
             self.put_persona_schema,
-            'personas.json',
+            'personas',
             '^([a-zA-Z0-9-_.]{3,25}|[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12})$'
         )
 
@@ -112,7 +112,7 @@ class ServerHandler(BaseHandler):
 
         self.put_item(
             self.put_reaction_schema,
-            'reactions.json',
+            'reactions',
             '^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$',
             cache
         )
@@ -120,14 +120,14 @@ class ServerHandler(BaseHandler):
     
     def delete_persona(self):
         self.delete_item(
-            'personas.json',
+            'personas',
             '^([a-zA-Z0-9-_.]{3,25}|[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12})$'
         )
 
 
     def delete_reaction(self):
         self.delete_item(
-            'reactions.json',
+            'reactions',
             '^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$'
         )
 
