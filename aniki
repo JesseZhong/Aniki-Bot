@@ -59,36 +59,19 @@ activate() {
 
 run_bot() {
     activate
-
     python3 bot/main.py
-
     deactivate
 }
 
 run_api() {
     activate
-
-    # Set necessary environmental variables.
-    [[ -e ".env" ]] && . .env
-    export FLASK_APP=api.main
-    [[ -v PORT ]] && port=$PORT || port=5102
-
-    local options=''
-
-    # Use TLS if cert provided.
-    if [[ -v CERT_FILE && -v KEY_FILE ]]
-    then
-        options="--cert=$CERT_FILE --key=$KEY_FILE"
-    fi
-    
-    # Run dev instance of the api.
-    python3 dashboard/server/
-
+    python3 -m dashboard.api.main ssl
     deactivate
+    exit
 }
 
 run_client() {
-    cd client/
+    cd dashboard/client/
     yarn run start
 }
 

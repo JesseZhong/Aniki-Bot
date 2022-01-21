@@ -291,13 +291,12 @@ class BaseHandler(BaseHTTPRequestHandler):
             Returns the mapping if it does.
         """
 
-        if not self.check_file_exists(self.VANITY):
-            return False
+        vanities = get('vanity')
 
         match = re.match(r'^/vanity/(?P<guild>[a-zA-Z0-9_]{2,100})$', self.path)
         if match:
             guild = match.group('guild')
-            vanities = get('vanity')
+            
             if guild in vanities:
                 self.send_headers(200)
                 self.send_content({
@@ -489,7 +488,16 @@ class BaseHandler(BaseHTTPRequestHandler):
         discriminator = user['discriminator']
         userid = user['id']
 
-        permitted = get_guild(self.guild)
+        guild_stuff = get_guild(self.guild)
+        if not guild_stuff or 'data' not in guild_stuff:
+            return False
+
+        guild_data = guild_stuff['data']
+
+        if 'permitted' not in guild_data:
+            return False
+
+        permitted = guild_data['permitted']
 
         # Check if the user is simply listed.
         if 'users' in permitted and \

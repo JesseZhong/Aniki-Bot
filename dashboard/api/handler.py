@@ -7,7 +7,7 @@ import requests
 from gremlin.discord.audio import Audio
 from bs4 import BeautifulSoup
 from typing import Any, Dict
-from .basehandler import BaseHandler
+from dashboard.api.basehandler import BaseHandler
 
 class ServerHandler(BaseHandler):
 

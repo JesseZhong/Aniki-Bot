@@ -12,7 +12,7 @@
 			"**/.gitignore": true,
 
 			"**/env/**": true,
-			"**/__pycache__/**": true,
+			"**/__pycache__/**": false,
 			"youtube*": true,
 
 
