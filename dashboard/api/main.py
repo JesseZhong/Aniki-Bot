@@ -1,56 +1,52 @@
 #!/bin/python
-
-import ssl
 from os import getenv
-from sys import argv
-from socket import SO_REUSEADDR, SOL_SOCKET
-from http.server import HTTPServer
 from dotenv import load_dotenv
-from dashboard.api.handler import ServerHandler
+from flask import Flask
+from flask_restful import Api
+from dashboard.api.authorization import RefreshAccess, RequestAccess, RequestAuthorization, RevokeAccess
+from dashboard.api.emojis import Emojis
+from dashboard.api.images import ImageUpload
+from dashboard.api.guild import Guild, GuildLookup
+from dashboard.api.metadata import Metadata
+from dashboard.api.personas import Personas, Persona
+from dashboard.api.reactions import Reaction, Reactions
 
-if __name__ == '__main__':
 
-    load_dotenv()
-    API_URL = getenv('API_URL')
-    API_PORT = int(getenv('API_PORT'))
+load_dotenv()
+SITE_URL = getenv('SITE_URL')
 
-    server = HTTPServer(
-        (
-            API_URL,
-            API_PORT
-        ),
-        ServerHandler
+app = Flask(__name__)
+api = Api(app)
+
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add(
+        'Access-Control-Allow-Headers',
+        'Content-Type, Accept, Authorization, Refresh, Guild, Code, Content-Type, State, Refresh, X-Requested-With'
     )
+    response.headers.add(
+        'Access-Control-Allow-Methods',
+        'GET, PUT, DELETE, OPTIONS'
+    )
+    response.headers.add('Content-Type', 'application/json')
+    return response
 
-    # Setup with SSL if argument present.
-    if len(argv) > 1 and argv[1] == 'ssl':
-        
-        CERT_FILE = getenv('CERT_FILE')
-        KEY_FILE = getenv('KEY_FILE')
 
-        server.socket = ssl.wrap_socket(
-            server.socket,
-            server_side=True,
-            certfile=CERT_FILE,
-            keyfile=KEY_FILE,
-            ssl_version=ssl.PROTOCOL_TLSv1_2
-        )
+api.add_resource(RequestAuthorization, '/authorize')
+api.add_resource(RequestAccess, '/access')
+api.add_resource(RefreshAccess, '/refresh')
+api.add_resource(RevokeAccess, '/revoke')
 
-        # Allow for address re-use after service restarts.
-        server.socket.setsockopt(
-            SOL_SOCKET,
-            SO_REUSEADDR,
-            1
-        )
+api.add_resource(GuildLookup, '/guild/lookup/<guild_name>')
+api.add_resource(Guild, '/guild/<guild_id>')
 
-        print('Configured with SSL.')
+api.add_resource(Reactions, '/reactions')
+api.add_resource(Reaction, '/reactions/<reaction_id>')
 
-    print(f'Server started on {API_URL}:{API_PORT}.')
+api.add_resource(Personas, '/personas')
+api.add_resource(Persona, '/personas/<persona_id>')
 
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
-
-    server.server_close()
-    print('Server shutdown.')
+api.add_resource(Metadata, '/metadata')
+api.add_resource(Emojis, '/emojis')
+api.add_resource(ImageUpload, '/images/<image_key>')
