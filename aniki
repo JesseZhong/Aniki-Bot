@@ -65,9 +65,25 @@ run_bot() {
 
 run_api() {
     activate
-    python3 -m dashboard.api.main ssl
+
+    # Set necessary environmental variables.
+    [[ -e ".env" ]] && . .env
+    export FLASK_APP=dashboard.api.main
+    [[ -v PORT ]] && port=$PORT || port=5102
+
+    local options=''
+
+    # Use TLS if cert provided.
+    if [[ -v CERT_FILE && -v KEY_FILE ]]
+    then
+        options="--cert=$CERT_FILE --key=$KEY_FILE"
+    fi
+    
+    # Run dev instance of the api.
+    flask run --port=$port $options
+
     deactivate
-    exit
+    #exit
 }
 
 run_client() {

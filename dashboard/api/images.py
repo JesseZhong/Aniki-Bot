@@ -5,8 +5,8 @@ from flask_restful import Resource, abort
 from boto3 import client
 from botocore.client import Config
 from botocore.exceptions import ClientError
-from api.authorization import admin_required
-from api.cdn import gen_image_url
+from dashboard.api.authorization import auth_required
+from dashboard.api.cdn import gen_image_url
 import re
 
 
@@ -25,7 +25,7 @@ IMAGE_KEY_REGEX = '^[^\\^{}%`\"<>|]{1,}\.(png|gif|jpeg|jpg)$'
 
 class ImageUpload(Resource):
 
-    @admin_required
+    @auth_required
     def get(self, args: Dict[str, str]):
         """
             Provide a presigned URL for uploading am image.

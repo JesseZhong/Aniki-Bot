@@ -1,16 +1,18 @@
 #!/bin/python
-from os import getenv
-from dotenv import load_dotenv
-from flask import Flask
-from flask_restful import Api
-from dashboard.api.authorization import RefreshAccess, RequestAccess, RequestAuthorization, RevokeAccess
-from dashboard.api.emojis import Emojis
-from dashboard.api.images import ImageUpload
-from dashboard.api.guild import Guild, GuildLookup
-from dashboard.api.metadata import Metadata
-from dashboard.api.personas import Personas, Persona
-from dashboard.api.reactions import Reaction, Reactions
-
+try:
+    from os import getenv
+    from dotenv import load_dotenv
+    from flask import Flask
+    from flask_restful import Api
+    from dashboard.api.authorization import RefreshAccess, RequestAccess, RequestAuthorization, RevokeAccess
+    from dashboard.api.emojis import Emojis
+    from dashboard.api.images import ImageUpload
+    from dashboard.api.guild import Guild, GuildLookup
+    from dashboard.api.metadata import Metadata
+    from dashboard.api.personas import Personas, Persona
+    from dashboard.api.reactions import Reaction, Reactions
+except ImportError as e:
+    print(e)
 
 load_dotenv()
 SITE_URL = getenv('SITE_URL')

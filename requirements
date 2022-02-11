@@ -10,7 +10,7 @@ cffi==1.14.5
 chardet==4.0.0
 click==8.0.3
 cryptography==36.0.1
-cutegremlin==1.1.2
+cutegremlin==1.1.5
 discord.py==1.7.1
 docutils==0.18
 Flask==2.0.2

@@ -1,13 +1,11 @@
 from os import getenv
 from dotenv import load_dotenv
 from typing import Dict
-from flask_restful import abort
-from importlib.resources import Resource
+from flask_restful import Resource, abort
 from dashboard.api.authorization import auth_required
 from gremlin.db.lmdb import get
 import requests
 import re
-
 
 load_dotenv()
 DISCORD_API = getenv('DISCORD_API', 'https://discord.com/api')
