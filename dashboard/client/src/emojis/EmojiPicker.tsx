@@ -1,7 +1,7 @@
 import React from 'react';
 import { getState } from '../containers/AppContainer';
 import { Emoji, GuildEmojis } from './Emojis';
-import { GuildPreview } from '../guild/GuildPreview';
+import { Guild } from '../guild/Guild';
 import './EmojiPicker.sass';
 
 const cdnUrl = 'https://cdn.discordapp.com';
@@ -78,7 +78,7 @@ const EmojiPicker = (props: {
      * @returns Guild icon.
      */
     const guildIcon = (
-        guild: GuildEmojis | GuildPreview,
+        guild: GuildEmojis | Guild,
         onClick?: React.MouseEventHandler<HTMLDivElement>
     ) => 
     <div

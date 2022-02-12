@@ -1,15 +1,18 @@
 import React from 'react';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { Persona } from './Personas';
+import PersonaActions from '../actions/PersonaActions';
+import { v4 as uuid } from 'uuid';
 import './PersonaNameEdit.sass';
 
 const PersonaNameEdit = (props: {
-    persona: Persona,
-    set: (persona: Persona) => void,
+    persona?: Persona,
     finishedEdit: () => void
 }) => {
 
-    const persona = props.persona;
+    const persona = props.persona ?? {
+        id: uuid()
+    } as Persona;
     const finishedEdit = props.finishedEdit;
 
     return (
@@ -19,7 +22,7 @@ const PersonaNameEdit = (props: {
             }}
             onSubmit={({ name }) => {
                 persona.name = name;
-                props.set(persona);
+                PersonaActions.put(persona);
                 finishedEdit();
             }}
         >

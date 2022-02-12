@@ -1,106 +1,95 @@
 import * as React from 'react';
-import { AppState } from "./containers/AppContainer";
-import { Switch, Route, Redirect } from 'react-router-dom';
-import PageNotFound from './not-found/PageNotFound';
-import Denied from './auth/Denied';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AppState } from './containers/AppContainer';
 import FetchingAccess from './auth/FetchingAccess';
 import RequestAuthorization from './auth/RequestAuth';
+import PageNotFound from './not-found/PageNotFound';
 import MainPage from './main/MainPage';
-import Landing from './auth/Landing';
-import { GuildPreview } from './guild/GuildPreview';
-import Vanity from './guild/Vanity';
+import Denied from './auth/Denied';
+import VanityLayout from './main/VanityLayout';
+import GuildLayout from './main/GuildLayout';
+
+
+const GUILD_ID_PATTERN = ':guild([0-9]{5,19})';
+const GUILD_VANITY_PATTERN = ':vanity([a-zA-Z0-9_]{2,100})';
 
 
 const App = (state: AppState) => {
 
-    const vanity = <Route
-        exact
-        path='/g/:vanity([a-zA-Z0-9_]{2,100})'
-        render={(props: any) =>
-            <Vanity
-                {...props}
-                lookupVanity={state.lookupVanity}
-            />
-        }
-    />
-
     const route = () => {
         if (state.session?.access_token) {
             return (
-                <Switch>
-                    {vanity}
-                    <Route
-                        exact
-                        path='/:guild([0-9]{5,19})'
-                        render={(props: any) => {
-
-                            // Fetch data if guild specified is different.
-                            state.lookupGuild(
-                                props,
-                                (guild: GuildPreview) => {
-                                    state.fetchAllData(guild.id);
+                <Routes>
+                    <Route path='/nope' element={PageNotFound} />
+                    <Route path='/g'>
+                        <Route
+                            path={GUILD_VANITY_PATTERN}
+                            element={<VanityLayout session={state.session} />}
+                        >
+                            <Route
+                                path='/home'
+                                element={
+                                    <MainPage
+                                        personas={state.personas}
+                                        reactions={state.reactions}
+                                    />
                                 }
-                            );
-
-                            return (
-                                <MainPage {...props}
-                                    personas={state.personas}
-                                    reactions={state.reactions}
-                                    setPersona={state.putPersona}
-                                    setReaction={state.putReaction}
-                                    removePersona={state.removePersona}
-                                    removeReaction={state.removeReaction}
-                                />
-                            )
-                        }}
-                    />
-                    <Route path='*' component={PageNotFound} />
-                </Switch>
+                            />
+                            <Route index element={<Navigate replace to='home' />} />
+                        </Route>
+                        <Route index element={<Navigate replace to='/nope' />} />
+                    </Route>
+                    <Route
+                        path='/'
+                        element={<GuildLayout session={state.session} />}
+                    >
+                        <Route path={GUILD_ID_PATTERN}>
+                        </Route>
+                        <Route
+                            index
+                            element={<Navigate replace to='/nope' />}
+                        />
+                    </Route>
+                    <Route path='*' element={<Navigate replace to='/nope' />} />
+                </Routes>
             )
         }
 
         else {
             return (
-                <Switch>
-                    {vanity}
+                <Routes>
                     <Route
-                        exact
                         path='/denied'
-                        component={Denied}
+                        element={Denied}
                     />
                     <Route
-                        exact
                         path='/requestauth'
-                        render={(props: any) =>
-                            <RequestAuthorization {...props}
-                                session={state.session}
-                                requestAuthorization={state.requestAuthorization}
-                            />}
+                        element={<RequestAuthorization session={state.session}/>}
                     />
                     <Route
-                        exact
                         path='/authorized'
-                        render={(props: any) =>
-                            <FetchingAccess {...props}
-                                session={state.session}
-                                lookupGuild={state.lookupGuild}
-                                requestAccess={state.requestAccess}
-                                fetchAllData={state.fetchAllData}
-                            />
-                        }
+                        element={<FetchingAccess session={state.session}/>}
                     />
-                    <Route
-                        exact
-                        path='/:guild([0-9]{5,19})'
-                        render={(props: any) =>
-                            <Landing {...props}
-                                lookupGuild={state.lookupGuild}
-                            />
-                        }
-                    />
-                    <Route path='*' render={() => <Redirect to='/denied' />} />
-                </Switch>
-            )
+                    <Route path='/g'>
+                        <Route path={GUILD_VANITY_PATTERN}>
+                            <Route path='/home' element={<Navigate replace to='/requestauth' />} />
+                            <Route index element={<Navigate replace to='/requestauth' />} />
+                        </Route>
+                        <Route index element={<Navigate replace to='/denied' />} />
+                    </Route>
+                    <Route path='/'>
+                        <Route path={GUILD_ID_PATTERN}>
+                            <Route path='/home' element={<Navigate replace to='/requestauth' />} />
+                            <Route index element={<Navigate replace to='/requestauth' />} />
+                        </Route>
+                        <Route
+                            index
+                            element={<Navigate replace to='/denied' />}
+                        />
+                    </Route>
+                    <Route path='*' element={<Navigate replace to='/denied' />} />
+                </Routes>
+            );
         }
     }
 

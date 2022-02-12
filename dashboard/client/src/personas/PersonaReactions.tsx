@@ -1,8 +1,8 @@
 import React from 'react';
+import uuid from 'node-uuid';
 import PersonaCard from '../personas/PersonaCard';
 import ReactionCard from '../reactions/ReactionCard';
 import ReactionCardEdit from '../reactions/ReactionCardEdit';
-import uuid from 'node-uuid';
 import { Persona } from '../personas/Personas';
 import { Reaction } from '../reactions/Reactions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -14,10 +14,6 @@ const PersonaReactions = (
     props: {
         persona: [string, Persona],
         reactions: Array<[string, Reaction]>,
-        setPersona: (key: string, persona: Persona) => void,
-        removePersona: () => void,
-        setReaction: (key: string, reaction: Reaction) => void,
-        removeReaction: (key: string, reaction: Reaction) => void,
         onResize?: () => void
     }
 ) => {
@@ -44,9 +40,6 @@ const PersonaReactions = (
         <PersonaCard
             ref={cardRef}
             persona={persona}
-            key={key}
-            set={(p: Persona) => props.setPersona(key, p)}
-            remove={props.removePersona}
             affixedChild={
                 <button
                     type='button'
@@ -79,10 +72,7 @@ const PersonaReactions = (
                         .map(
                             ([key, reaction]) =>
                                 <ReactionCard
-                                    key={key}
                                     reaction={reaction}
-                                    set={(reaction: Reaction) => props.setReaction(key, reaction)}
-                                    remove={() => props.removeReaction(key, reaction)}
                                     className='mb-2'
                                     onResize={() => props.onResize?.()}
                                 />

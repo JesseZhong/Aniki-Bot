@@ -2,16 +2,21 @@ import React from 'react';
 import { faSync } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Session } from './Session';
+import AuthActions from '../actions/AuthActions';
+import { useLocation } from 'react-router';
+import SessionActions from '../actions/SessionActions';
 
 const RequestAuthorization = (
     props: {
-        session: Session,
-        requestAuthorization: (
-            state: string,
-            received: (auth_url: string) => void
-        ) => void
+        session: Session
     }
 ) => {
+    const session = props.session;
+
+    // Save the user's intended location before redirecting to OAuth.
+    const { pathname } = useLocation();
+    session.redirect_uri = pathname;
+    SessionActions.set(session);
 
     // The client first requests a Discord OAuth URL
     // the user can use to login and or authorize access
@@ -19,8 +24,8 @@ const RequestAuthorization = (
     // NOTE: Session id is passed so both the client
     // and API can verify it is the same user performing
     // these handshakes throughout the OAuth process.
-    props.requestAuthorization(
-        props.session?.session_id,
+    AuthActions.requestAuthorization(
+        session?.session_id,
         (auth_url: string) => {
 
             // Redirect the user to the OAuth URL

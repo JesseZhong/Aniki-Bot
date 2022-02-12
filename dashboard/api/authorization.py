@@ -256,12 +256,6 @@ class RequestAccess(Resource):
         finally:
             db.close()
 
-        # Check if user is permitted.
-        # Set admin if the user is one.
-        is_admin = permissions_check(tokens['access_token'])
-        if is_admin:
-            tokens['is_admin'] = True
-
         return tokens, 200
 
 

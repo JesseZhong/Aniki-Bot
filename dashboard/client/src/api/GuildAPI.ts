@@ -1,5 +1,5 @@
 import request, { Response } from 'superagent';
-import { GuildPreview } from '../guild/GuildPreview';
+import { Guild } from '../guild/Guild';
 import { Access } from './Access';
 import { ErrorResponse } from './ErrorResponse';
 
@@ -8,8 +8,8 @@ const GuildAPI = (
     access: Access
 ) => ({
     get(
-        guild: string,
-        received: (guild: GuildPreview) => void,
+        guild_id: string,
+        received: (guild: Guild) => void,
         error?: (error: any) => void
     ): void {
         access(
@@ -17,9 +17,8 @@ const GuildAPI = (
                 token: string,
                 errorHandler?: (response: ErrorResponse) => boolean
             ) =>
-                request.get(`${url}/guild`)
+                request.get(`${url}/guild/${guild_id}`)
                     .set('Accept', 'application/json')
-                    .set('Guild', guild)
                     .auth(token, { type: 'bearer' })
                     .end((err: any, response: Response) => {
                         if (err) {
@@ -29,30 +28,35 @@ const GuildAPI = (
                             return;
                         }
 
-                        received(response.body as GuildPreview);
+                        received(response.body as Guild);
                     })
         );
     },
 
-    vanity(
+    verifyVanity(
         guild_name: string,
-        received: (guild_id: string) => void,
+        received: (guild: Guild) => void,
         error?: (error: any) => void
     ): void {
-        request.get(`${url}/vanity/${guild_name}`)
-            .set('Accept', 'application/json')
-            .end((err: any, response: Response) => {
-                if (err) {
-                    error?.(err);
-                    return;
-                }
+        access(
+            (
+                token: string,
+                errorHandler?: (response: ErrorResponse) => boolean
+            ) =>
+                request.get(`${url}/guild/vanity/${guild_name}`)
+                    .set('Accept', 'application/json')
+                    .auth(token, { type: 'bearer' })
+                    .end((err: any, response: Response) => {
+                        if (err) {
+                            if (!errorHandler?.(response as ErrorResponse)) {
+                                error?.(err);
+                            }
+                            return;
+                        }
 
-                const content = response.body as {
-                    id: string
-                };
-
-                received(content.id);
-            });
+                        received(response.body as Guild);
+                    })
+        );
     }
 });
 

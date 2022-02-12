@@ -1,4 +1,5 @@
 export interface Reaction {
+    id: string,
     triggers: string[];
     
     audio_url?: string,

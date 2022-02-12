@@ -1,22 +1,26 @@
 import React from 'react';
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import { useState } from "react";
-import { Reaction } from "./Reactions";
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { useState } from 'react';
+import { Reaction } from './Reactions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import VideoEditor from '../embeds/VideoEditor';
 import Message from '../embeds/Message';
 import ReactionValidation from './ReactionValidation';
+import ReactionActions from '../actions/ReactionActions';
+import { v4 as uuid } from 'uuid';
 import './ReactionCardEdit.sass';
+
 
 const ReactionCardEdit = (props: {
     reaction?: Reaction,
-    set: (reaction: Reaction) => void,
     finishedEdit: () => void,
     onResize?: () => void
 }) => {
 
-    const reaction = props.reaction ?? { } as Reaction;
+    const reaction = props.reaction ?? {
+        id: uuid()
+    } as Reaction;
     const [showAudioFields, setShowAudioFields] = useState(!!reaction?.audio_url);
     const [height, setHeight] = React.useState(0);
     const cardRef = React.createRef<HTMLDivElement>();
@@ -56,7 +60,7 @@ const ReactionCardEdit = (props: {
                         .filter((item: string) => item)
                         .map((trigger: string) => trigger.trim());
 
-                    props.set(reaction);
+                    ReactionActions.put(reaction);
                     setSubmitting(false);
                     props.finishedEdit();
                 }}

@@ -13,6 +13,7 @@ try:
     from dashboard.api.reactions import Reaction, Reactions
 except ImportError as e:
     print(e)
+    exit()
 
 load_dotenv()
 SITE_URL = getenv('SITE_URL')

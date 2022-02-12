@@ -18,10 +18,10 @@ class SessionStore extends ReduceStore<Session, ActionPayload> {
 
     public reduce(state: Session, action: ActionPayload): Session {
         switch(action.type) {
-            case ActionTypes.RECEIVE_SESSION:
-                const receiveAction: SessionPayload = action as SessionPayload;
-                if (receiveAction) {
-                    state = receiveAction.session;
+            case ActionTypes.LOAD_SESSION:
+                const loadAction: SessionPayload = action as SessionPayload;
+                if (loadAction) {
+                    state = loadAction.session;
                 }
                 return state;
 
@@ -30,7 +30,6 @@ class SessionStore extends ReduceStore<Session, ActionPayload> {
                 state = setAction.session;
                 return {...state};
 
-            case ActionTypes.GET_SESSION:
             default:
                 return state;
         }

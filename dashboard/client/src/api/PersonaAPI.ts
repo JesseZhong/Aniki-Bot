@@ -35,7 +35,6 @@ const PersonaAPI = (
 
     put(
         guild: string,
-        key: string,
         persona: Persona,
         onSuccess?: () => void
     ): void {
@@ -44,7 +43,7 @@ const PersonaAPI = (
                 token: string,
                 errorHandler?: (response: ErrorResponse) => boolean
             ) =>
-                request.put(`${url}/personas/${key}`)
+                request.put(`${url}/personas/${persona.key}`)
                     .set('Accept', 'application/json')
                     .set('Guild', guild)
                     .auth(token, { type: 'bearer' })

@@ -1,4 +1,4 @@
-import { GuildPreview } from "../guild/GuildPreview";
+import { Guild } from "../guild/Guild";
 
 export interface Emoji {
     id: string,
@@ -19,7 +19,7 @@ export class Emojis extends Map<string, GuildEmojis> {
     public readonly emoji_list: Emoji[];
     public readonly emoji_lookup: Map<string, Emoji>;
     public readonly guild_emoji_list: GuildEmojis[];
-    public readonly guild_lookup: Map<string, GuildPreview>;
+    public readonly guild_lookup: Map<string, Guild>;
 
     constructor(
         entries?: readonly (
@@ -39,7 +39,7 @@ export class Emojis extends Map<string, GuildEmojis> {
             // Get guilds by their ids.
             const guildObj = this.guild_emoji_list.reduce(
                 (
-                    lookup: { [key: string]: GuildPreview },
+                    lookup: { [key: string]: Guild },
                     gEmojis: GuildEmojis
                 ) => {
                     lookup[gEmojis.id] = {

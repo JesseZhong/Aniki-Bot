@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import './HoverButtonGroup.sass';
 
+
 const HoverButtonGroup = (props: {
     owner: React.RefObject<HTMLElement>,
     children?: React.ReactElement<HTMLButtonElement>[] | React.ReactElement<HTMLButtonElement>,
+    className?: string,
     style?: React.CSSProperties
 }) => {
     const [hovered, setHovered] = useState(false);
+    const className = props.className;
 
     useEffect(
         () => {
@@ -30,7 +33,10 @@ const HoverButtonGroup = (props: {
         {
             hovered &&
             <div
-                className='hover-btn-group btn-group'
+                className={
+                    'hover-btn-group btn-group' +
+                    (className ? ` ${className}` : '')
+                }
                 style={{
                     ...{
                         top: '-1em',

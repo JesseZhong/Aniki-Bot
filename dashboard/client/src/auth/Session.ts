@@ -9,6 +9,7 @@ export interface Session {
     access_token?: string;
     refresh_token?: string;
     user?: User;
+    redirect_uri?: string;
 }
 
 export const Sessions = {

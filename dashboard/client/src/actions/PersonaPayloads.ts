@@ -6,7 +6,6 @@ export interface ReceivePersonasPayload extends ActionPayload {
 }
 
 export interface PutPersonaPayload extends ActionPayload {
-    key: string;
     persona: Persona;
 }
 

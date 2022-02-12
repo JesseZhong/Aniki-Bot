@@ -1,23 +1,20 @@
 import { ReduceStore } from 'flux/utils';
 import AppDispatcher, { ActionPayload } from '../AppDispatcher';
 import ActionTypes from '../actions/ActionTypes';
-import { GuildPreview } from '../guild/GuildPreview';
+import { Guild } from '../guild/Guild';
 import { RecieveGuildPayload } from '../actions/GuildPayloads';
 
-class GuildStore extends ReduceStore<GuildPreview, ActionPayload> {
+class GuildStore extends ReduceStore<Guild, ActionPayload> {
 
     public constructor() {
         super(AppDispatcher);
     }
 
-    public getInitialState(): GuildPreview {
-        return {
-            id: '',
-            name: ''
-        };
+    public getInitialState(): Guild {
+        return {};
     }
 
-    public reduce(state: GuildPreview, action: ActionPayload): GuildPreview {
+    public reduce(state: Guild, action: ActionPayload): Guild {
         switch(action.type) {
             case ActionTypes.RECEIVE_GUILD:
                 const receiveAction: RecieveGuildPayload = action as RecieveGuildPayload;
@@ -26,7 +23,6 @@ class GuildStore extends ReduceStore<GuildPreview, ActionPayload> {
                 }
                 return state;
 
-            case ActionTypes.GET_GUILD:
             default:
                 return state;
         }

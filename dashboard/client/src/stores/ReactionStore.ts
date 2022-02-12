@@ -26,14 +26,14 @@ class ReactionStore extends ReduceStore<Reactions, ActionPayload> {
             case ActionTypes.PUT_REACTION:
                 const putAction: PutReactionPayload = action as PutReactionPayload;
                 if (putAction) {
-                    state.set(putAction.key, putAction.reaction);
+                    state.set(putAction.id, putAction.reaction);
                 }
                 return new Map(state.entries());
 
             case ActionTypes.REMOVE_REACTION:
                 const removeAction: RemoveReactionPayload = action as RemoveReactionPayload;
                 if (removeAction) {
-                    state.delete(removeAction.key);
+                    state.delete(removeAction.id);
                 }
                 return new Map(state.entries());
 

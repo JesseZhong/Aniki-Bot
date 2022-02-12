@@ -35,7 +35,6 @@ const ReactionAPI = (
 
     put(
         guild: string,
-        key: string,
         reaction: Reaction,
         onSuccess?: () => void
     ): void {
@@ -44,7 +43,7 @@ const ReactionAPI = (
                 token: string,
                 errorHandler?: (response: ErrorResponse) => boolean
             ) =>
-                request.put(`${url}/reactions/${key}`)
+                request.put(`${url}/reactions/${reaction.id}`)
                     .set('Accept', 'application/json')
                     .set('Guild', guild)
                     .auth(token, { type: 'bearer' })
@@ -66,7 +65,7 @@ const ReactionAPI = (
 
     remove(
         guild: string,
-        key: string,
+        id: string,
         onSuccess?: () => void
     ): void {
         access(
@@ -74,7 +73,7 @@ const ReactionAPI = (
                 token: string,
                 errorHandler?: (response: ErrorResponse) => boolean
             ) =>
-                request.delete(`${url}/reactions/${key}`)
+                request.delete(`${url}/reactions/${id}`)
                     .set('Accept', 'application/json')
                     .set('Guild', guild)
                     .auth(token, { type: 'bearer' })

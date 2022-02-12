@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React from 'react';
 import uuid from 'node-uuid';
 import { Persona, Personas } from '../personas/Personas';
 import { Reaction, Reactions } from '../reactions/Reactions';
@@ -9,6 +9,8 @@ import PersonaReactions from '../personas/PersonaReactions';
 import ReactionCard from '../reactions/ReactionCard';
 import ReactionCardEdit from '../reactions/ReactionCardEdit';
 import PersonaCreate from '../personas/PersonaCreate';
+import PersonaActions from '../actions/PersonaActions';
+import ReactionActions from '../actions/ReactionActions';
 import Dialog from '../common/Dialog';
 import './MainPage.sass';
 
@@ -20,16 +22,19 @@ const MainPage = (
     props: {
         personas: Personas,
         reactions: Reactions
-        setPersona: (key: string, persona: Persona) => void,
-        setReaction: (key: string, reaction: Reaction) => void,
-        removePersona: (key: string) => void,
-        removeReaction: (key: string) => void
     }
 ) => {
+    React.useEffect(() => {
+            PersonaActions.get();
+            ReactionActions.get();
+        },
+        []
+    );
+
     const personas = props.personas;
     const reactions = props.reactions;
 
-    const [diagFields, setDiagFields] = useState({
+    const [diagFields, setDiagFields] = React.useState({
         title: 'temp',
         body: <></>,
         onConfirm: () => {}
@@ -37,14 +42,14 @@ const MainPage = (
 
     const pageRef = React.createRef<HTMLDivElement>();
 
-    const [reactionGridRef, setReactionGridRef] = useState<Grid | undefined>(undefined);
-    const [personaGridRef, setPersonaGridRef] = useState<Grid | undefined>(undefined);
-    const [reactionCols, setReactionCols] = useState(0);
-    const [personaCols, setPersonaCols] = useState(0);
-    const [addNewReaction, setAddNewReaction] = useState(false);
-    const [addNewPersona, setAddNewPersona] = useState(false);
+    const [reactionGridRef, setReactionGridRef] = React.useState<Grid | undefined>(undefined);
+    const [personaGridRef, setPersonaGridRef] = React.useState<Grid | undefined>(undefined);
+    const [reactionCols, setReactionCols] = React.useState(0);
+    const [personaCols, setPersonaCols] = React.useState(0);
+    const [addNewReaction, setAddNewReaction] = React.useState(false);
+    const [addNewPersona, setAddNewPersona] = React.useState(false);
 
-    useLayoutEffect(
+    React.useLayoutEffect(
         () => {
             const calcCols = () => {
                 if (pageRef.current) {
@@ -100,7 +105,7 @@ const MainPage = (
                     Are you sure you want to remove <b></b>
                 </p>
             </div>,
-            onConfirm: () => props.removeReaction(key)
+            onConfirm: () => ReactionActions.remove(key)
         });
     }
 
@@ -116,7 +121,7 @@ const MainPage = (
                     Are you sure you want to remove <b></b>
                 </p>
             </div>,
-            onConfirm: () => props.removePersona(key)
+            onConfirm: () => PersonaActions.remove(key)
         });
     }
 
@@ -153,7 +158,7 @@ const MainPage = (
                         <ReactionCardEdit
                             set={
                                 (reaction: Reaction) => {
-                                    props.setReaction(uuid.v4(), reaction);
+                                    ReactionActions.put(uuid.v4(), reaction);
                                     setAddNewReaction(false);
                                 }
                             }
@@ -210,7 +215,7 @@ const MainPage = (
                         <PersonaCreate
                             set={
                                 (persona: Persona) => {
-                                    props.setPersona(uuid.v4(), persona);
+                                    PersonaActions.put(uuid.v4(), persona);
                                     setAddNewPersona(false);
                                 }
                             }
@@ -248,12 +253,6 @@ const MainPage = (
                     }
                 </StackGrid>
             </div>
-            <Dialog
-                id='remove-dialog'
-                title={diagFields.title}
-                body={diagFields.body}
-                onConfirm={diagFields.onConfirm}
-            />
         </div>
     )
 }

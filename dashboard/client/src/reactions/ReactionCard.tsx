@@ -1,16 +1,14 @@
 import React from 'react';
 import { Reaction } from './Reactions';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrashAlt, faEdit } from '@fortawesome/free-regular-svg-icons';
 import ReactionCardView from './ReactionCardView';
 import ReactionCardEdit from './ReactionCardEdit';
-import HoverButtonGroup from '../common/HoverButtonGroup';
+import ManageButtons from '../common/ManageButtons';
+import ReactionActions from '../actions/ReactionActions';
 import './ReactionCard.sass';
+
 
 const ReactionCard = (props: {
     reaction: Reaction,
-    set: (reaction: Reaction) => void,
-    remove: () => void,
     onResize?: () => void,
     className?: string,
     edit?: boolean
@@ -42,30 +40,16 @@ const ReactionCard = (props: {
             ref={cardRef}
         >
             {
-                !edit &&
-                <HoverButtonGroup owner={cardRef}>
-                    <button
-                        type='button'
-                        className='btn btn-sm'
-                        onClick={() => setEdit(true)}
-                    >
-                        <FontAwesomeIcon icon={faEdit} />
-                    </button>
-                    <button
-                        className='btn btn-sm'
-                        data-bs-toggle='modal'
-                        data-bs-target='#remove-dialog'
-                        onClick={props.remove}
-                    >
-                        <FontAwesomeIcon icon={faTrashAlt} />
-                    </button>
-                </HoverButtonGroup>
+                <ManageButtons
+                    owner={cardRef}
+                    onEditClick={() => setEdit(true)}
+                    onRemoveConfirm={() => ReactionActions.remove(reaction.id)}
+                />
             }
             {
                 edit
                 ? <ReactionCardEdit
                     reaction={reaction}
-                    set={props.set}
                     finishedEdit={() => setEdit(false)}
                     onResize={() => props.onResize?.()}
                 />
