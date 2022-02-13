@@ -1,8 +1,8 @@
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
+import MetadataActions from '../actions/MetadataActions';
 import { Metadata } from '../api/Metadata';
-import { getState } from '../containers/AppContainer';
 import MediaCard, { MediaType } from './MediaCard';
 import Video, { videoRegex } from './Video';
 
@@ -74,12 +74,10 @@ const Media = (
         else {
             // Fetch site metadata.
             if (!retreiving) {
-                getState().fetchMetadata(
+                MetadataActions.get(
                     url,
-                    (meta: Metadata) => {
-                        setMetadata(meta);
-                    }
-                )
+                    setMetadata
+                );
                 setRetreiving(true);
             }
 

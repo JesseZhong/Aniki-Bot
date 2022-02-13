@@ -12,4 +12,4 @@ export interface Reaction {
     persona?: string
 }
 
-export type Reactions = Map<string, Reaction>;
+export class Reactions extends Map<string, Reaction> {};

@@ -41,7 +41,7 @@ api.add_resource(RequestAccess, '/access')
 api.add_resource(RefreshAccess, '/refresh')
 api.add_resource(RevokeAccess, '/revoke')
 
-api.add_resource(GuildLookup, '/guild/lookup/<guild_name>')
+api.add_resource(GuildLookup, '/guild/vanity/<guild_name>')
 api.add_resource(Guild, '/guild/<guild_id>')
 
 api.add_resource(Reactions, '/reactions')

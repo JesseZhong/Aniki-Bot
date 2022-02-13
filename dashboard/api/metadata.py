@@ -1,13 +1,13 @@
 from flask_restful import Resource, request, abort
-from dashboard.api.authorization import auth_required
+from dashboard.api.authorization import perms_required
 from bs4 import BeautifulSoup
 import requests
 
 
 class Metadata(Resource):
 
-    @auth_required
-    def post(self):
+    @perms_required
+    def post(self, **kwargs):
         """
             Gets the metatags from a webpage.
         """

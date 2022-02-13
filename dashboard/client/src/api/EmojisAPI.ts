@@ -22,9 +22,13 @@ const EmojisAPI = (
                     .auth(token, { type: 'bearer' })
                     .end((error: any, response: Response) => {
                         if (error) {
-                            if (!errorHandler?.(response as ErrorResponse)) {
+                            if (
+                                error.status < 500 &&
+                                !errorHandler?.(response as ErrorResponse)
+                            ) {
                                 console.error(error)
                             }
+                            onerror?.(error);
                             return;
                         }
 

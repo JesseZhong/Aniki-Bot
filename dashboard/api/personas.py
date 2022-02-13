@@ -1,5 +1,5 @@
 from typing import Dict
-from dashboard.api.authorization import auth_required
+from dashboard.api.authorization import perms_required
 from dashboard.api.guild_collection import GuildCollection
 from flask_restful import Resource, abort
 
@@ -17,52 +17,53 @@ def get_personas(
 
 class Personas(Resource):
 
-    @auth_required
+    @perms_required
     def get(
         self,
-        guild_id: str
+        guild: str,
+        **kwargs
     ):
         """
             Returns all the personas for a guild.
         """
-        return get_personas(guild_id).get_items()
+        return get_personas(guild).get_items()
 
 
 class Persona(Resource):
 
-    @auth_required
+    @perms_required
     def put(
         self,
-        args: Dict[str, str],
-        guild_id: str
+        persona_id: str,
+        guild: str,
+        **kwargs
     ):
         """
             Adds or updates a persona.
         """
-        if not args or 'persona_id' not in args:
+        if not persona_id:
             abort(400, 'Missing ID.')
-        persona_id = args['persona_id']
 
-        return get_personas(guild_id).put_item(
+        return get_personas(guild).put_item(
             'schemas/put_persona.json',
             PERSONA_ID_REGEX,
             persona_id,
         )
 
-    @auth_required
+    @perms_required
     def delete(
         self,
-        args: Dict[str, str],
-        guild_id: str
+        persona_id: str,
+        guild: str,
+        **kwargs
     ):
         """
             Removes a persona.
         """
-        if not args or 'persona_id' not in args:
+        if not persona_id:
             abort(400, 'Missing ID.')
-        persona_id = args['persona_id']
 
-        return get_personas(guild_id).remove_item(
+        return get_personas(guild).remove_item(
             PERSONA_ID_REGEX,
             persona_id
         )

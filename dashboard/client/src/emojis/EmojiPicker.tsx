@@ -87,13 +87,13 @@ const EmojiPicker = (props: {
         onClick={onClick}
     >
         {
-            guild.icon
+            guild.id && guild.icon
             ? <img
                 src={getGuildIconUrl(guild.id, guild.icon)}
                 alt={guild.name}
             />
             : <div>
-                {guild.name[0]}
+                {guild?.name?.[0]}
             </div>
         }
     </div>;

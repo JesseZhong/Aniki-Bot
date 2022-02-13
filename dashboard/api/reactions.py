@@ -1,6 +1,6 @@
 import asyncio
 from typing import Any, Dict
-from dashboard.api.authorization import auth_required
+from dashboard.api.authorization import perms_required
 from dashboard.api.guild_collection import GuildCollection
 from flask_restful import Resource, abort
 from gremlin.discord.audio import Audio
@@ -19,24 +19,26 @@ def get_reactions(
 
 class Reactions(Resource):
 
-    @auth_required
+    @perms_required
     def get(
         self,
-        guild_id: str
+        guild: str,
+        **kwargs
     ):
         """
             Returns all the reactions for a guild.
         """
-        return get_reactions(guild_id).get_items()
+        return get_reactions(guild).get_items()
 
 
 class Reaction(Resource):
 
-    @auth_required
+    @perms_required
     def put(
         self,
         args: Dict[str, str],
-        guild_id: str
+        guild: str,
+        **kwargs
     ):
         """
             Adds or updates a reaction.
@@ -55,18 +57,19 @@ class Reaction(Resource):
                     clip=(reaction['clip'] if 'clip' in reaction else None)
                 ))
 
-        return get_reactions(guild_id).put_item(
+        return get_reactions(guild).put_item(
             'schemas/put_persona.json',
             REACTION_ID_REGEX,
             reaction_id,
             cache
         )
 
-    @auth_required
+    @perms_required
     def delete(
         self,
         args: Dict[str, str],
-        guild_id: str
+        guild: str,
+        **kwargs
     ):
         """
             Removes a reaction.
@@ -75,7 +78,7 @@ class Reaction(Resource):
             abort(400, 'Missing ID.')
         reaction_id = args['reaction_id']
 
-        return get_reactions(guild_id).remove_item(
+        return get_reactions(guild).remove_item(
             REACTION_ID_REGEX,
             reaction_id
         )

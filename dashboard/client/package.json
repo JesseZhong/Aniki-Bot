@@ -60,6 +60,9 @@
     "webpack-cli": "^4.7.0",
     "yup": "^0.32.9"
   },
+  "resolutions": {
+    "react-error-overlay": "6.0.9"
+  },
   "eslintConfig": {
     "extends": [
       "react-app",

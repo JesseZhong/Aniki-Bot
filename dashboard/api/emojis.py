@@ -1,7 +1,7 @@
 from os import getenv
 from dotenv import load_dotenv
 from flask_restful import Resource, abort
-from dashboard.api.authorization import auth_required
+from dashboard.api.authorization import perms_required
 from dashboard.api.logging import Logging
 import requests
 import json
@@ -13,7 +13,7 @@ DISCORD_TOKEN = getenv('DISCORD_TOKEN')
 
 class Emojis(Resource):
 
-    @auth_required
+    @perms_required
     def get(
         self,
         token: str

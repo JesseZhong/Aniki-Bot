@@ -9,7 +9,8 @@ const PersonaAPI = (
 ) => ({
     get(
         guild: string,
-        received: (personas: Personas) => void
+        received: (personas: Personas) => void,
+        onerror?: (error: any) => void
     ): void {
         access(
             (
@@ -22,13 +23,17 @@ const PersonaAPI = (
                     .auth(token, { type: 'bearer' })
                     .end((error: any, response: Response) => {
                         if (error) {
-                            if (!errorHandler?.(response as ErrorResponse)) {
+                            if (
+                                error.status < 500 &&
+                                !errorHandler?.(response as ErrorResponse)
+                            ) {
                                 console.error(error)
                             }
+                            onerror?.(error);
                             return;
                         }
 
-                        received(new Map<string, Persona>(Object.entries(response.body)));
+                        received(new Personas(Object.entries(response.body)));
                     })
         );
     },
@@ -36,28 +41,33 @@ const PersonaAPI = (
     put(
         guild: string,
         persona: Persona,
-        onSuccess?: () => void
+        onsuccess?: () => void,
+        onerror?: (error: any) => void
     ): void {
         access(
             (
                 token: string,
                 errorHandler?: (response: ErrorResponse) => boolean
             ) =>
-                request.put(`${url}/personas/${persona.key}`)
+                request.put(`${url}/personas/${persona.id}`)
                     .set('Accept', 'application/json')
                     .set('Guild', guild)
                     .auth(token, { type: 'bearer' })
                     .send(persona)
                     .end((error: any, response: Response) => {
                         if (error) {
-                            if (!errorHandler?.(response as ErrorResponse)) {
+                            if (
+                                error.status < 500 &&
+                                !errorHandler?.(response as ErrorResponse)
+                            ) {
                                 console.error(error)
                             }
+                            onerror?.(error);
                             return;
                         }
 
                         if (response.status === 201) {
-                            onSuccess?.();
+                            onsuccess?.();
                         }
                     })
         );
@@ -65,28 +75,33 @@ const PersonaAPI = (
 
     remove(
         guild: string,
-        key: string,
-        onSuccess?: () => void
+        id: string,
+        onsuccess?: () => void,
+        onerror?: (error: any) => void
     ): void {
         access(
             (
                 token: string,
                 errorHandler?: (response: ErrorResponse) => boolean
             ) =>
-                request.delete(`${url}/personas/${key}`)
+                request.delete(`${url}/personas/${id}`)
                     .set('Accept', 'application/json')
                     .set('Guild', guild)
                     .auth(token, { type: 'bearer' })
                     .end((error: any, response: Response) => {
                         if (error) {
-                            if (!errorHandler?.(response as ErrorResponse)) {
+                            if (
+                                error.status < 500 &&
+                                !errorHandler?.(response as ErrorResponse)
+                            ) {
                                 console.error(error)
                             }
+                            onerror?.(error);
                             return;
                         }
 
                         if (response.status === 201) {
-                            onSuccess?.();
+                            onsuccess?.();
                         }
                     })
         );

@@ -129,12 +129,12 @@ def permissions_check(
     abort(401, message='Unauthorized - Invalid Token.')
 
 
-def resolve_auth():
+def resolve_permissions():
     """
-        Grab token and check
+        Grab token and check if the user has the correct guild access permissions.
     """
     if 'Authorization' not in request.headers or 'Guild' not in request.headers:
-        abort(401)
+        abort(401, message='Missing headers.')
 
     auth_type, token = request.headers['Authorization'].split(' ')
 
@@ -149,17 +149,61 @@ def resolve_auth():
     )
 
 
-def auth_required(func):
+def perms_required(func):
     """
         Requires the user to auth with Discord
-        and be permitted.
+        and have guild view permissions.
     """
 
     @wraps(func)
-    def check_auth(*args, **kwargs):
-        token, guild = resolve_auth()
-        return func(args, kwargs, token=token, guild=guild)
+    def check_permissions(*args, **kwargs):
+        token, guild = resolve_permissions()
+        kwargs['token'] = token
+        kwargs['guild'] = guild
+        return func(*args, **kwargs)
     
+    return check_permissions
+
+
+
+def resolve_auth():
+    """
+        Check if the user has a valid Discord access token.
+    """
+    if 'Authorization' not in request.headers:
+        abort(401, message='Missing authorization.')
+
+    auth_type, token = request.headers['Authorization'].split(' ')
+
+    if auth_type.lower() != 'bearer':
+        abort(400)
+
+    discord = DiscordAuth(
+        DISCORD_API,
+        REDIRECT_URL,
+        CLIENT_ID
+    )
+
+    try:
+        discord.get_user(token)
+
+    except ExpiredTokenError:
+        abort(401, message='Unauthorized - Invalid Token.')
+
+    except InvalidTokenError:
+        abort(401, message='Unauthorized - New Token Required.')
+
+
+def auth_required(func):
+    """
+        Requires the user to have authed with Discord.
+    """
+    
+    @wraps(func)
+    def check_auth(*args, **kwargs):
+        resolve_auth()
+        return func(*args, **kwargs)
+
     return check_auth
 
 

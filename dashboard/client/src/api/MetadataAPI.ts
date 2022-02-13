@@ -10,7 +10,8 @@ const MetadataAPI = (
     post(
         guild: string,
         meta_url: string,
-        received: (metadata: Metadata) => void
+        received: (metadata: Metadata) => void,
+        onerror?: (error: any) => void
     ): void {
         access(
             (
@@ -26,9 +27,13 @@ const MetadataAPI = (
                     })
                     .end((error: any, response: Response) => {
                         if (error) {
-                            if (!errorHandler?.(response as ErrorResponse)) {
+                            if (
+                                error.status < 500 &&
+                                !errorHandler?.(response as ErrorResponse)
+                            ) {
                                 console.error(error)
                             }
+                            onerror?.(error);
                             return;
                         }
 

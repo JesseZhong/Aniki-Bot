@@ -1,7 +1,6 @@
 import React from 'react';
-import uuid from 'node-uuid';
-import { Persona, Personas } from '../personas/Personas';
-import { Reaction, Reactions } from '../reactions/Reactions';
+import { Personas } from '../personas/Personas';
+import { Reactions } from '../reactions/Reactions';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import StackGrid, { Grid } from 'react-stack-grid';
@@ -11,8 +10,10 @@ import ReactionCardEdit from '../reactions/ReactionCardEdit';
 import PersonaCreate from '../personas/PersonaCreate';
 import PersonaActions from '../actions/PersonaActions';
 import ReactionActions from '../actions/ReactionActions';
-import Dialog from '../common/Dialog';
+import compact from 'lodash/compact';
+import { Guild } from '../guild/Guild';
 import './MainPage.sass';
+
 
 const reactionCardWidth = 520;
 const personaCardWidth = 630;
@@ -20,6 +21,7 @@ const gutter = 12;
 
 const MainPage = (
     props: {
+        guild: Guild,
         personas: Personas,
         reactions: Reactions
     }
@@ -28,17 +30,11 @@ const MainPage = (
             PersonaActions.get();
             ReactionActions.get();
         },
-        []
+        [props.guild]
     );
 
     const personas = props.personas;
     const reactions = props.reactions;
-
-    const [diagFields, setDiagFields] = React.useState({
-        title: 'temp',
-        body: <></>,
-        onConfirm: () => {}
-    });
 
     const pageRef = React.createRef<HTMLDivElement>();
 
@@ -93,39 +89,7 @@ const MainPage = (
         )
     }
 
-    const removeReaction = (
-        key: string,
-        reaction: Reaction
-    ) => {
-        setDiagFields({
-            title: 'Remove Reaction?',
-            body:
-            <div>
-                <p>
-                    Are you sure you want to remove <b></b>
-                </p>
-            </div>,
-            onConfirm: () => ReactionActions.remove(key)
-        });
-    }
-
-    const removePersona = (
-        key: string,
-        persona: Persona
-    ) => {
-        setDiagFields({
-            title: 'Remove Persona?',
-            body:
-            <div>
-                <p>
-                    Are you sure you want to remove <b></b>
-                </p>
-            </div>,
-            onConfirm: () => PersonaActions.remove(key)
-        });
-    }
-
-    const existingNames = new Set([...personas].map(([_key, persona]) => persona.name));
+    const existingNames = new Set(compact([...personas.values()].map((persona) => persona.name)));
 
     return (
         <div
@@ -156,12 +120,6 @@ const MainPage = (
                         }}
                     >
                         <ReactionCardEdit
-                            set={
-                                (reaction: Reaction) => {
-                                    ReactionActions.put(uuid.v4(), reaction);
-                                    setAddNewReaction(false);
-                                }
-                            }
                             finishedEdit={() => setAddNewReaction(false)}
                         />
                     </div>
@@ -183,8 +141,6 @@ const MainPage = (
                                     <ReactionCard
                                         key={key}
                                         reaction={reaction}
-                                        set={(reaction: Reaction) => props.setReaction(key, reaction)}
-                                        remove={() => removeReaction(key, reaction)}
                                         onResize={() => reactionGridRef?.updateLayout()}
                                     />
                             )
@@ -213,12 +169,6 @@ const MainPage = (
                         }}
                     >
                         <PersonaCreate
-                            set={
-                                (persona: Persona) => {
-                                    PersonaActions.put(uuid.v4(), persona);
-                                    setAddNewPersona(false);
-                                }
-                            }
                             finishedEdit={() => setAddNewPersona(false)}
                             existingNames={existingNames}
                         />
@@ -232,21 +182,12 @@ const MainPage = (
                 >
                     {
                         personas &&
-                        [...personas].map(
+                        [...personas.values()].map(
                             (persona) =>
                                 <PersonaReactions
-                                    key={persona[0]}
+                                    key={persona.id}
                                     persona={persona}
-                                    reactions={
-                                        [...reactions]
-                                            .filter(
-                                                ([_rKey, reaction]) => reaction.persona === persona[0]
-                                            )
-                                    }
-                                    setPersona={props.setPersona}
-                                    removePersona={() => removePersona(...persona)}
-                                    setReaction={props.setReaction}
-                                    removeReaction={removeReaction}
+                                    reactions={reactions}
                                     onResize={() => personaGridRef?.updateLayout()}
                                 />
                         )

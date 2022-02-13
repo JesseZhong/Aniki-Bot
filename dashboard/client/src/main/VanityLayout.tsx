@@ -2,10 +2,13 @@ import React from 'react';
 import { Outlet, useNavigate, useParams } from 'react-router';
 import VanityActions from '../actions/VanityActions';
 import { Session } from '../auth/Session';
+import { Guild } from '../guild/Guild';
+import GuildCard from '../guild/GuildCard';
 
 
 const VanityLayout = (props: {
-    session: Session
+    session: Session,
+    guild: Guild
 }) => {
     const navigate = useNavigate();
     const { vanity } = useParams();
@@ -20,12 +23,14 @@ const VanityLayout = (props: {
         },
         [
             props.session,
-            vanity
+            vanity,
+            navigate
         ]
     );
 
     return (
         <>
+            <GuildCard guild={props.guild} />
             <Outlet />
         </>
     );

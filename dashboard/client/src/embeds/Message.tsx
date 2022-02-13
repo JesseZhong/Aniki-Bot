@@ -17,6 +17,7 @@ const Message = (
     } & FieldHookConfig<any>
 ) => {
     
+    // eslint-disable-next-line
     const [field, _meta, helpers] = useField<string>(props);
     const textRef = React.useRef<HTMLDivElement>(null);
     const emojis = getState().emojis;

@@ -1,11 +1,10 @@
 from flask_restful import abort
 from gremlin.db.lmdb import get, open_db, transact_get, transact_update
 from typing import Any, Callable, Dict, NoReturn, Tuple, Union
-import traceback
-import re
-
 from dashboard.api.logging import Logging
 from dashboard.api.validation import verify_schema
+import traceback
+import re
 
 
 class GuildCollection:

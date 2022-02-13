@@ -22,9 +22,13 @@ const GuildAPI = (
                     .auth(token, { type: 'bearer' })
                     .end((err: any, response: Response) => {
                         if (err) {
-                            if (!errorHandler?.(response as ErrorResponse)) {
-                                error?.(err);
+                            if (
+                                err.status < 500 &&
+                                !errorHandler?.(response as ErrorResponse)
+                            ) {
+                                console.error(error)
                             }
+                            error?.(err);
                             return;
                         }
 
@@ -48,9 +52,13 @@ const GuildAPI = (
                     .auth(token, { type: 'bearer' })
                     .end((err: any, response: Response) => {
                         if (err) {
-                            if (!errorHandler?.(response as ErrorResponse)) {
-                                error?.(err);
+                            if (
+                                err.status < 500 &&
+                                !errorHandler?.(response as ErrorResponse)
+                            ) {
+                                console.error(error)
                             }
+                            error?.(err);
                             return;
                         }
 

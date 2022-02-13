@@ -8,11 +8,10 @@ import MainPage from './main/MainPage';
 import Denied from './auth/Denied';
 import VanityLayout from './main/VanityLayout';
 import GuildLayout from './main/GuildLayout';
+import SessionActions from './actions/SessionActions';
 
 
-const GUILD_ID_PATTERN = ':guild([0-9]{5,19})';
-const GUILD_VANITY_PATTERN = ':vanity([a-zA-Z0-9_]{2,100})';
-
+SessionActions.load();
 
 const App = (state: AppState) => {
 
@@ -20,34 +19,35 @@ const App = (state: AppState) => {
         if (state.session?.access_token) {
             return (
                 <Routes>
-                    <Route path='/nope' element={PageNotFound} />
-                    <Route path='/g'>
-                        <Route
-                            path={GUILD_VANITY_PATTERN}
-                            element={<VanityLayout session={state.session} />}
-                        >
-                            <Route
-                                path='/home'
-                                element={
-                                    <MainPage
-                                        personas={state.personas}
-                                        reactions={state.reactions}
-                                    />
-                                }
-                            />
-                            <Route index element={<Navigate replace to='home' />} />
-                        </Route>
-                        <Route index element={<Navigate replace to='/nope' />} />
-                    </Route>
+                    <Route path='/nope' element={<PageNotFound />} />
                     <Route
-                        path='/'
-                        element={<GuildLayout session={state.session} />}
+                        path={`/g/:vanity`}
+                        element={<VanityLayout session={state.session} guild={state.guild} />}
                     >
-                        <Route path={GUILD_ID_PATTERN}>
-                        </Route>
                         <Route
                             index
-                            element={<Navigate replace to='/nope' />}
+                            element={
+                                <MainPage
+                                    guild={state.guild}
+                                    personas={state.personas}
+                                    reactions={state.reactions}
+                                />
+                            }
+                        />
+                    </Route>
+                    <Route
+                        path={`/:guild`}
+                        element={<GuildLayout session={state.session} guild={state.guild} />}
+                    >
+                        <Route
+                            index
+                            element={
+                                <MainPage
+                                    guild={state.guild}
+                                    personas={state.personas}
+                                    reactions={state.reactions}
+                                />
+                            }
                         />
                     </Route>
                     <Route path='*' element={<Navigate replace to='/nope' />} />
@@ -60,7 +60,7 @@ const App = (state: AppState) => {
                 <Routes>
                     <Route
                         path='/denied'
-                        element={Denied}
+                        element={<Denied />}
                     />
                     <Route
                         path='/requestauth'
@@ -70,23 +70,14 @@ const App = (state: AppState) => {
                         path='/authorized'
                         element={<FetchingAccess session={state.session}/>}
                     />
-                    <Route path='/g'>
-                        <Route path={GUILD_VANITY_PATTERN}>
-                            <Route path='/home' element={<Navigate replace to='/requestauth' />} />
-                            <Route index element={<Navigate replace to='/requestauth' />} />
-                        </Route>
-                        <Route index element={<Navigate replace to='/denied' />} />
-                    </Route>
-                    <Route path='/'>
-                        <Route path={GUILD_ID_PATTERN}>
-                            <Route path='/home' element={<Navigate replace to='/requestauth' />} />
-                            <Route index element={<Navigate replace to='/requestauth' />} />
-                        </Route>
-                        <Route
-                            index
-                            element={<Navigate replace to='/denied' />}
-                        />
-                    </Route>
+                    <Route
+                        path={`/g/:vanity`}
+                        element={<Navigate replace to='/requestauth' />}
+                    />
+                    <Route
+                        path={`/:guild`}
+                        element={<Navigate replace to='/requestauth'
+                    />} />
                     <Route path='*' element={<Navigate replace to='/denied' />} />
                 </Routes>
             );

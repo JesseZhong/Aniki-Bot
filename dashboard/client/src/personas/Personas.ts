@@ -4,4 +4,4 @@ export interface Persona {
     avatar?: string;
 }
 
-export type Personas = Map<string, Persona>;
+export class Personas extends Map<string, Persona> {};
