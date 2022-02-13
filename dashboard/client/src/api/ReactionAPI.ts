@@ -33,7 +33,7 @@ const ReactionAPI = (
                             return;
                         }
 
-                        received(new Reactions(Object.entries(response.body)));
+                        received(new Reactions(response.body));
                     })
         );
     },

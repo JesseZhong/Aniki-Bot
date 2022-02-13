@@ -33,7 +33,7 @@ const PersonaAPI = (
                             return;
                         }
 
-                        received(new Personas(Object.entries(response.body)));
+                        received(new Personas(response.body));
                     })
         );
     },
