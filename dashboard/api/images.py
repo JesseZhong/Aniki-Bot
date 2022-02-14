@@ -26,14 +26,13 @@ IMAGE_KEY_REGEX = '^[^\\^{}%`\"<>|]{1,}\.(png|gif|jpeg|jpg)$'
 class ImageUpload(Resource):
 
     @perms_required
-    def get(self, args: Dict[str, str]):
+    def get(self, image_key: str):
         """
             Provide a presigned URL for uploading am image.
         """
 
-        if not args or 'image_key' not in args:
+        if not image_key:
             abort(400, 'Missing image key.')
-        image_key = args['image_key']
 
         if not re.match(
             IMAGE_KEY_REGEX,

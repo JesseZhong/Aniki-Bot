@@ -36,7 +36,7 @@ class Reaction(Resource):
     @perms_required
     def put(
         self,
-        args: Dict[str, str],
+        reaction_id: str,
         guild: str,
         **kwargs
     ):
@@ -44,9 +44,8 @@ class Reaction(Resource):
             Adds or updates a reaction.
             Also, attempts to cache any reaction audio.
         """
-        if not args or 'reaction_id' not in args:
+        if not reaction_id:
             abort(400, 'Missing ID.')
-        reaction_id = args['reaction_id']
 
         def cache(reaction: Dict[str, Any]):
             if 'audio_url' in reaction and reaction['audio_url']:
@@ -58,7 +57,7 @@ class Reaction(Resource):
                 ))
 
         return get_reactions(guild).put_item(
-            'schemas/put_persona.json',
+            'schemas/put_reaction.json',
             REACTION_ID_REGEX,
             reaction_id,
             cache
@@ -67,16 +66,15 @@ class Reaction(Resource):
     @perms_required
     def delete(
         self,
-        args: Dict[str, str],
+        reaction_id: str,
         guild: str,
         **kwargs
     ):
         """
             Removes a reaction.
         """
-        if not args or 'reaction_id' not in args:
+        if not reaction_id:
             abort(400, 'Missing ID.')
-        reaction_id = args['reaction_id']
 
         return get_reactions(guild).remove_item(
             REACTION_ID_REGEX,

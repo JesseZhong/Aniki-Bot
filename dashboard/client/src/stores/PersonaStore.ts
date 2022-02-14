@@ -28,14 +28,14 @@ class PersonaStore extends ReduceStore<Personas, ActionPayload> {
                 if (putAction) {
                     state.set(putAction.persona.id, putAction.persona);
                 }
-                return new Map(state.entries());
+                return new Personas(Object.fromEntries(state));
 
             case ActionTypes.REMOVE_PERSONA:
                 const removeAction: RemovePersonaPayload = action as RemovePersonaPayload;
                 if (removeAction) {
                     state.delete(removeAction.key);
                 }
-                return new Map(state.entries());
+                return new Personas(Object.fromEntries(state));
 
             default:
                 return state;
