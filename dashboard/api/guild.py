@@ -36,14 +36,12 @@ def verify_guild(guild_id: str) -> Union[Tuple, NoReturn]:
 class Guild(Resource):
 
     @auth_required
-    def get(self, args: Dict[str, str]):
+    def get(self, guild_id):
         """
             Get guild preview from Discord.
         """
-        if not args or 'guild_id' not in args:
+        if not guild_id:
             abort(400, message='Missing ID.')
-
-        guild_id = args['guild_id']
 
         return verify_guild(guild_id)
 

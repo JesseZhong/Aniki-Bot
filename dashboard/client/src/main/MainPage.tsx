@@ -147,7 +147,7 @@ const MainPage = (
                     }
                 </StackGrid>
             </div>
-            <div className='d-flex flex-row justify-content-between'>
+            {/* <div className='d-flex flex-row justify-content-between'>
                 <h2>Bot Personas</h2>
                 <div className='align-self-center'>
                     <button
@@ -193,7 +193,7 @@ const MainPage = (
                         )
                     }
                 </StackGrid>
-            </div>
+            </div> */}
         </div>
     )
 }
