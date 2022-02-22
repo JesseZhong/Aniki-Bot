@@ -1,65 +1,46 @@
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
+import { Modal, Button } from 'react-bootstrap';
 import './Dialog.sass';
 
+
 const Dialog = (props: {
-    id: string,
-    title: string,
-    body: JSX.Element,
+    title: JSX.Element | string,
+    body: JSX.Element | string,
     onConfirm: () => void,
+    onCancel: () => void,
     confirmButton?: string,
     cancelButton?: string,
     className?: string
 }) => (
-    <div
-        id={props.id}
-        className={
-            'modal fade ' +
-            (props.className ? ` ${props.className}` : '')
-        }
-        tabIndex={-1}
-        role='dialog'
-        aria-hidden='true'
+    <Modal
+        show={true}
+        onHide={props.onCancel}
+        className={props.className}
+        centered
     >
-        <div className='modal-dialog modal-dialog-centered show' role='document'>
-            <div className='modal-content bg-light'>
-                <div className='modal-header bg-secondary'>
-                    <h5 className='modal-title text-dark'>
-                        {props.title}
-                    </h5>
-                    <button
-                        type='button'
-                        className='btn text-dark'
-                        data-bs-dismiss='modal'
-                        aria-label='Close'
-                    >
-                        <FontAwesomeIcon icon={faTimes} />
-                    </button>
-                </div>
-                <div className='modal-body'>
-                    {props.body}
-                </div>
-                <div className='modal-footer'>
-                    <button
-                        type='button'
-                        className='btn btn-danger'
-                        onClick={props.onConfirm}
-                        data-bs-dismiss='modal'
-                    >
-                        {props.confirmButton ?? 'Yes'}
-                    </button>
-                    <button
-                        type='button'
-                        className='btn text-light'
-                        data-bs-dismiss='modal'
-                    >
-                        {props.cancelButton ?? 'No'}
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+        <Modal.Header>
+            <Modal.Title>
+                {props.title}
+            </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+            {props.body}
+        </Modal.Body>
+        <Modal.Footer>
+            <Button
+                variant='danger'
+                onClick={props.onConfirm}
+            >
+                {props.confirmButton ?? 'Yes'}
+            </Button>
+            <Button
+                variant='secondary'
+                onClick={props.onCancel}
+            >
+                {props.cancelButton ?? 'No'}
+            </Button>
+        </Modal.Footer>
+    </Modal>
 )
 
 export default Dialog;

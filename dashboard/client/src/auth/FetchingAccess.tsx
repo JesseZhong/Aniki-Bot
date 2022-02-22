@@ -1,48 +1,43 @@
 import React from 'react';
-import { Link, RouteComponentProps, useHistory, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { faCircleNotch, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Session } from './Session';
-import { GuildPreview } from '../guild/GuildPreview';
+import AuthActions from '../actions/AuthActions';
+import SessionActions from '../actions/SessionActions';
 
 const AwaitAccess = (
     props: {
-        session: Session,
-        lookupGuild: (
-            props?: RouteComponentProps,
-            received?: (guild: GuildPreview) => void,
-            pulled?: (id: string) => void,
-            error?: () => void
-        ) => void
-        requestAccess: (
-            state: string,
-            code: string,
-            received: (token: string) => void
-        ) => void,
-        fetchAllData: (
-            guild?: string
-        ) => void
+        session: Session
     }
 ) => {
-    const history = useHistory();
+    const navigate = useNavigate();
     const location = useLocation();
+    const session = props.session;
 
-    const goMain = () => {
-        props.lookupGuild(
-            undefined,
-            (guild: GuildPreview) => {
-                props.fetchAllData(guild.id);
-                history.push(`/${guild.id}`);
-            }
-        );
+    /**
+     * Pull a redirect URI from the user session to
+     * send the user to after authentication is successful.
+     */
+    const redirect = () => {
+        if (session.redirect_uri) {
+            navigate(session.redirect_uri);
+
+            // Cleanup.
+            session.redirect_uri = undefined;
+            SessionActions.set(session);
+        }
+        else {
+            navigate('/nope');
+        }
     }
 
     // NOTE: Discord OAuth service seems to call this route twice,
     // causing a second post to the API and therefore the Discord
     // token endpoint again. This causes both the API and site to error.
     // Check if the session already has a token before proceeding.
-    if (props.session?.access_token) {
-        goMain();
+    if (session?.access_token) {
+        redirect();
         return <div>
             <img
                 src='https://media1.tenor.com/images/bf327be1ebbde7f32baf5136042bf118/tenor.gif?itemid=14563637'
@@ -92,7 +87,7 @@ const AwaitAccess = (
 
     // Check for any kind of inconsistencies. States no matching or no
     // code could mean some kind of attack. Display this if that happens.
-    if (state !== props.session.session_id || code === null) {
+    if (state !== session.session_id || code === null) {
         return (
             <div
                 className='d-flex flex-column justify-content-center align-items-center'
@@ -112,10 +107,10 @@ const AwaitAccess = (
 
     // Ping the API to retreive the access and refresh tokens from Discord.
     // Navigate back to root once the tokens are received.
-    props.requestAccess(
+    AuthActions.requestAccess(
         state,
         code,
-        goMain
+        redirect
     );
 
     return (

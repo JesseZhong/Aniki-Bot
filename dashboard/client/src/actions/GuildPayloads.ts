@@ -1,6 +1,6 @@
 import { ActionPayload } from '../AppDispatcher';
-import { GuildPreview } from '../guild/GuildPreview';
+import { Guild } from '../guild/Guild';
 
 export interface RecieveGuildPayload extends ActionPayload {
-    guild: GuildPreview
+    guild: Guild
 }

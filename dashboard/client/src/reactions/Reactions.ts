@@ -1,4 +1,5 @@
 export interface Reaction {
+    id: string,
     triggers: string[];
     
     audio_url?: string,
@@ -11,4 +12,15 @@ export interface Reaction {
     persona?: string
 }
 
-export type Reactions = Map<string, Reaction>;
+export class Reactions extends Map<string, Reaction> {
+
+    constructor(reactions?: Object) {
+        super();
+        if (reactions) {
+            for (const [key, reaction] of Object.entries(reactions)) {
+                reaction.id = key;
+                this.set(key, reaction);
+            }
+        }
+    }
+}

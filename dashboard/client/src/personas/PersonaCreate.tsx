@@ -1,13 +1,15 @@
 import React from 'react';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { Persona } from './Personas';
-import './PersonaCreate.sass';
 import PersonaNameValidation from './PersonaNameValidation';
 import PersonaAvatarValidation from './PersonaAvatarValidation';
 import Avatar from '../common/Avatar';
+import PersonaActions from '../actions/PersonaActions';
+import { v4 as uuid } from 'uuid';
+import './PersonaCreate.sass';
+
 
 const PersonaCreate = (props: {
-    set: (persona: Persona) => void,
     finishedEdit: () => void,
     existingNames: Set<string>
 }) => {
@@ -16,6 +18,7 @@ const PersonaCreate = (props: {
         <div className='persona-create'>
             <Formik
                 initialValues={{
+                    id: uuid(),
                     name: '',
                     avatar: ''
                 } as Persona}
@@ -24,7 +27,7 @@ const PersonaCreate = (props: {
                         .concat(PersonaAvatarValidation)
                 }
                 onSubmit={(persona: Persona) => {
-                    props.set(persona);
+                    PersonaActions.put(persona);
                     props.finishedEdit();
                 }}
             >

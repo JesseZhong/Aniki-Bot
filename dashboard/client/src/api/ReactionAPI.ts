@@ -9,7 +9,8 @@ const ReactionAPI = (
 ) => ({
     get(
         guild: string,
-        received: (reactions: Reactions) => void
+        received: (reactions: Reactions) => void,
+        onerror?: (error: any) => void
     ): void {
         access(
             (
@@ -22,43 +23,51 @@ const ReactionAPI = (
                     .auth(token, { type: 'bearer' })
                     .end((error: any, response: Response) => {
                         if (error) {
-                            if (!errorHandler?.(response as ErrorResponse)) {
+                            if (
+                                error.status < 500 &&
+                                !errorHandler?.(response as ErrorResponse)
+                            ) {
                                 console.error(error)
                             }
+                            onerror?.(error);
                             return;
                         }
 
-                        received(new Map<string, Reaction>(Object.entries(response.body)));
+                        received(new Reactions(response.body));
                     })
         );
     },
 
     put(
         guild: string,
-        key: string,
         reaction: Reaction,
-        onSuccess?: () => void
+        onsuccess?: () => void,
+        onerror?: (error: any) => void
     ): void {
         access(
             (
                 token: string,
                 errorHandler?: (response: ErrorResponse) => boolean
             ) =>
-                request.put(`${url}/reactions/${key}`)
+                request.put(`${url}/reactions/${reaction.id}`)
                     .set('Accept', 'application/json')
                     .set('Guild', guild)
                     .auth(token, { type: 'bearer' })
                     .send(reaction)
                     .end((error: any, response: Response) => {
                         if (error) {
-                            if (!errorHandler?.(response as ErrorResponse)) {
+                            if (
+                                error.status < 500 &&
+                                !errorHandler?.(response as ErrorResponse)
+                            ) {
                                 console.error(error)
                             }
+                            onerror?.(error);
                             return;
                         }
 
                         if (response.status === 201) {
-                            onSuccess?.();
+                            onsuccess?.();
                         }
                     })
         );
@@ -66,28 +75,33 @@ const ReactionAPI = (
 
     remove(
         guild: string,
-        key: string,
-        onSuccess?: () => void
+        id: string,
+        onsuccess?: () => void,
+        onerror?: (error: any) => void
     ): void {
         access(
             (
                 token: string,
                 errorHandler?: (response: ErrorResponse) => boolean
             ) =>
-                request.delete(`${url}/reactions/${key}`)
+                request.delete(`${url}/reactions/${id}`)
                     .set('Accept', 'application/json')
                     .set('Guild', guild)
                     .auth(token, { type: 'bearer' })
                     .end((error: any, response: Response) => {
                         if (error) {
-                            if (!errorHandler?.(response as ErrorResponse)) {
+                            if (
+                                error.status < 500 &&
+                                !errorHandler?.(response as ErrorResponse)
+                            ) {
                                 console.error(error)
                             }
+                            onerror?.(error);
                             return;
                         }
 
                         if (response.status === 201) {
-                            onSuccess?.();
+                            onsuccess?.();
                         }
                     })
         );

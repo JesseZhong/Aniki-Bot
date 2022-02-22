@@ -1,5 +1,5 @@
 import * as ls from 'local-storage';
-import uuid from 'node-uuid';
+import { v4 as uuid } from 'uuid';
 import { User } from './User';
 
 const key = 'session';
@@ -9,6 +9,7 @@ export interface Session {
     access_token?: string;
     refresh_token?: string;
     user?: User;
+    redirect_uri?: string;
 }
 
 export const Sessions = {
@@ -27,7 +28,7 @@ export const Sessions = {
         if (!session?.session_id) {
 
             session = {
-                session_id: uuid.v4()
+                session_id: uuid()
             };
 
             // Put the session in local storage.

@@ -1,10 +1,11 @@
-import request, { Response } from "superagent";
-import { ErrorResponse } from "./ErrorResponse";
+import request, { Response } from 'superagent';
+import { ErrorResponse } from './ErrorResponse';
 
 
 interface TokenResponse {
     access_token: string;
     refresh_token: string;
+    is_admin?: boolean;
     scope: string;
 }
 
@@ -14,13 +15,15 @@ const AuthAPI = (
 ) => ({
     requestAuthorization(
         state: string,
-        received: (auth_url: string) => void
+        received: (auth_url: string) => void,
+        onerror?: (error: any) => void
     ): void {
         request.get(`${url}/authorize`)
             .set('Accept', 'application/json')
             .set('State', state)
             .end((error: any, response: Response) => {
                 if (error) {
+                    onerror?.(error);
                     return console.error(error);
                 }
 
@@ -41,8 +44,10 @@ const AuthAPI = (
         code: string,
         received: (
             access_token: string,
-            refresh_token: string
-        ) => void
+            refresh_token: string,
+            is_admin?: boolean
+        ) => void,
+        onerror?: (error: any) => void
     ): void {
         request.get(`${url}/access`)
             .set('Accept', 'application/json')
@@ -50,17 +55,20 @@ const AuthAPI = (
             .set('Code', code)
             .end((error: any, response: Response) => {
                 if (error) {
+                    onerror?.(error);
                     return console.error(error);
                 }
 
                 const {
                     access_token,
-                    refresh_token
+                    refresh_token,
+                    is_admin
                 } = response.body as TokenResponse;
 
                 received(
                     access_token,
-                    refresh_token
+                    refresh_token,
+                    is_admin
                 );
             });
     },
@@ -89,8 +97,13 @@ const AuthAPI = (
         action(
             access_token,
             (response: ErrorResponse): boolean => {
-                if (response.statusCode === 401) {
-                    if (response.statusText === 'Unauthorized - Invalid Token.') {
+                if (response.status === 401) {
+
+                    const body = response.body as {
+                        'message': string
+                    }
+
+                    if (body.message === 'Unauthorized - Invalid Token.') {
                         request.get(`${url}/refresh`)
                             .set('Accept', 'application/json')
                             .set('Refresh', refresh_token)
@@ -115,7 +128,7 @@ const AuthAPI = (
 
                         return true;
                     }
-                    else if (response.text === 'Unauthorized - New Token Required.') {
+                    else if (body.message === 'Unauthorized - New Token Required.') {
                         tokenRevoked();
                         return false;
                     }

@@ -2,8 +2,8 @@ import React from 'react';
 import './Avatar.sass';
 
 const Avatar = (props: {
-    src: string,
-    alt: string
+    src?: string,
+    alt?: string
 }) => (
     <img
         className='avatar'

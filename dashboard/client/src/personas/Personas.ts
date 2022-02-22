@@ -1,6 +1,18 @@
 export interface Persona {
-    name: string;
-    avatar: string;
+    id: string;
+    name?: string;
+    avatar?: string;
 }
 
-export type Personas = Map<string, Persona>;
+export class Personas extends Map<string, Persona> {
+
+    constructor(personas?: Object) {
+        super();
+        if (personas) {
+            for (const [key, persona] of Object.entries(personas)) {
+                persona.id = key;
+                this.set(key, persona);
+            }
+        }
+    }
+}

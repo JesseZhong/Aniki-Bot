@@ -12,7 +12,7 @@
 			"**/.gitignore": true,
 
 			"**/env/**": true,
-			"**/__pycache__/**": true,
+			"**/__pycache__/**": false,
 			"youtube*": true,
 
 
@@ -21,6 +21,7 @@
 			"**/tsconfig.json": true,
 			"**/webpack.config.js": true
 		},
-		"python.defaultInterpreterPath": "./env/bin/python3"
+		"python.defaultInterpreterPath": "./env/bin/python3",
+		"python.pythonPath": "env/bin/python3"
 	}
 }

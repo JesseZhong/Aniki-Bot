@@ -1,12 +1,12 @@
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
+import MetadataActions from '../actions/MetadataActions';
 import { Metadata } from '../api/Metadata';
-import { getState } from '../containers/AppContainer';
 import MediaCard, { MediaType } from './MediaCard';
 import Video, { videoRegex } from './Video';
 
-const imageRegex = /(https{0,1}:\/\/[^\s]+\.(?:gif|jp[e]{0,1}g|webm|webp|png|svg)[^\s]*)/;
+export const imageRegex = /(https{0,1}:\/\/[^\s]+\.(?:gif|jp[e]{0,1}g|webm|webp|png|svg)[^\s]*)/;
 const redditRegex = /(https{0,1}:\/\/(www\.|)reddit\.com[^\s]*)/;
 const twitterRegex = /^/;
 export const mediaRegex = /(https{0,1}:\/\/[^\s]*)/;
@@ -74,12 +74,10 @@ const Media = (
         else {
             // Fetch site metadata.
             if (!retreiving) {
-                getState().fetchMetadata(
+                MetadataActions.get(
                     url,
-                    (meta: Metadata) => {
-                        setMetadata(meta);
-                    }
-                )
+                    setMetadata
+                );
                 setRetreiving(true);
             }
 
@@ -88,6 +86,7 @@ const Media = (
                 content = <div>
                     <img
                         src={metadata?.['og:image']}
+                        alt={metadata?.['og:title']}
                     />
                 </div>;
             }

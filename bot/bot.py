@@ -5,28 +5,29 @@ import logging
 import traceback
 from os import path
 from logging.handlers import RotatingFileHandler
-from discord import \
-    Client, Message, Webhook, AsyncWebhookAdapter, \
-    TextChannel, VoiceChannel, AllowedMentions, Member
-from .persona import Persona
-from .reaction import Reaction
+from discord import Client, Message, Member
+from bot.persona import Persona
+from bot.reaction import Reaction
+from bot.state import is_connected
+from gremlin.db.lmdb import get
 from gremlin.discord.audio import Audio
-from .state import is_connected
-import asyncio
-import re
 from collections import defaultdict
 from typing import Dict
+import re
 
 class Bot(Client):
 
-    def __init__(self):
+    def __init__(
+        self,
+        log_location: str
+    ):
         super().__init__()
 
         # Setup logging.
         self.logger = logging.getLogger('Error Log')
         self.logger.setLevel(logging.ERROR)
         handler = RotatingFileHandler(
-            'bot-error.log',
+            path.join(log_location, 'bot-error.log'),
             maxBytes=20000,
             backupCount=1
         )
@@ -52,41 +53,47 @@ class Bot(Client):
             value['reactions'] = reactions
 
 
-    def load(self, filepath: str):
+    def load(self):
         """
-            Load bot settings and customizations from a directory.
+            Load bot settings and customizations from db.
         """
-        file = path.basename(filepath)
-        guild = path.basename(path.dirname(filepath))
 
-        if not re.match(r'^/{0,1}[0-9]{18}/{0,1}$', guild):
-            return
+        # Get permitted guilds.
+        guilds = [g for g in get('guild') if g]
 
-        try:
-            # Load in personas.
-            if re.match(r'/{0,1}personas\.json', file):
-                with open(filepath, 'r') as personaFile:
-                    personas = {
-                        k:Persona(**v)
-                        for k, v
-                        in json.load(personaFile).items()
-                    }
-                    self.add(guild, personas=personas)
+        for guild in guilds:
 
-            # Load in and flatten phrases based of trigger phrases.
-            if re.match(r'/{0,1}reactions\.json', file):
-                with open(filepath, 'r') as reactionsFile:
-                    rawReactions = json.load(reactionsFile)
-                    reactions = {
-                        t:Reaction(**r)
-                        for r in rawReactions.values()
-                        for t in r['triggers']
-                    }
-                    self.add(guild, reactions=reactions)
+            # Skip invalid guild snowflake.
+            if not re.match(r'^/{0,1}[0-9]{18}/{0,1}$', guild):
+                continue
 
-        except Exception as error:
-            self.log_error(error)
-            pass
+            try:
+                # Load personas.
+                personas = {
+                    k:Persona(**v)
+                    for k, v
+                    in json.load(get('personas')).items()
+                }
+                self.add(
+                    guild,
+                    personas=personas
+                )
+
+                # Load in and flatten phrases based of trigger phrases.
+                rawReactions = json.load(get('reactions'))
+                reactions = {
+                    t:Reaction(**r)
+                    for r in rawReactions.values()
+                    for t in r['triggers']
+                }
+                self.add(
+                    guild,
+                    reactions=reactions
+                )
+
+            except Exception as error:
+                self.log_error(error)
+                pass
 
 
     async def on_ready(self):
