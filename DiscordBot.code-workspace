@@ -18,8 +18,8 @@
 
 			"**/node_modules/**": true,
 			"**/browserslist": true,
-			"**/tsconfig.json": true,
-			"**/webpack.config.js": true
+			"**/tsconfig.json": false,
+			"**/webpack.config.js": false
 		},
 		"python.defaultInterpreterPath": "./env/bin/python3",
 		"python.pythonPath": "env/bin/python3"

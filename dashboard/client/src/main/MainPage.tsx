@@ -1,6 +1,6 @@
 import React from 'react';
 import { Personas } from '../personas/Personas';
-import { Reactions } from '../reactions/Reactions';
+import { Reaction, Reactions } from '../reactions/Reactions';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import StackGrid, { Grid } from 'react-stack-grid';
@@ -147,7 +147,7 @@ const MainPage = (
                     }
                 </StackGrid>
             </div>
-            {/* <div className='d-flex flex-row justify-content-between'>
+            <div className='d-flex flex-row justify-content-between'>
                 <h2>Bot Personas</h2>
                 <div className='align-self-center'>
                     <button
@@ -187,13 +187,17 @@ const MainPage = (
                                 <PersonaReactions
                                     key={persona.id}
                                     persona={persona}
-                                    reactions={reactions}
+                                    reactions={
+                                        [...reactions.values()].filter(
+                                            (reaction: Reaction) => reaction.persona === persona.id
+                                        )
+                                    }
                                     onResize={() => personaGridRef?.updateLayout()}
                                 />
                         )
                     }
                 </StackGrid>
-            </div> */}
+            </div>
         </div>
     )
 }
