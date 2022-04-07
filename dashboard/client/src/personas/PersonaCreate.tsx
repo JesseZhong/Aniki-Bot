@@ -44,7 +44,7 @@ const PersonaCreate = (props: {
                                     values.avatar
                                     ? <Avatar
                                         src={values.avatar}
-                                        alt='REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE'
+                                        name='REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE'
                                     />
                                     : <span>
                                         Preview

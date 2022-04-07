@@ -32,7 +32,7 @@ const GuildAPI = (
                             return;
                         }
 
-                        received(response.body as Guild);
+                        received(new Guild(response.body));
                     })
         );
     },
@@ -62,7 +62,7 @@ const GuildAPI = (
                             return;
                         }
 
-                        received(response.body as Guild);
+                        received(new Guild(response.body));
                     })
         );
     }

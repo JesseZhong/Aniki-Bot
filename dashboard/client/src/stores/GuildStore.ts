@@ -11,7 +11,7 @@ class GuildStore extends ReduceStore<Guild, ActionPayload> {
     }
 
     public getInitialState(): Guild {
-        return {};
+        return new Guild;
     }
 
     public reduce(state: Guild, action: ActionPayload): Guild {

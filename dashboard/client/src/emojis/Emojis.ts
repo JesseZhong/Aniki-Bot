@@ -7,10 +7,7 @@ export interface Emoji {
     guild_id?: string
 }
 
-export interface GuildEmojis {
-    id: string,
-    name: string,
-    icon?: string,
+export class GuildEmojis extends Guild {
     emojis?: Emoji[]
 }
 
@@ -42,11 +39,13 @@ export class Emojis extends Map<string, GuildEmojis> {
                     lookup: { [key: string]: Guild },
                     gEmojis: GuildEmojis
                 ) => {
-                    lookup[gEmojis.id] = {
-                        id: gEmojis.id,
-                        name: gEmojis.name,
-                        icon: gEmojis.icon
-                    };
+                    if (gEmojis.id) {
+                        lookup[gEmojis.id] = new Guild ({
+                            id: gEmojis.id,
+                            name: gEmojis.name,
+                            icon: gEmojis.icon
+                        });
+                    }
                     return lookup;
                 },
                 {}

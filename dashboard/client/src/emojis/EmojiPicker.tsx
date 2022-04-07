@@ -22,22 +22,6 @@ export const getEmojiUrl = (
 }
 
 /**
- * Generate the guild icon's CDN URI.
- * @param guild_id ID of the guild.
- * @param icon_hash Icon's identifying hash.
- * @returns Icon URI.
- */
-const getGuildIconUrl = (
-    guild_id: string,
-    icon_hash: string
-) => {
-    // Docs: https://discord.com/developers/docs/reference#image-formatting
-    // 'In the case of endpoints that support GIFs, the hash will begin with a_ if it is available in GIF format. (example: a_1269e74af4df7417b13759eae50c83dc)"'
-    const animated = /^a_.*/.test(icon_hash);
-    return `${cdnUrl}/icons/${guild_id}/${icon_hash}.${(animated ? 'gif' : 'png')}`;
-}
-
-/**
  * Randomly picks an emoji from what is available in the emoji store.
  * @returns A random emoji's CDN URI.
  */
@@ -80,23 +64,28 @@ const EmojiPicker = (props: {
     const guildIcon = (
         guild: GuildEmojis | Guild,
         onClick?: React.MouseEventHandler<HTMLDivElement>
-    ) => 
-    <div
-        key={guild.id}
-        className='guild-icon jar'
-        onClick={onClick}
-    >
-        {
-            guild.id && guild.icon
-            ? <img
-                src={getGuildIconUrl(guild.id, guild.icon)}
-                alt={guild.name}
-            />
-            : <div>
-                {guild?.name?.[0]}
+    ) => {
+        const guildIconUrl = guild.getIconUrl();
+
+        return (
+            <div
+                key={guild.id}
+                className='guild-icon jar'
+                onClick={onClick}
+            >
+                {
+                    guildIconUrl
+                    ? <img
+                        src={guildIconUrl}
+                        alt={guild.name}
+                    />
+                    : <div>
+                        {guild?.name?.[0]}
+                    </div>
+                }
             </div>
-        }
-    </div>;
+        );
+    }
 
     /**
      * Lists out all the emojis on the right pane of the picker, sorted by their guild.
