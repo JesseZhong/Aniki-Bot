@@ -145,7 +145,7 @@ WantedBy=multi-user.target
 "
     location="/etc/systemd/system/$1"
     sudo echo "$contents" > "$location"
-    sudo chmod +x "$location"
+    sudo chmod 755 "$location"
 }
 
 setup_bot_service() {
@@ -165,7 +165,7 @@ WantedBy=multi-user.target
 "
     location="/etc/systemd/system/$1"
     sudo echo "$contents" > "$location"
-    sudo chmod +x "$location"
+    sudo chmod 755 "$location"
 }
 
 deploy() {
@@ -199,23 +199,37 @@ deploy() {
         fi
 
         # Setup proxy for the api.
-        setup_api_nginx /etc/nginx/conf.d/aniki-api.conf
+        conf_file='/etc/nginx/conf.d/aniki-api.conf'
+        echo "Created configuration file at $conf_file."
+        setup_api_nginx "$conf_file"
+    
+    else
+        echo "Distro not supported. Exiting..."
+        exit
     fi
 
     # Restart NGINX
     sudo systemctl restart nginx
 
     # Setup services.
+    echo "Installing API service."
     apiserv='aniki-api.service'
-    botserv='aniki-bot.service'
     setup_api_service "$apiserv"
+
+    echo "Installing bot service."
+    botserv='aniki-bot.service'
     setup_bot_service "$botserv"
+
+    echo "Restarting daemon."
     sudo systemctl daemon-reload
 
     # Start service and enable for restart.
+    echo "Starting and enabling API."
     sudo systemctl start "$apiserv"
-    sudo systemctl start "$botserv"
     sudo systemctl enable "$apiserv"
+
+    echo "Starting and enabling bot."
+    sudo systemctl start "$botserv"
     sudo systemctl enable "$botserv"
 }
 
@@ -249,6 +263,10 @@ case "$arg1" in
     install | setup)
         install
         hash -p "$script_path/$base" "$base"
+    ;;
+    deploy)
+        echo "Beginning deployment."
+        deploy
     ;;
     dev | run)
         # GNOME desktop environment.
