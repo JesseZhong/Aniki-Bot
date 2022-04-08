@@ -15,13 +15,18 @@ SessionActions.load();
 
 const App = (state: AppState) => {
 
+    const defaultRoute = (
+        process.env.NODE_ENV !== 'production' && process.env.REACT_APP_START_PATH &&
+        <Route path='/' element={<Navigate replace to={process.env.REACT_APP_START_PATH} />} />
+    );
+
     const route = () => {
         if (state.session?.access_token) {
             return (
                 <Routes>
                     <Route path='/nope' element={<PageNotFound />} />
                     <Route
-                        path={`/g/:vanity`}
+                        path='/g/:vanity'
                         element={<VanityLayout session={state.session} guild={state.guild} />}
                     >
                         <Route
@@ -36,7 +41,7 @@ const App = (state: AppState) => {
                         />
                     </Route>
                     <Route
-                        path={`/:guild`}
+                        path='/:guild'
                         element={<GuildLayout session={state.session} guild={state.guild} />}
                     >
                         <Route
@@ -50,6 +55,7 @@ const App = (state: AppState) => {
                             }
                         />
                     </Route>
+                    {defaultRoute}
                     <Route path='*' element={<Navigate replace to='/nope' />} />
                 </Routes>
             )
@@ -66,8 +72,9 @@ const App = (state: AppState) => {
                         path='/authorized'
                         element={<FetchingAccess session={state.session}/>}
                     />
-                    <Route path={`/g/:vanity`} element={<RequestAuthorization session={state.session}/>} />
-                    <Route path={`/:guild`} element={<RequestAuthorization session={state.session}/>} />
+                    <Route path='/g/:vanity' element={<RequestAuthorization session={state.session}/>} />
+                    <Route path='/:guild' element={<RequestAuthorization session={state.session}/>} />
+                    {defaultRoute}
                     <Route path='*' element={<Navigate replace to='/denied' />} />
                 </Routes>
             );

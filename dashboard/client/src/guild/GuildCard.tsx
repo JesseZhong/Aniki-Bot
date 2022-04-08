@@ -11,8 +11,9 @@ const GuildCard = (props: {
     return (
         <div>
             <Avatar
-                src={guild.icon}
-                alt={guild.name}
+                src={guild.getIconUrl()}
+                name={guild.name}
+                size='2em'
             />
             <span>
                 {guild.name}

@@ -47,7 +47,7 @@ const PersonaCard = React.forwardRef(
 
                     <Avatar
                         src={persona.avatar}
-                        alt={persona.name}
+                        name={persona.name}
                     />
                     
                     <div className='ms-3 content'>
