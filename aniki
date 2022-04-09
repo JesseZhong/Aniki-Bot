@@ -105,7 +105,7 @@ setup_api_nginx() {
     [[ -e ".env" ]] && . .env
     [[ -v $DOMAIN ]] && domain=$DOMAIN || domain=localhost
     [[ -v $CERT_DOMAIN ]] && cert_domain=$CERT_DOMAIN || cert_domain=$domain
-    [[ -v $API_PORT ]] && port=$API_PORT || port=5102
+    [[ -v $API_PORT ]] && port=$API_PORT || port=5103
 
 contents="
 server {
@@ -130,15 +130,17 @@ server {
 
 setup_api_service() {
 
+    [[ -v $SUDO_USER ]] && user=$SUDO_USER || user=$USER
+
 contents="[Unit]
 Description=Aniki API Service
 After=network.target
 
 [Service]
-User=$USER
+User=$user
 WorkingDirectory=$script_path
 Environment='PATH=$script_path/env/bin'
-ExecStart=env/bin/python3 dashboard/server/main.py
+ExecStart=$scipt_path/env/bin/uwsgi --ini dashboard/api/api.ini --enable-threads
 
 [Install]
 WantedBy=multi-user.target
@@ -150,15 +152,17 @@ WantedBy=multi-user.target
 
 setup_bot_service() {
 
+    [[ -v $SUDO_USER ]] && user=$SUDO_USER || user=$USER
+
 contents="[Unit]
 Description=Aniki Bot Service
 After=network.target
 
 [Service]
-User=$USER
+User=$user
 WorkingDirectory=$script_path
 Environment='PATH=$script_path/env/bin'
-ExecStart=env/bin/python3 src/bot.py
+ExecStart=$script_path/env/bin/python3 bot/main.py
 
 [Install]
 WantedBy=multi-user.target
