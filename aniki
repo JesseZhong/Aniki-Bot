@@ -110,7 +110,7 @@ setup_api_nginx() {
 contents="
 server {
     listen 443 ssl;
-    listen [::]:443 ipv6only=on;
+    listen [::]:443;
     server_name $domain;
 
     location / {
@@ -140,7 +140,7 @@ After=network.target
 User=$user
 WorkingDirectory=$script_path
 Environment='PATH=$script_path/env/bin'
-ExecStart=$scipt_path/env/bin/uwsgi --ini dashboard/api/api.ini --enable-threads
+ExecStart=$script_path/env/bin/uwsgi --ini dashboard/api/api.ini --enable-threads
 
 [Install]
 WantedBy=multi-user.target

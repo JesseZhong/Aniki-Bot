@@ -22,7 +22,7 @@ bot.load()
 watcher = FileWatcher(DATA_DIR, bot.load)
 
 # Do et.
-bot.start(API_TOKEN)
+bot.run(API_TOKEN)
 
 # Kill the watcher when the bot is done.
 watcher.stop()
