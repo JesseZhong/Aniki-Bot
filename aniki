@@ -59,7 +59,7 @@ activate() {
 
 run_bot() {
     activate
-    python3 bot/main.py
+    python3 -m bot.main
     deactivate
 }
 
@@ -162,7 +162,7 @@ After=network.target
 User=$user
 WorkingDirectory=$script_path
 Environment='PATH=$script_path/env/bin'
-ExecStart=$script_path/env/bin/python3 bot/main.py
+ExecStart=$script_path/env/bin/python3 -m bot.main
 
 [Install]
 WantedBy=multi-user.target
