@@ -1,5 +1,4 @@
 import React from 'react';
-import { CSSProperties } from '@emotion/serialize';
 import './Avatar.sass';
 
 const Avatar = (props: {
