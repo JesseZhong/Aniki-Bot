@@ -1,21 +1,26 @@
 import React from 'react';
 import Avatar from '../common/Avatar';
 import { Guild } from './Guild';
+import './GuildCard.sass';
 
 
 const GuildCard = (props: {
-    guild: Guild
+    guild: Guild,
+    style?: React.CSSProperties
 }) => {
-    const guild = props.guild;
+    const { guild, style } = props;
 
     return (
-        <div>
+        <div
+            className='guild-card d-flex flex-row align-items-center'
+            style={style}
+        >
             <Avatar
                 src={guild.getIconUrl()}
                 name={guild.name}
                 size='2em'
             />
-            <span>
+            <span className='ms-2'>
                 {guild.name}
             </span>
         </div>

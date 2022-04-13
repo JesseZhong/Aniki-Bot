@@ -91,24 +91,31 @@ const MainPage = (
 
     const existingNames = new Set(compact([...personas.values()].map((persona) => persona.name)));
 
+    const reactionsWidth = `${reactionCols * reactionCardWidth + ((reactionCols - 1) * gutter)}px`;
+
+    const personasWidth = `${personaCols * personaCardWidth + ((personaCols - 1) * gutter)}px`;
+
     return (
         <div
             ref={pageRef}
             className='main-page'
         >
-            <div className='d-flex flex-row justify-content-between'>
+            <div
+                className='mx-auto pt-3 mb-2'
+                style={{
+                    maxWidth: reactionsWidth
+                }}
+            >
                 <h1>
                     Reactions
-                </h1>
-                <div className='align-self-center'>
                     <button
                         type='button'
                         className='btn btn-outline-white text-primary'
                         onClick={() => setAddNewReaction(!addNewReaction)}
                     >
-                        <FontAwesomeIcon icon={faPlus} /> Reaction
+                        <FontAwesomeIcon icon={faPlus} />
                     </button>
-                </div>
+                </h1>
             </div>
             <div className='mb-5'>
                 {
@@ -116,7 +123,7 @@ const MainPage = (
                     <div
                         className='reaction-add my-3 mx-auto'
                         style={{
-                            maxWidth: `${reactionCols * reactionCardWidth + ((reactionCols - 1) * gutter)}px`
+                            maxWidth: reactionsWidth
                         }}
                     >
                         <ReactionCardEdit
@@ -129,6 +136,7 @@ const MainPage = (
                     gutterWidth={gutter}
                     gutterHeight={gutter}
                     gridRef={grid => setReactionGridRef(grid)}
+                    itemComponent='div'
                 >
                     {
                         reactions &&
@@ -147,17 +155,22 @@ const MainPage = (
                     }
                 </StackGrid>
             </div>
-            <div className='d-flex flex-row justify-content-between'>
-                <h2>Bot Personas</h2>
-                <div className='align-self-center'>
+            <div
+                className='d-flex flex-row justify-content-between mx-auto'
+                style={{
+                    maxWidth: personasWidth
+                }}
+            >
+                <h2>
+                    Bot Personas
                     <button
                         type='button'
                         className='btn btn-outline-white text-primary'
                         onClick={() => setAddNewPersona(!addNewPersona)}
                     >
-                        <FontAwesomeIcon icon={faPlus} /> Persona
+                        <FontAwesomeIcon icon={faPlus} />
                     </button>
-                </div>
+                </h2>
             </div>
             <div>
                 {
@@ -165,7 +178,7 @@ const MainPage = (
                     <div
                         className='my-3 mx-auto'
                         style={{
-                            maxWidth: `${personaCols * personaCardWidth + ((personaCols - 1) * gutter)}px`
+                            maxWidth: personasWidth
                         }}
                     >
                         <PersonaCreate

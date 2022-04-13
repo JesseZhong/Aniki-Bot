@@ -1,9 +1,9 @@
 import React from 'react';
-import { Outlet, useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import VanityActions from '../actions/VanityActions';
 import { Session } from '../auth/Session';
 import { Guild } from '../guild/Guild';
-import GuildCard from '../guild/GuildCard';
+import LayoutFragment from './LayoutFragment';
 
 
 const VanityLayout = (props: {
@@ -28,12 +28,7 @@ const VanityLayout = (props: {
         ]
     );
 
-    return (
-        <>
-            <GuildCard guild={props.guild} />
-            <Outlet />
-        </>
-    );
+    return <LayoutFragment guild={props.guild} />;
 }
 
 export default VanityLayout;

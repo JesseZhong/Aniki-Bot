@@ -58,7 +58,7 @@ const App = (state: AppState) => {
                     {defaultRoute}
                     <Route path='*' element={<Navigate replace to='/nope' />} />
                 </Routes>
-            )
+            );
         }
 
         else {

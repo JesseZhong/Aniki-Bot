@@ -1,9 +1,9 @@
 import React from 'react';
-import { Outlet, useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import GuildActions from '../actions/GuildActions';
 import { Session } from '../auth/Session';
 import { Guild } from '../guild/Guild';
-import GuildCard from '../guild/GuildCard';
+import LayoutFragment from './LayoutFragment';
 
 
 const GuildLayout = (props: {
@@ -28,12 +28,7 @@ const GuildLayout = (props: {
         ]
     );
 
-    return (
-        <>
-            <GuildCard guild={props.guild} />
-            <Outlet />
-        </>
-    );
+    return <LayoutFragment guild={props.guild} />;
 }
 
 export default GuildLayout;

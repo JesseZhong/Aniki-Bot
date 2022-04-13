@@ -6,7 +6,7 @@ phases:
       nodejs: 12
     commands:
       - npm i -g yarn --unsafe-perm
-      - npm i -g serverless@2.64.1 --unsafe-perm
+      - npm i -g serverless@3.9.2 --unsafe-perm
   build:
     commands:
       - cd ./dashboard/client/ && ./publish
