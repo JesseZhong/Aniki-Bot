@@ -8,4 +8,4 @@ phases:
       - npm i -g yarn --unsafe-perm
   build:
     commands:
-      - ./goob deploy
+      - ./aniki publish
