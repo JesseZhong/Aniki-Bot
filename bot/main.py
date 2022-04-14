@@ -4,7 +4,6 @@ import os
 from dotenv import load_dotenv
 from bot.bot import Bot
 from bot.filewatcher import FileWatcher
-from pathlib import Path
 
 
 load_dotenv()

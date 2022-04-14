@@ -4,6 +4,7 @@ import json
 import logging
 import traceback
 from os import path
+from pathlib import Path
 from logging.handlers import RotatingFileHandler
 from discord import Client, Message, Member
 from bot.persona import Persona
@@ -24,6 +25,7 @@ class Bot(Client):
         super().__init__()
 
         # Setup logging.
+        Path(log_location).mkdir(parents=True, exist_ok=True)
         self.logger = logging.getLogger('Error Log')
         self.logger.setLevel(logging.ERROR)
         handler = RotatingFileHandler(
@@ -59,20 +61,24 @@ class Bot(Client):
         """
 
         # Get permitted guilds.
-        guilds = [g for g in get('guild') if g]
+        guilds = [g for g in get('guilds') if g]
+        print(guilds)
 
         for guild in guilds:
 
             # Skip invalid guild snowflake.
-            if not re.match(r'^/{0,1}[0-9]{18}/{0,1}$', guild):
+            if not re.match(r'^[0-9]{18}$', guild):
                 continue
 
             try:
+                # Get all data for the guild.
+                data = get(guild)
+
                 # Load personas.
                 personas = {
                     k:Persona(**v)
                     for k, v
-                    in json.load(get('personas')).items()
+                    in data['personas'].items()
                 }
                 self.add(
                     guild,
@@ -80,7 +86,7 @@ class Bot(Client):
                 )
 
                 # Load in and flatten phrases based of trigger phrases.
-                rawReactions = json.load(get('reactions'))
+                rawReactions = data['reactions']
                 reactions = {
                     t:Reaction(**r)
                     for r in rawReactions.values()
@@ -92,6 +98,7 @@ class Bot(Client):
                 )
 
             except Exception as error:
+                print(error)
                 self.log_error(error)
                 pass
 
