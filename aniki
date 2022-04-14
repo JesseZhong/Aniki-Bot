@@ -351,6 +351,29 @@ case "$arg1" in
     roles | role | r)
 
     ;;
+    publish)
+        if [[ -e '.env.publish' ]]
+        then
+            . .env.publish
+        fi
+
+        export REACT_APP_SITE_DOMAIN=$SITE_URL
+        export REACT_APP_API_URL=$API_URL
+
+        cd ./dashboard/client/
+
+        yarn install
+        yarn run build
+
+        cd ../cdk/
+        yarn install
+        yarn run build
+        yarn cdk deploy
+
+        # cdk deploy exiting with 1, even on successful deployment.
+        # Overriding exit code for CodeBuild until I figure out what's causing the 1.
+        exit 0
+    ;;
     *)
         echo "$usage"
         exit

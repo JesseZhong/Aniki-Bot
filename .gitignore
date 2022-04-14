@@ -67,3 +67,11 @@ node_modules/
 *.pem
 *.csr
 *.key
+
+# Outputs
+!**/cdk/lib/
+**/cdk/**/*.js
+**/cdk/**/*.d.ts
+**/cdk/cdk.out/
+ssr-build/
+cdk.context.json
