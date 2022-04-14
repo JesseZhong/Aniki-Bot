@@ -156,12 +156,13 @@ setup_bot_service() {
 
 contents="[Unit]
 Description=Aniki Bot Service
-After=network.target
+After=multi-user.target
 
 [Service]
 User=$user
+Type=idle
 WorkingDirectory=$script_path
-Environment='PATH=$script_path/env/bin'
+Environment='PATH=$script_path/env/bin:/usr/local/bin:$PATH'
 ExecStart=$script_path/env/bin/python3 -m bot.main
 
 [Install]
