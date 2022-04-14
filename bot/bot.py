@@ -62,7 +62,6 @@ class Bot(Client):
 
         # Get permitted guilds.
         guilds = [g for g in get('guilds') if g]
-        print(guilds)
 
         for guild in guilds:
 
@@ -75,27 +74,29 @@ class Bot(Client):
                 data = get(guild)
 
                 # Load personas.
-                personas = {
-                    k:Persona(**v)
-                    for k, v
-                    in data['personas'].items()
-                }
-                self.add(
-                    guild,
-                    personas=personas
-                )
+                if 'personas' in data:
+                    personas = {
+                        k:Persona(**v)
+                        for k, v
+                        in data['personas'].items()
+                    }
+                    self.add(
+                        guild,
+                        personas=personas
+                    )
 
                 # Load in and flatten phrases based of trigger phrases.
-                rawReactions = data['reactions']
-                reactions = {
-                    t:Reaction(**r)
-                    for r in rawReactions.values()
-                    for t in r['triggers']
-                }
-                self.add(
-                    guild,
-                    reactions=reactions
-                )
+                if 'reactions' in data:
+                    rawReactions = data['reactions']
+                    reactions = {
+                        t:Reaction(**r)
+                        for r in rawReactions.values()
+                        for t in r['triggers']
+                    }
+                    self.add(
+                        guild,
+                        reactions=reactions
+                    )
 
             except Exception as error:
                 print(error)
