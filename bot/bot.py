@@ -1,6 +1,4 @@
 #!/bin/python
-
-import json
 import logging
 import traceback
 from os import path
