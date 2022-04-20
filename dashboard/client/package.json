@@ -52,6 +52,7 @@
     "react": "^17.0.2",
     "react-bootstrap": "^2.1.2",
     "react-dom": "^17.0.2",
+    "react-lite-youtube-embed": "^2.2.1-a",
     "react-router-dom": "^6.2.1",
     "react-stack-grid": "^0.7.1",
     "react-tenor": "^2.2.0",

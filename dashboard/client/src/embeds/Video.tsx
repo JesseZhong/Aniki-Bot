@@ -1,4 +1,6 @@
 import React from 'react';
+import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 import './Video.sass';
 
 const aspect_ratio = 0.5625;
@@ -16,7 +18,8 @@ const Video = (
     }
 ) => {
     const PARENT_DOMAIN = process.env.REACT_APP_SITE_DOMAIN;
-    const url = props.url;
+    const { url, width, className } = props;
+
     if (!url) {
         return (<></>);
     }
@@ -28,12 +31,9 @@ const Video = (
     const twMatch = url.match(twitchRegex);
 
     // Check if it's a Youtube video.
+    let ytid;
     if (ytMatch?.groups) {
-        const id = ytMatch.groups['id'];
-        if (id) {
-            src = `https://www.youtube.com/embed/${id}`;
-            title = id;
-        }
+        ytid = ytMatch.groups['id'];
     }
 
     // Check if it's a Twitch clip.
@@ -46,26 +46,44 @@ const Video = (
         }
     }
 
-    if (src) {
+    const height = width
+        ? width * aspect_ratio
+        : undefined;
+
+    if (src || ytid) {
         return (
             <div
                 className={
                     'd-flex justify-content-center video' +
-                    (props.className ? ` ${props.className}` : '')
+                    (className ? ` ${className}` : '')
                 }
             >
-                <iframe
-                    width={props.width}
-                    height={
-                        props.width
-                        ? props.width * aspect_ratio
-                        : undefined
-                    }
-                    className={props.className}
-                    src={src}
-                    title={title}
-                    allowFullScreen
-                />
+                {
+                    ytid
+                    ? <div
+                        style={{
+                            width: width,
+                            minWidth: width,
+                            height: height,
+                            minHeight: height
+                        }}
+                    >
+                        <LiteYouTubeEmbed
+                            id={ytid}
+                            title={title}
+                            adNetwork={false}
+                        />
+                    </div>
+                    : <iframe
+                        loading='lazy'
+                        width={width}
+                        height={height}
+                        className={className}
+                        src={src}
+                        title={title}
+                        allowFullScreen
+                    />
+                }
             </div>
         )
     }
