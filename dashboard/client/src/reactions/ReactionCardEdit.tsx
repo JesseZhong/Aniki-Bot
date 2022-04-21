@@ -5,7 +5,7 @@ import { Reaction } from './Reactions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import VideoEditor from '../embeds/VideoEditor';
-import Message from '../embeds/Message';
+import Message from '../embeds/Message/Message';
 import ReactionValidation from './ReactionValidation';
 import ReactionActions from '../actions/ReactionActions';
 import { v4 as uuid } from 'uuid';

@@ -3,18 +3,18 @@ const cdnUrl = 'https://cdn.discordapp.com';
 export class Guild {
 
     constructor(
-        obj?: {
+        guild?: {
             id?: string,
             name?: string,
             icon?: string
         }
     ) {
-        if (obj) {
+        if (guild) {
             ({
                 id: this.id,
                 name: this.name,
                 icon: this.icon
-            } = obj);
+            } = guild);
         }
     }
 

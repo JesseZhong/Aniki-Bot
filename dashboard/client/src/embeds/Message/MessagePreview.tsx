@@ -1,4 +1,4 @@
-import Media, { mediaRegex } from '../embeds/Media';
+import Media, { mediaRegex } from '../Media';
 import './MessagePreview.sass';
 
 const MessagePreview = (props: {

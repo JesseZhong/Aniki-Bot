@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
-import { getState } from '../containers/AppContainer';
+import { getState } from '../../containers/AppContainer';
 import { ErrorMessage, FieldHookConfig, useField } from 'formik';
-import EmojiPicker, { emojiRegex, getEmojiUrl, getRandomEmoji, ungroupedEmojiRegex } from '../emojis/EmojiPicker';
+import EmojiPicker, { emojiRegex, getEmojiUrl, getRandomEmoji, ungroupedEmojiRegex } from '../../emojis/EmojiPicker';
 import Tenor, { Result } from 'react-tenor';
-import { imageRegex, mediaRegex } from './Media';
+import { imageRegex, mediaRegex } from '../Media';
 import './Message.sass';
 import './ReactTenor.sass';
 

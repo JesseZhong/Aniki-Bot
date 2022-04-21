@@ -8,7 +8,7 @@ test('should display name initials if no image was provided', () => {
 
     const { getByText } = render(<Avatar name={name} />);
 
-    expect(getByText(name[0], { exact: true})).toHaveTextContent(name[0]);
+    expect(getByText(name[0], { exact: true })).toHaveTextContent(name[0]);
 });
 
 test('should display image if the source is provided', () => {

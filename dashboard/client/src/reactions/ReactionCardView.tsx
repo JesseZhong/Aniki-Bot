@@ -1,6 +1,6 @@
 import { Reaction } from './Reactions';
 import AudioCard from '../embeds/AudioCard';
-import MessagePreview from '../embeds/MessagePreview';
+import MessagePreview from '../embeds/Message/MessagePreview';
 import './ReactionCardView.sass';
 
 const ReactionCardView = (props: {

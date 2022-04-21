@@ -25,7 +25,7 @@ module.exports = {
     moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
 
     moduleNameMapper: {
-      "^.+\\.(css|less|scss|sass)$": "identity-obj-proxy"
+      "^.+\\.(css|less|scss|sass|png|jpe{0,1}g)$": "identity-obj-proxy"
     },
 
     testEnvironment: "jsdom"

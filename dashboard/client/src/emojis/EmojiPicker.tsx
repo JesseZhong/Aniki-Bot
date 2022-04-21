@@ -5,6 +5,8 @@ import { Guild } from '../guild/Guild';
 import './EmojiPicker.sass';
 
 const cdnUrl = 'https://cdn.discordapp.com';
+
+// ex. <a:widePeepoHappy:887114394117480480>
 export const emojiRegex = /^<[a-z0-9_]*:(?<name>[a-z0-9_]{2,}):(?<id>[0-9]+)>$/i;
 export const ungroupedEmojiRegex = /(<[a-z0-9_]*:[a-z0-9_]{2,}:[0-9]+>)/i;
 
