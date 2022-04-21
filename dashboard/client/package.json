@@ -10,12 +10,17 @@
     "react-eject": "react-scripts eject",
     "flow": "flow-remove-types app/ -d src/",
     "start": "PORT=4200 HTTPS=true npm run react-start",
-    "build": "craco build"
+    "build": "craco build",
+    "test": "jest",
+    "start-tests": "jest --watch"
   },
   "devDependencies": {
     "@babel/core": "^7.14.0",
+    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/react": "^12.0.4",
     "@types/classnames": "^2.3.1",
     "@types/flux": "^3.1.9",
+    "@types/jest": "^27.4.1",
     "@types/lodash": "^4.14.168",
     "@types/node-uuid": "^0.0.28",
     "@types/react": "^17.0.5",
@@ -26,11 +31,14 @@
     "@types/uuid": "^8.3.4",
     "@types/yup": "^0.29.11",
     "flow-remove-types": "^2.150.1",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^27.5.1",
     "react-scripts": "^5.0.0",
     "sass-embedded": "^1.49.11",
     "sass-loader": "^12.6.0",
     "source-map-loader": "^0.2.4",
     "speed-measure-webpack-plugin": "^1.5.0",
+    "ts-jest": "^27.1.4",
     "ts-loader": "^9.1.2",
     "typescript": "^4.5.5"
   },

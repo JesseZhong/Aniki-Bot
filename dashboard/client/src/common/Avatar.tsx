@@ -22,7 +22,7 @@ const Avatar = (props: {
         ? <img
             className='avatar'
             src={src}
-            alt={name}
+            alt={name ?? 'avatar'}
             style={style}
         />
         : <span
