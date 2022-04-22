@@ -1,4 +1,4 @@
-import { emojiRegex, getEmojiUrl, ungroupedEmojiRegex } from "../../emojis/EmojiPicker";
+import { emojiRegex, ungroupedEmojiRegex } from "../../emojis/EmojiPicker";
 import { Emojis } from "../../emojis/Emojis";
 import { imageRegex, mediaRegex } from "../Media";
 import { MessageNode, MessageNodeType } from "./MessageNode";
@@ -161,7 +161,7 @@ export class MessageTree {
 
                 // Wrap paragraphs with tags.
                 case MessageNodeType.PARAGRAPH:
-                    return <p>
+                    return <p key={index} data-testid='paragraph'>
                         {node.children?.map((part, index) => this.render_part(emojis, part, index))}
                     </p>;
 
@@ -214,7 +214,7 @@ export class MessageTree {
                             ? this.wrap_part(
                                 'emoji',
                                 <img
-                                    src={getEmojiUrl(emoji.id, emoji.animated)}
+                                    src={emoji.getEmojiUrl()}
                                     alt={`:${emoji.name}:`}
                                     data-emoji={emoji.id}
                                     className='emoji'
@@ -262,6 +262,7 @@ export class MessageTree {
             className={attributes?.className}
             contentEditable={attributes?.editable}
             suppressContentEditableWarning={attributes?.editable}
+            data-testid='message-part'
         >
             {content}
         </span>;

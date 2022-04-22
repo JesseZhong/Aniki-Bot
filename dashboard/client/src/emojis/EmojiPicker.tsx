@@ -4,24 +4,11 @@ import { Emoji, GuildEmojis } from './Emojis';
 import { Guild } from '../guild/Guild';
 import './EmojiPicker.sass';
 
-const cdnUrl = 'https://cdn.discordapp.com';
 
 // ex. <a:widePeepoHappy:887114394117480480>
 export const emojiRegex = /^<[a-z0-9_]*:(?<name>[a-z0-9_]{2,}):(?<id>[0-9]+)>$/i;
 export const ungroupedEmojiRegex = /(<[a-z0-9_]*:[a-z0-9_]{2,}:[0-9]+>)/i;
 
-/**
- * Generate an emoji's CDN URI.
- * @param id Identifying snowflake for the emoji.
- * @param animated GIF/APNG or flat image.
- * @returns Emoji's URI.
- */
-export const getEmojiUrl = (
-    id: string,
-    animated?: boolean
-) => {
-    return `${cdnUrl}/emojis/${id}.${(animated ? 'gif' : 'png')}`;
-}
 
 /**
  * Randomly picks an emoji from what is available in the emoji store.
@@ -36,7 +23,7 @@ export const getRandomEmoji = (): string | null => {
 
     const index = Math.floor(Math.random() * emojis.emoji_list.length);
     const emoji = emojis.emoji_list[index];
-    return getEmojiUrl(emoji.id, emoji.animated);
+    return emoji.getEmojiUrl();
 }
 
 /**
@@ -127,10 +114,7 @@ const EmojiPicker = (props: {
                         onClick={() => props.onClick(`<:${emoji.name}:${emoji.id}>`)}
                     >
                         <img
-                            src={getEmojiUrl(
-                                emoji.id,
-                                emoji.animated
-                            )}
+                            src={emoji.getEmojiUrl()}
                             alt={emoji.name}
                         />
                     </div>;
@@ -158,7 +142,7 @@ const EmojiPicker = (props: {
                 <div className='d-flex flex-row ms-2'>
                     <div className='emoji d-flex flex-column justify-content-center me-2'>
                         <img
-                            src={getEmojiUrl(selected.id)}
+                            src={selected.getEmojiUrl()}
                             alt={name}
                         />
                     </div>

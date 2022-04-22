@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { getState } from '../../containers/AppContainer';
 import { ErrorMessage, FieldHookConfig, useField } from 'formik';
-import EmojiPicker, { emojiRegex, getEmojiUrl, getRandomEmoji, ungroupedEmojiRegex } from '../../emojis/EmojiPicker';
+import EmojiPicker, { emojiRegex, getRandomEmoji, ungroupedEmojiRegex } from '../../emojis/EmojiPicker';
 import Tenor, { Result } from 'react-tenor';
 import { imageRegex, mediaRegex } from '../Media';
 import './Message.sass';
@@ -223,7 +223,7 @@ const Message = (
                                 ? wrapContent(
                                     'image',
                                     <img
-                                        src={getEmojiUrl(emoji.id, emoji.animated)}
+                                        src={emoji.getEmojiUrl()}
                                         alt={`:${emoji.name}:`}
                                         data-emoji={emoji.id}
                                         className='emoji'

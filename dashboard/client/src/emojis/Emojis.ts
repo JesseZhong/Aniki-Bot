@@ -1,10 +1,39 @@
 import { Guild } from "../guild/Guild";
 
-export interface Emoji {
-    id: string,
-    name: string,
-    animated?: boolean,
-    guild_id?: string
+const cdnUrl = 'https://cdn.discordapp.com';
+
+export class Emoji {
+
+    constructor(
+        emoji: {
+            id: string,
+            name: string,
+            animated?: boolean,
+            guild_id?: string
+        }
+    ) {
+        ({
+            id: this.id,
+            name: this.name,
+            animated: this.animated,
+            guild_id: this.guild_id
+        } = emoji);
+    }
+
+    public id: string;
+    public name: string;
+    public animated?: boolean;
+    public guild_id?: string;
+
+    /**
+     * Generate an emoji's CDN URI.
+     * @param id Identifying snowflake for the emoji.
+     * @param animated GIF/APNG or flat image.
+     * @returns Emoji's URI.
+     */
+    public getEmojiUrl() {
+        return `${cdnUrl}/emojis/${this.id}.${(this.animated ? 'gif' : 'png')}`;
+    }
 }
 
 export class GuildEmojis extends Guild {
@@ -13,10 +42,26 @@ export class GuildEmojis extends Guild {
 
 export class Emojis extends Map<string, GuildEmojis> {
 
-    public readonly emoji_list: Emoji[];
-    public readonly emoji_lookup: Map<string, Emoji>;
-    public readonly guild_emoji_list: GuildEmojis[];
-    public readonly guild_lookup: Map<string, Guild>;
+    private readonly _emoji_list: Emoji[];
+    private readonly _emoji_lookup: Map<string, Emoji>;
+    private readonly _guild_emoji_list: GuildEmojis[];
+    private readonly _guild_lookup: Map<string, Guild>;
+
+    public get emoji_lookup() {
+        return this._emoji_lookup;
+    }
+
+    public get emoji_list() {
+        return this._emoji_list
+    }
+
+    public get guild_emoji_list() {
+        return this._guild_emoji_list;
+    }
+
+    public get guild_lookup() {
+        return this._guild_lookup;
+    }
 
     constructor(
         entries?: readonly (
@@ -31,10 +76,10 @@ export class Emojis extends Map<string, GuildEmojis> {
             const guildEmojisList = [...entries.values()]
 
             // Get just a list of guild emojis without the guild id.
-            this.guild_emoji_list = guildEmojisList.map(([_key, gEmojis]) => gEmojis);
+            this._guild_emoji_list = guildEmojisList.map(([_key, gEmojis]) => gEmojis);
 
             // Get guilds by their ids.
-            const guildObj = this.guild_emoji_list.reduce(
+            const guildObj = this._guild_emoji_list.reduce(
                 (
                     lookup: { [key: string]: Guild },
                     gEmojis: GuildEmojis
@@ -50,13 +95,13 @@ export class Emojis extends Map<string, GuildEmojis> {
                 },
                 {}
             );
-            this.guild_lookup = new Map(Object.entries(guildObj));
+            this._guild_lookup = new Map(Object.entries(guildObj));
 
             // Get a flattened list of all the emojis.
-            this.emoji_list = guildEmojisList.map(([_key, gEmojis]) => gEmojis.emojis ?? []).flat();
+            this._emoji_list = guildEmojisList.map(([_key, gEmojis]) => gEmojis.emojis ?? []).flat();
 
             // Get a mapping of emoji name:id to their emojis.
-            const emojiObj = this.emoji_list.reduce(
+            const emojiObj = this._emoji_list.reduce(
                 (
                     lookup: { [key: string]: Emoji},
                     emoji: Emoji
@@ -68,13 +113,13 @@ export class Emojis extends Map<string, GuildEmojis> {
                 },
                 {}
             )
-            this.emoji_lookup = new Map(Object.entries(emojiObj));
+            this._emoji_lookup = new Map(Object.entries(emojiObj));
         }
         else {
-            this.emoji_list = [];
-            this.emoji_lookup = new Map();
-            this.guild_emoji_list = [];
-            this.guild_lookup = new Map();
+            this._emoji_list = [];
+            this._emoji_lookup = new Map();
+            this._guild_emoji_list = [];
+            this._guild_lookup = new Map();
         }
     }
 }

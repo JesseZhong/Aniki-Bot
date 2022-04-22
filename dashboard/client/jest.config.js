@@ -28,5 +28,13 @@ module.exports = {
       "^.+\\.(css|less|scss|sass|png|jpe{0,1}g)$": "identity-obj-proxy"
     },
 
-    testEnvironment: "jsdom"
+    testEnvironment: "jsdom",
+
+    preset: "ts-jest",
+
+    globals: {
+      "ts-jest": {
+        isolatedModules: true
+      }
+    }
   };
