@@ -26,7 +26,7 @@ beforeAll(() => {
             'test-emote:123456',
             new Emoji({
                 id: '123456',
-                name: 'test-emote'
+                name: 'test_emote'
             })
         ],
         [
@@ -106,5 +106,36 @@ test('should render text separated by line breaks as paragraphs', () => {
 })
 
 test('should render all message parts correctly and in order', () => {
+    const text = '<:test_emote:123456>Hi frands! <:widePeepoHappy:7777777> Welcome.\nhttps://twatch.tb\nHere\'s a funny meme: https://img.nicememe.com/happy.gif';
 
+    const { getAllByTestId } = renderTree(text);
+
+    const parts = getAllByTestId('message-part');
+
+    expect(parts.length).toEqual(7);
+
+    const assertType = (index: number, type: string) => {
+        expect(parts[index].getAttribute('data-text-type')).toEqual(type);
+    }
+
+    // Emote: <:test_emote:123456>
+    assertType(0, 'emoji');
+
+    // Text: 'Hi frands! '
+    assertType(1, 'text');
+
+    // Emote: <:widePeepoHappy:7777777>
+    assertType(2, 'emoji');
+
+    // Text: ' Welcome.'
+    assertType(3, 'text');
+
+    // Link: 'https://twatch.tb'
+    assertType(4, 'link');
+
+    // Text: "Here's a funny meme: "
+    assertType(5, 'text');
+
+    // Image: 'https://img.nicememe.com/happy.gif'
+    assertType(6, 'image');
 });

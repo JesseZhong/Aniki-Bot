@@ -83,7 +83,12 @@ export class MessageTree {
         else {
 
             // Breakout text into recognizable parts.
-            const parts = text?.split(new RegExp(`${mediaRegex.source}|${ungroupedEmojiRegex.source}`))
+            const parts = text?.split(
+                    new RegExp(
+                        `${mediaRegex.source}|${ungroupedEmojiRegex.source}`,
+                        'i'
+                    )
+                )
                 .filter(w => w);
 
             // No parts? Send it back as is.
