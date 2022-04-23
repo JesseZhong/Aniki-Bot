@@ -238,6 +238,14 @@ test('should rerender paragraphs properly', () => {
     expect(getAllByTestId('paragraph').length).toEqual(5);
 });
 
+test('should rerender text with linebreaks as paragraphs', () => {
+    const { getAllByTestId } = treeRerender(<>
+        sussy<br/>baka<br/>yuh
+    </>);
+
+    expect(getAllByTestId('paragraph').length).toEqual(3);
+});
+
 test('should rerender produceable nodes similar to the original', () => {
 
     const { getAllByRole, getAllByTestId } = treeRerender(<>

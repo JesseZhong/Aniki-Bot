@@ -352,6 +352,12 @@ export class MessageTree {
 
                     result += (node as HTMLAnchorElement).href;
                 }
+
+                // Line breaks man.
+                else if (node instanceof HTMLBRElement) {
+
+                    result += '\n';
+                }
             }
         )
 
