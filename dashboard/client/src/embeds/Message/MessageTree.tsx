@@ -1,3 +1,4 @@
+import React from "react";
 import { emojiRegex, ungroupedEmojiRegex } from "../../emojis/EmojiPicker";
 import { Emojis } from "../../emojis/Emojis";
 import { imageRegex, mediaRegex } from "../Media";
@@ -6,25 +7,21 @@ import { MessageNode, MessageNodeType } from "./MessageNode";
 
 export class MessageTree {
 
-    private _text: string;
     private _root?: MessageNode;
 
     constructor(
         text?: string
     ) {
-        this._text = text ?? '';
-        this.populate();
-    }
-
-    public get() {
-        return this._text;
+        this.populate(text);
     }
 
     /**
      * Breakdown the text and build out the message tree.
      */
-    private populate(): void {
-        this._root = this.breakdown(this._text);
+    private populate(text?: string): void {
+        if (text) {
+            this._root = this.breakdown(text);
+        }
     }
 
     /**
@@ -39,7 +36,7 @@ export class MessageTree {
         if (!node) {
 
             // Breakdown into lines.
-            const lines = text?.split('\n').filter(w => w);
+            const lines = text?.split('\n');
 
             // Nothing? Empty tree it is.
             if (!lines) {
@@ -271,5 +268,93 @@ export class MessageTree {
         >
             {content}
         </span>;
+    }
+
+    /**
+     * Parses nodes and populate the message tree with the result.
+     */
+    public parse(nodes: NodeList): void {
+
+        this.populate(this.flatten_nodes(nodes));
+    }
+
+    /**
+     * Recursively traverse nodes, flattening them out to plain text.
+     */
+    private flatten_nodes(
+        nodes: NodeList,
+        max_depth: number = 10
+    ): string {
+
+        // Drop everything past the max depth.
+        if (max_depth <= 0) {
+            return '';
+        }
+
+        let result = '';
+
+        nodes.forEach(
+            (node: Node) => {
+
+                // Plain text.
+                if (node instanceof Text) {
+                    result += (node as Text).nodeValue;
+                }
+
+                // Layouts.
+                else if (
+                    node instanceof HTMLDivElement ||
+                    node instanceof HTMLSpanElement ||
+                    node instanceof HTMLParagraphElement
+                ) {
+                    // Add newline for paragraph if there's a node before.
+                    if (node instanceof HTMLParagraphElement && node.previousSibling) {
+                        result += '\n';
+                    }
+
+                    if (node.hasChildNodes()) {
+                        result += this.flatten_nodes(
+                            node.childNodes,
+                            max_depth - 1
+                        );
+                    }
+
+                    // Add newline for paragraph if there is a non-paragraph node after.
+                    if (
+                        node instanceof HTMLParagraphElement &&
+                        node.nextSibling &&
+                        !(node.nextSibling instanceof HTMLParagraphElement)
+                    ) {
+                        result += '\n';
+                    }
+                }
+
+                // Images and emotes.
+                else if (node instanceof HTMLImageElement) {
+
+                    const image = node as HTMLImageElement;
+
+                    // Check if emoji.
+                    if (node.hasAttribute('data-emoji')) {
+                        const id = image.getAttribute('data-emoji');
+                        const name = /^:{0,1}([a-z0-9_]{2,}):{0,1}$/i.exec(image.alt)?.[1];
+                        result += `<:${name}:${id}>`;
+                    }
+
+                    // Append the source for regular images.
+                    else {
+                        result += image.src;
+                    }
+                }
+
+                // Links.
+                else if (node instanceof HTMLAnchorElement) {
+
+                    result += (node as HTMLAnchorElement).href;
+                }
+            }
+        )
+
+        return result;
     }
 }
