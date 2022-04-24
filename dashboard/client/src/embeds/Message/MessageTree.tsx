@@ -1,8 +1,9 @@
-import React from "react";
-import { emojiRegex, ungroupedEmojiRegex } from "../../emojis/EmojiPicker";
-import { Emojis } from "../../emojis/Emojis";
-import { imageRegex, mediaRegex } from "../Media";
-import { MessageNode, MessageNodeType } from "./MessageNode";
+import React from 'react';
+import { emojiRegex, ungroupedEmojiRegex } from '../../emojis/EmojiPicker';
+import { Emojis } from '../../emojis/Emojis';
+import { mediaRegex } from '../Media';
+import { MessageNode, MessageNodeType } from './MessageNode';
+import { MessagePart } from './MessagePart';
 
 
 export class MessageTree {
@@ -18,7 +19,7 @@ export class MessageTree {
     /**
      * Breakdown the text and build out the message tree.
      */
-    private populate(text?: string): void {
+    public populate(text?: string): void {
         if (text) {
             this._root = this.breakdown(text);
         }
@@ -172,102 +173,33 @@ export class MessageTree {
                         return null;
                     }
 
-                    // Non-images are appended as link.
-                    if (!imageRegex.test(node.rawText)) {
-                        return this.wrap_part(
-                            'link',
-                            <a href={node?.rawText}>
-                                {node?.rawText}
-                            </a>,
-                            index,
-                            {
-                                className: 'link'
-                            }
-                        );
-                    }
-                    else {
-                        return this.wrap_part(
-                            'image',
-                            <img src={node.rawText} alt={node.rawText} className='image' />,
-                            index
-                        );
-                    }
+                    return MessagePart.as_media(
+                        node.rawText,
+                        index
+                    );
 
                 case MessageNodeType.EMOJI:
                     if (!node.rawText) {
                         return null;
                     }
 
-                    const matches = node.rawText.match(emojiRegex);
-                    const name = matches?.groups?.['name'];
-                    const id = matches?.groups?.['id'];
-
-                    const to_text = () => this.wrap_part(
-                        'emoji',
-                        <>{node.rawText}</>,
+                    return MessagePart.as_emoji(
+                        emojis,
+                        node.rawText,
                         index
                     );
-
-                    if (name && id && emojis) {
-
-                        const emoji = emojis.emoji_lookup.get(`${name}:${id}`);
-
-                        return emoji
-                            ? this.wrap_part(
-                                'emoji',
-                                <img
-                                    src={emoji.getEmojiUrl()}
-                                    alt={`:${emoji.name}:`}
-                                    data-emoji={emoji.id}
-                                    className='emoji'
-                                />,
-                                index,
-                                {
-                                    editable: false
-                                }
-                            )
-                            : to_text();
-                    }
-                    else {
-                        return to_text();
-                    }
 
                 case MessageNodeType.TEXT:
                     if (!node.rawText) {
                         return null;
                     }
 
-                    return this.wrap_part(
-                        'text',
-                        <>{node.rawText}</>,
-                        index
-                    );
+                    return MessagePart.as_text(node.rawText, index);
                     
                 default:
                     return null;
             }
         }
-    }
-
-    private wrap_part (
-        type: string,
-        content: JSX.Element | string,
-        key: string | number,
-        attributes?: {
-            className?: string,
-            editable?: boolean
-        }
-    ) {
-        return <span
-            key={key}
-            data-text-type={type}
-            className={attributes?.className}
-            contentEditable={attributes?.editable}
-            suppressContentEditableWarning={attributes?.editable}
-            data-testid='message-part'
-        >
-            {content}
-        </span>;
     }
 
     /**
@@ -276,6 +208,10 @@ export class MessageTree {
     public parse(nodes: NodeList): void {
 
         this.populate(this.flatten_nodes(nodes));
+    }
+
+    public flatten(nodes: NodeList): string {
+        return this.flatten_nodes(nodes);
     }
 
     /**
