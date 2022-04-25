@@ -173,6 +173,87 @@ export class MessageController {
             }
         }
 
+        else {
+            const anchorType = (anchorNode as HTMLSpanElement).getAttribute('data-text-type');
+            const focusType = (focusNode as HTMLSpanElement).getAttribute('data-text-type');
+
+            const removeNodes = (
+                startNode: Node | null,
+                endNode: Node | null
+            ) => {
+                const parent = startNode?.parentElement;
+                if (!parent) {
+                    return;
+                }
+
+                while (startNode) {
+
+                    parent.removeChild(startNode);
+    
+                    // Break out once the last node is encountered.
+                    if (startNode === endNode) {
+                        break;
+                    }
+                }
+            }
+
+            // If both text, merge them.
+            if (
+                anchorType === 'text' &&
+                focusType === 'text'
+            ) {
+                const anchorText = anchorNode.textContent;
+                const focusText = focusNode.textContent;
+                anchorNode.textContent =
+                    anchorText?.slice(0, start) +
+                    text +
+                    focusText?.slice(Math.min(end, focusText.length));
+
+                // Remove everything between and the last selected node.
+                removeNodes(anchorNode.nextSibling, focusNode);
+            }
+
+            else {
+
+                // Just the anchor has text? Insert text there.
+                if (anchorType === 'text') {
+                    const textContent = anchorNode.textContent;
+                    anchorNode.textContent =
+                        textContent?.slice(0, start) +
+                        text;
+
+                    // Remove everything between and last.
+                    removeNodes(anchorNode.nextSibling, focusNode);
+                }
+
+                // Maybe just the end? Put here.
+                else if (focusType === 'text') {
+                    const textContent = focusNode.textContent;
+                    focusNode.textContent =
+                        text +
+                        textContent?.slice(Math.min(end, textContent.length));
+
+                    // Remove first and everything between.
+                    removeNodes(anchorNode, focusNode.previousSibling);
+                }
+
+                // Ah. Just put it in its own thing.
+                else {
+
+                    // Create a new span for text.
+                    const newNode = MessagePart.inject_text(text);
+
+                    anchorNode?.parentElement?.insertBefore(
+                        newNode,
+                        anchorNode
+                    );
+
+                    // Removes EVERYTHING.
+                    removeNodes(anchorNode, focusNode);
+                }
+            }
+        }
+
         const current = this.inputRef.current;
         if (current && current.hasChildNodes()) {
             this.onInsert(current.childNodes);
