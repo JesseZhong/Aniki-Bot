@@ -10,57 +10,40 @@ export class MessageController {
     constructor(
         private inputRef: React.RefObject<HTMLDivElement>,
         private onInsert: (nodes: NodeList) => void
-    ) {
-        if (inputRef.current) {
-            const current = inputRef.current;
+    ) { }
 
-            current.onkeydown = (event) => this.onKeyDown(event);
-        }
+    public register() {
+        document.addEventListener('selectionchange', this.onSelectionChange);
+        document.addEventListener('beforeinput', this.onBeforeInput);
     }
 
-    private onKeyDown(event: KeyboardEvent) {
+    public unregister() {
+        document.removeEventListener('selectionchange', this.onSelectionChange);
+        document.removeEventListener('beforeinput', this.onBeforeInput);
+    }
 
-        if (event) {
+    private onSelectionChange() {
+        this.saveSelection(document.getSelection());
+    }
 
-            // Character replacements.
-            let code = '';
-            switch (event.key) {
-                case '<':
-                    code = '&lt;';
-                    break;
-                case '>':
-                    code = '&gt;';
-                    break;
-                default:
-                    code = event.key;
-                    break;
-            }
+    private onBeforeInput(event: InputEvent) {
+        const { inputType, data, preventDefault } = event;
 
-            switch (event.code) {
-
-                // Backspace
-                case '0x000E':
-                    this.insert(code, { left: 1 });
-                    break;
-
-                // Delete
-                case '0xE053':
-                    this.insert(code, { right: 1 });
-                    break;
-
-                // Arrow Left
-                case '0xE04B':
-                    break;
-                case '0xE04D':
-                    break;
-
-                default:
-                    this.insert(code);
-                    break;
-            }
-
-            event.preventDefault();
+        // Let composition through.
+        if (
+            inputType === 'insertCompositionText' ||
+            inputType === 'deleteCompositionText'
+        ) {
+            return;
         }
+
+        if (
+            inputType === 'insertText'
+        ) {
+            this.insert(data ?? '');
+        }
+
+        preventDefault();
     }
 
     public saveSelection(selection?: Selection | null) {

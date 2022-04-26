@@ -37,21 +37,9 @@ const Message = (
 
     React.useEffect(
         () => {
-            const onSelectChange = () => {
-                controller.saveSelection(document.getSelection());
-            }
+            controller.register();
 
-            document.addEventListener(
-                'selectionchange',
-                onSelectChange
-            );
-
-            return () => {
-                document.removeEventListener(
-                    'selectionchange',
-                    onSelectChange
-                );
-            }
+            return controller.unregister();
         }
     );
 
