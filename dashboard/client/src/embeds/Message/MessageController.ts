@@ -1,6 +1,4 @@
 import React from 'react';
-import $ from 'jquery';
-import { MessagePart } from './MessagePart';
 
 
 export interface SelectedMessageNode {
@@ -242,135 +240,135 @@ export class MessageController {
             focusOffset
         } = selection;
 
-        // const start = Math.max(anchorOffset - (offset?.left ?? 0), 0);
-        // const end = focusOffset + (offset?.right ?? 0);
+        const start = Math.max(anchorOffset - (offset?.left ?? 0), 0);
+        const end = focusOffset + (offset?.right ?? 0);
 
-        // // Ensure there is a selection at all.
-        // if (!anchorNode || !focusNode) {
-        //     return;
-        // }
+        // Ensure there is a selection at all.
+        if (!anchorNode || !focusNode) {
+            return;
+        }
 
-        // // Same node?
-        // if (anchorNode.isEqualNode(focusNode)) {
+        // Same node?
+        if (anchorNode.isEqualNode(focusNode)) {
 
-        //     // Text node? Just splice the text in.
-        //     if (anchorNode instanceof Text) {
-        //         const textElement = anchorNode as Text;
-        //         const textContent = textElement.textContent;
-        //         textElement.textContent =
-        //             textContent?.slice(0, start) +
-        //             text +
-        //             textContent?.slice(Math.min(end, textContent.length));
+            // Text node? Just splice the text in.
+            if (anchorNode instanceof Text) {
+                const textElement = anchorNode as Text;
+                const textContent = textElement.textContent;
+                textElement.textContent =
+                    textContent?.slice(0, start) +
+                    text +
+                    textContent?.slice(Math.min(end, textContent.length));
 
-        //         this.resetSelection(anchorNode, start + 1);
-        //     }
+                this.resetSelection(anchorNode, start + 1);
+            }
 
-        //     // Otherwise, insert a new node with the text.
-        //     else {
-        //         if (!anchorNode.hasChildNodes()) {
-        //             return;
-        //         }
+            // Otherwise, insert a new node with the text.
+            else {
+                if (!anchorNode.hasChildNodes()) {
+                    return;
+                }
 
-        //         const children = anchorNode.childNodes;
+                const children = anchorNode.childNodes;
 
-        //         // Create a new span for text.
-        //         const newNode = MessagePart.inject_text(text);
+                // Add text as a regular text element.
+                const newNode = document.createTextNode(text);
 
-        //         // Insert.
-        //         children.length === focusOffset
-        //             ? anchorNode.appendChild(newNode)
-        //             : anchorNode.insertBefore(newNode, children[focusOffset + 1]);
+                // Insert.
+                children.length === focusOffset
+                    ? anchorNode.appendChild(newNode)
+                    : anchorNode.insertBefore(newNode, children[focusOffset + 1]);
 
-        //         // Remove all children that were selected (between offsets).
-        //         for(let i = start; i < Math.min(focusOffset, children.length); i++) {
-        //             anchorNode.removeChild(children[i]);
-        //         }
+                // Remove all children that were selected (between offsets).
+                for(let i = start; i < Math.min(focusOffset, children.length); i++) {
+                    anchorNode.removeChild(children[i]);
+                }
 
-        //         // Try to focus selection on the inner text.
-        //         this.resetSelection(newNode.firstChild ?? newNode, 1);
-        //     }
-        // }
+                // Try to focus selection on the inner text.
+                this.resetSelection(newNode.firstChild ?? newNode, 1);
+            }
+        }
 
-        // else {
-        //     const anchorType = (anchorNode as HTMLSpanElement).getAttribute('data-text-type');
-        //     const focusType = (focusNode as HTMLSpanElement).getAttribute('data-text-type');
+        else {
+            const anchorType = (anchorNode as HTMLSpanElement).getAttribute('data-text-type');
+            const focusType = (focusNode as HTMLSpanElement).getAttribute('data-text-type');
 
-        //     const removeNodes = (
-        //         startNode: Node | null,
-        //         endNode: Node | null
-        //     ) => {
-        //         const parent = startNode?.parentElement;
-        //         if (!parent) {
-        //             return;
-        //         }
+            const removeNodes = (
+                startNode: Node | null,
+                endNode: Node | null
+            ) => {
+                const parent = startNode?.parentElement;
+                if (!parent) {
+                    return;
+                }
 
-        //         while (startNode) {
+                while (startNode) {
 
-        //             parent.removeChild(startNode);
+                    parent.removeChild(startNode);
     
-        //             // Break out once the last node is encountered.
-        //             if (startNode === endNode) {
-        //                 break;
-        //             }
-        //         }
-        //     }
+                    // Break out once the last node is encountered.
+                    if (startNode === endNode) {
+                        break;
+                    }
+                }
+            }
 
-        //     // If both text, merge them.
-        //     if (
-        //         anchorType === 'text' &&
-        //         focusType === 'text'
-        //     ) {
-        //         const anchorText = anchorNode.textContent;
-        //         const focusText = focusNode.textContent;
-        //         anchorNode.textContent =
-        //             anchorText?.slice(0, start) +
-        //             text +
-        //             focusText?.slice(Math.min(end, focusText.length));
+            // If both text, merge them.
+            if (
+                anchorType === 'text' &&
+                focusType === 'text'
+            ) {
+                const anchorText = anchorNode.textContent;
+                const focusText = focusNode.textContent;
+                anchorNode.textContent =
+                    anchorText?.slice(0, start) +
+                    text +
+                    focusText?.slice(Math.min(end, focusText.length));
 
-        //         // Remove everything between and the last selected node.
-        //         removeNodes(anchorNode.nextSibling, focusNode);
-        //     }
+                // Remove everything between and the last selected node.
+                removeNodes(anchorNode.nextSibling, focusNode);
+            }
 
-        //     else {
+            else {
 
-        //         // Just the anchor has text? Insert text there.
-        //         if (anchorType === 'text') {
-        //             const textContent = anchorNode.textContent;
-        //             anchorNode.textContent =
-        //                 textContent?.slice(0, start) +
-        //                 text;
+                // Just the anchor has text? Insert text there.
+                if (anchorType === 'text') {
+                    const textContent = anchorNode.textContent;
+                    anchorNode.textContent =
+                        textContent?.slice(0, start) +
+                        text;
 
-        //             // Remove everything between and last.
-        //             removeNodes(anchorNode.nextSibling, focusNode);
-        //         }
+                    // Remove everything between and last.
+                    removeNodes(anchorNode.nextSibling, focusNode);
+                }
 
-        //         // Maybe just the end? Put here.
-        //         else if (focusType === 'text') {
-        //             const textContent = focusNode.textContent;
-        //             focusNode.textContent =
-        //                 text +
-        //                 textContent?.slice(Math.min(end, textContent.length));
+                // Maybe just the end? Put here.
+                else if (focusType === 'text') {
+                    const textContent = focusNode.textContent;
+                    focusNode.textContent =
+                        text +
+                        textContent?.slice(Math.min(end, textContent.length));
 
-        //             // Remove first and everything between.
-        //             removeNodes(anchorNode, focusNode.previousSibling);
-        //         }
+                    // Remove first and everything between.
+                    removeNodes(anchorNode, focusNode.previousSibling);
+                }
 
-        //         // Ah. Just put it in its own thing.
-        //         else {
+                // Ah. Just put it in its own thing.
+                else {
 
-        //             // Create a new span for text.
-        //             const newNode = MessagePart.inject_text(text);
+                    // Add text as a new text node.
+                    const newNode = document.createTextNode(text);
 
-        //             anchorNode?.parentElement?.insertBefore(
-        //                 newNode,
-        //                 anchorNode
-        //             );
+                    anchorNode?.parentElement?.insertBefore(
+                        newNode,
+                        anchorNode
+                    );
 
-        //             // Removes EVERYTHING.
-        //             removeNodes(anchorNode, focusNode);
-        //         }
-        //     }
-        // }
+                    // Removes EVERYTHING.
+                    removeNodes(anchorNode, focusNode);
+                }
+            }
+        }
 
         const current = this.inputRef.current;
         if (current && current.hasChildNodes()) {

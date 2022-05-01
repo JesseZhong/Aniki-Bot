@@ -1,0 +1,16 @@
+  
+{
+    "short_name": "ANIKI",
+    "name": "ANIKI Dashboard",
+    "icons": [
+      {
+        "src": "favicon.png",
+        "sizes": "96x96",
+        "type": "image/png"
+      }
+    ],
+    "start_url": "./index.html",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#ffffff"
+  }
