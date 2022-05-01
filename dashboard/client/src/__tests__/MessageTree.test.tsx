@@ -43,12 +43,24 @@ afterAll(() => {
 });
 
 const renderTree = (
-    text: string
+    text?: string
 ) => {
     const tree = new MessageTree(text);
 
     return render(<>{tree.render(new Emojis())}</>);
 }
+
+test('should render one message part even with no text', () => {
+    const { getAllByTestId } = renderTree('');
+
+    expect(getAllByTestId(msgPartKey).length).toEqual(1);
+});
+
+test('should render one message part even with nothing', () => {
+    const { getAllByTestId } = renderTree();
+
+    expect(getAllByTestId(msgPartKey).length).toEqual(1);
+})
 
 test('should render plain text whole', () => {
     const text = 'This is a plain text sentence.';

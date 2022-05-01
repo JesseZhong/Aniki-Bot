@@ -18,6 +18,7 @@ export class MessagePart {
     ) {
         return <span
             key={key}
+            data-text-index={key}
             data-text-type={type}
             className={attributes?.className}
             contentEditable={attributes?.editable}
@@ -28,14 +29,17 @@ export class MessagePart {
         </span>;
     }
 
-    private static inject_node(
-        type: MessagePartType
+    public static as_paragraph(
+        children: React.ReactNode,
+        key?: string | number
     ) {
-        const node = document.createElement('span');
-        node.setAttribute('data-text-type', type);
-        node.setAttribute('data-testid', 'message-part');
-
-        return node;
+        return <p
+            key={key}
+            data-paragraph-index={key}
+            data-testid='paragraph'
+        >
+            {children}
+        </p>;
     }
 
     public static as_media(
@@ -113,75 +117,5 @@ export class MessagePart {
             <>{text}</>,
             key
         );
-    }
-
-    public static inject_media(
-        media_text: string
-    ) {
-        const node = this.inject_node('link');
-
-        // Non-images are appended as link.
-        if (!imageRegex.test(media_text)) {
-            const link = document.createElement('a');
-            
-            link.href = media_text;
-            link.textContent = media_text;
-            link.classList.add('link');
-
-            node.appendChild(link);
-        }
-        else {
-            const image = document.createElement('img');
-
-            image.src = media_text;
-            image.alt = media_text;
-            image.classList.add('image');
-
-            node.appendChild(image);
-            node.contentEditable = 'false';
-        }
-
-        return node;
-    }
-
-    public static inject_emoji(
-        emojis: Emojis,
-        emoji: string
-    ) {
-        const node = this.inject_node('emoji');
-
-        const matches = emoji.match(emojiRegex);
-        const name = matches?.groups?.['name'];
-        const id = matches?.groups?.['id'];
-
-        if (name && id && emojis) {
-
-            const emoji = emojis.emoji_lookup.get(`${name}:${id}`);
-
-            if (emoji) {
-                const image = document.createElement('img');
-
-                image.src = emoji.getEmojiUrl();
-                image.alt = `:${emoji.name}:`;
-                image.classList.add('emoji');
-                image.setAttribute('data-emoji', id);
-
-                node.appendChild(image);
-                node.contentEditable = 'false';
-
-                return node;
-            }
-        }
-
-        node.textContent = emoji;
-        return node;
-    }
-
-    public static inject_text(
-        text: string
-    ) {
-        const node = this.inject_node('text');
-        node.textContent = text;
-        return node;
     }
 }

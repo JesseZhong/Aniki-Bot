@@ -5,7 +5,6 @@ import { mediaRegex } from '../Media';
 import { MessageNode, MessageNodeType } from './MessageNode';
 import { MessagePart } from './MessagePart';
 
-
 export class MessageTree {
 
     private _root?: MessageNode;
@@ -20,9 +19,7 @@ export class MessageTree {
      * Breakdown the text and build out the message tree.
      */
     public populate(text?: string): void {
-        if (text) {
-            this._root = this.breakdown(text);
-        }
+        this._root = this.breakdown(text ?? '');
     }
 
     /**
@@ -89,38 +86,43 @@ export class MessageTree {
                 )
                 .filter(w => w);
 
-            // No parts? Send it back as is.
-            if (!parts) {
-                return node;
-            }
-
             const children = [];
 
-            for (const part of parts) {
+            // No parts? Put at least an empty one that can be filled later.
+            if (!parts || parts.length === 0) {
+                children.push(new MessageNode({
+                    type: MessageNodeType.TEXT,
+                    rawText: ''
+                }));
+            }
 
-                // Media maybe?
-                if (mediaRegex.test(part)) {
-                    children.push(new MessageNode({
-                        type: MessageNodeType.MEDIA,
-                        rawText: part
-                    }));
-                }
+            else {
+                for (const part of parts) {
 
-                // Maybe emoji?
-                else if (emojiRegex.test(part)) {
-                    children.push(new MessageNode({
-                        type: MessageNodeType.EMOJI,
-                        rawText: part
-                    }));
-                }
-        
-                else {
-        
-                    // Default is to text.
-                    children.push(new MessageNode({
-                        type: MessageNodeType.TEXT,
-                        rawText: text
-                    }));
+                    // Media maybe?
+                    if (mediaRegex.test(part)) {
+                        children.push(new MessageNode({
+                            type: MessageNodeType.MEDIA,
+                            rawText: part
+                        }));
+                    }
+
+                    // Maybe emoji?
+                    else if (emojiRegex.test(part)) {
+                        children.push(new MessageNode({
+                            type: MessageNodeType.EMOJI,
+                            rawText: part
+                        }));
+                    }
+            
+                    else {
+            
+                        // Default is to text.
+                        children.push(new MessageNode({
+                            type: MessageNodeType.TEXT,
+                            rawText: text
+                        }));
+                    }
                 }
             }
 
@@ -164,9 +166,15 @@ export class MessageTree {
 
                 // Wrap paragraphs with tags.
                 case MessageNodeType.PARAGRAPH:
-                    return <p key={index} data-testid='paragraph'>
-                        {node.children?.map((part, index) => this.render_part(emojis, part, index))}
-                    </p>;
+                    return MessagePart.as_paragraph(
+                        node.children?.map(
+                            (
+                                part,
+                                index
+                            ) => this.render_part(emojis, part, index)
+                        ),
+                        index
+                    );
 
                 case MessageNodeType.MEDIA:
                     if (!node.rawText) {
@@ -190,11 +198,7 @@ export class MessageTree {
                     );
 
                 case MessageNodeType.TEXT:
-                    if (!node.rawText) {
-                        return null;
-                    }
-
-                    return MessagePart.as_text(node.rawText, index);
+                    return MessagePart.as_text(node.rawText ?? '', index);
                     
                 default:
                     return null;
