@@ -5,7 +5,7 @@ import GuildStore from '../stores/GuildStore';
 import VanityStore from '../stores/VanityStore';
 import ActionTypes from './ActionTypes';
 import { AuthAccess } from './AuthActions';
-import { RecieveGuildPayload } from './GuildPayloads';
+import { ReceiveGuildPayload } from './GuildPayloads';
 import { ReceiveVanityPayloads } from './VanityPayloads';
 
 
@@ -43,7 +43,7 @@ const VanityActions = {
                 AppDispatcher.dispatch({
                     type: ActionTypes.RECEIVE_GUILD,
                     guild: guild
-                } as RecieveGuildPayload);
+                } as ReceiveGuildPayload);
 
                 received?.(guild);
             },

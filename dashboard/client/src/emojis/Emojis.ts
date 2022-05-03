@@ -27,17 +27,23 @@ export class Emoji {
 
     /**
      * Generate an emoji's CDN URI.
-     * @param id Identifying snowflake for the emoji.
-     * @param animated GIF/APNG or flat image.
-     * @returns Emoji's URI.
      */
     public getEmojiUrl() {
-        return `${cdnUrl}/emojis/${this.id}.${(this.animated ? 'gif' : 'png')}`;
+        return `${cdnUrl}/emojis/${this.id}.webp`;
     }
 }
 
 export class GuildEmojis extends Guild {
-    emojis?: Emoji[]
+    constructor(
+        guild?: {
+            id?: string,
+            name?: string,
+            icon?: string
+        },
+        public emojis?: Emoji[]
+    ) {
+        super(guild);
+    }
 }
 
 export class Emojis extends Map<string, GuildEmojis> {

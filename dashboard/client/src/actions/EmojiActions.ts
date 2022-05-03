@@ -10,7 +10,7 @@ const EmojiActions = {
         });
     },
 
-    recieve(emojis: Emojis) {
+    receive(emojis: Emojis) {
         AppDispatcher.dispatch({
             type: ActionTypes.RECEIVE_EMOJIS,
             emojis: emojis

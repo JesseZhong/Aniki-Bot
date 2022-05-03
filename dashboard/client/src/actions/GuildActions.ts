@@ -3,7 +3,7 @@ import AppDispatcher from '../AppDispatcher';
 import { Guild } from '../guild/Guild';
 import ActionTypes from './ActionTypes';
 import { AuthAccess } from './AuthActions';
-import { RecieveGuildPayload } from './GuildPayloads';
+import { ReceiveGuildPayload } from './GuildPayloads';
 
 
 const guildApi = GuildAPI(
@@ -21,7 +21,7 @@ const GuildActions = {
                 AppDispatcher.dispatch({
                     type: ActionTypes.RECEIVE_GUILD,
                     guild: guild
-                } as RecieveGuildPayload);
+                } as ReceiveGuildPayload);
             }
         );
     }

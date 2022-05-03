@@ -128,7 +128,7 @@ const Message = (
                     showEmojis &&
                     <EmojiPicker
                         onClick={(encodedEmoji: string) => {
-                            //cursorInsert(encodedEmoji);
+                            controller.insert(encodedEmoji);
                         }}
                     />
                 }
