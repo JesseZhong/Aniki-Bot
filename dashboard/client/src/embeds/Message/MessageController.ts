@@ -14,12 +14,23 @@ export interface MessageTreeSelection {
 
 export class MessageController {
 
-    private treeSelection?: MessageTreeSelection;
+    private treeSelection: MessageTreeSelection;
 
     constructor(
         private inputRef: React.RefObject<HTMLDivElement>,
         private onInsert: (nodes: NodeList) => void
-    ) { }
+    ) {
+        this.treeSelection = {
+            anchor: {
+                part: '0',
+                offset: 0
+            },
+            focus: {
+                part: '0',
+                offset: 0
+            }
+        };
+    }
 
     public register() {
         document.addEventListener('selectionchange', this.onSelectionChange);
@@ -57,7 +68,6 @@ export class MessageController {
 
     public saveSelection(selection?: Selection | null) {
         if (!this.inputRef.current || !selection) {
-            this.treeSelection = undefined;
             return;
         }
 
@@ -136,26 +146,40 @@ export class MessageController {
                     focus: focus
                 }
             }
-
-            else {
-                this.treeSelection = undefined;
-            }
-        }
-
-        // Nothing selected in the input? Release the current selection.
-        else {
-            this.treeSelection = undefined;
         }
     }
 
     public enforceSelection() {
-        if (!this.inputRef.current || !this.treeSelection) {
-            return;
-        }
-
         const selection = document.getSelection();
         if (!selection) {
             return;
+        }
+
+        const {
+            anchorNode,
+            anchorOffset,
+            focusNode,
+            focusOffset
+        } = this.locateSelectedNodes();
+
+        if (anchorNode && focusNode) {
+
+            selection.removeAllRanges();
+            const range = document.createRange();
+
+            range.setStart(anchorNode, anchorOffset);
+            range.setEnd(focusNode, focusOffset);
+
+            selection.addRange(range);
+        }
+    }
+
+    private locateSelectedNodes() {
+        if (!this.inputRef.current) {
+            return {
+                anchorOffset: 0,
+                focusOffset: 0
+            };
         }
 
         const current = this.inputRef.current;
@@ -176,18 +200,11 @@ export class MessageController {
             return parent?.querySelector(`span[data-text-index='${selected.part}']`);
         }
 
-        const anchorNode = locateNode(anchor);
-        const focusNode = locateNode(focus);
-
-        if (anchorNode && focusNode) {
-
-            selection.removeAllRanges();
-            const range = document.createRange();
-
-            range.setStart(anchorNode, anchor.offset);
-            range.setEnd(focusNode, focus.offset);
-
-            selection.addRange(range);
+        return {
+            anchorNode: locateNode(anchor),
+            anchorOffset: anchor.offset,
+            focusNode: locateNode(focus),
+            focusOffset: focus.offset
         }
     }
 
@@ -221,32 +238,20 @@ export class MessageController {
             right?: number
         }
     ) {
-        if (!this.treeSelection) {
-            return;
-        }
-
-        this.enforceSelection();
-
-        const selection = document.getSelection();
-
-        if (!selection) {
-            return;
-        }
-
         const {
             anchorNode,
             anchorOffset,
             focusNode,
             focusOffset
-        } = selection;
-
-        const start = Math.max(anchorOffset - (offset?.left ?? 0), 0);
-        const end = focusOffset + (offset?.right ?? 0);
+        } = this.locateSelectedNodes();
 
         // Ensure there is a selection at all.
         if (!anchorNode || !focusNode) {
             return;
         }
+
+        const start = Math.max(anchorOffset - (offset?.left ?? 0), 0);
+        const end = focusOffset + (offset?.right ?? 0);
 
         // Same node?
         if (anchorNode.isEqualNode(focusNode)) {

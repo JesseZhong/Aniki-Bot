@@ -10,7 +10,7 @@ export default {
     component: Message
 } as ComponentMeta<typeof Message>;
 
-const create = (
+const TestMessage = (
     content?: string
 ) => {
 
@@ -68,6 +68,6 @@ const create = (
     </Formik>;
 }
 
-export const Default: ComponentStory<typeof Message> = () => create();
+export const Default: ComponentStory<typeof Message> = () => TestMessage();
 
-export const WithContent: ComponentStory<typeof Message> = () => create('Hello this is fun.');
+export const WithContent: ComponentStory<typeof Message> = () => TestMessage('Hello this is fun.');

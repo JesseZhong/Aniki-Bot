@@ -81,6 +81,8 @@
     "react-tenor": "^2.2.0",
     "react-two-thumb-input-range": "^1.0.7",
     "rxjs": "^7.0.0",
+    "slate": "^0.78.0",
+    "slate-react": "^0.79.0",
     "superagent": "^6.1.0",
     "uuid": "^8.3.2",
     "webpack-cli": "^4.7.0",

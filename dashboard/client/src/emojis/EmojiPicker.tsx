@@ -31,7 +31,11 @@ export const getRandomEmoji = (): string | null => {
  * @returns The panel/picker.
  */
 const EmojiPicker = (props: {
-    onClick: (encodedEmoji: string) => void
+    onClick: (
+        encodedEmoji: string,
+        name: string,
+        id: string
+    ) => void
 }) => {
 
     const emojis = getState().emojis;
@@ -111,7 +115,11 @@ const EmojiPicker = (props: {
                                 }
                             }
                         }
-                        onClick={() => props.onClick(`<:${emoji.name}:${emoji.id}>`)}
+                        onClick={() => props.onClick(
+                            `<:${emoji.name}:${emoji.id}>`,
+                            emoji.name,
+                            emoji.id
+                        )}
                     >
                         <img
                             src={emoji.getEmojiUrl()}

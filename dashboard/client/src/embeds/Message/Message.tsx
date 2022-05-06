@@ -1,13 +1,16 @@
 import React from 'react';
-import ReactDOMServer from 'react-dom/server';
-import { getState } from '../../containers/AppContainer';
 import { ErrorMessage, FieldHookConfig, useField } from 'formik';
 import EmojiPicker, { getRandomEmoji } from '../../emojis/EmojiPicker';
 import Tenor, { Result } from 'react-tenor';
-import { MessageTree } from './MessageTree';
-import { MessageController } from './MessageController';
+import { DefaultElement, Editable, RenderElementProps, Slate, withReact } from 'slate-react';
+import { createEditor, Descendant } from 'slate';
+import { EmojiElement } from '../../slate';
+import { insertEmoji, withMedia } from './MessageCommands';
+import EmojiPart from './EmojiPart';
+import CodePart from './CodePart';
 import './Message.sass';
 import './ReactTenor.sass';
+
 
 const tenorKey = 'LVMDW1I5XR7G';
 
@@ -20,28 +23,10 @@ const Message = (
     
     // eslint-disable-next-line
     const [field, _meta, helpers] = useField<string>(props);
+
+    const [editor] = React.useState(() => withMedia(withReact(createEditor())));
+
     const textRef = React.useRef<HTMLDivElement>(null);
-    const emojis = getState().emojis;
-    const [value, setValue] = React.useState(field.value);
-
-    const messageTree = new MessageTree(value);
-    const controller =  new MessageController(
-        textRef,
-        n => helpers.setValue(messageTree.flatten(n))
-    );
-
-    const assignValue = (val: string) => {
-        helpers.setValue(val);
-        setValue(val);
-    }
-
-    React.useEffect(
-        () => {
-            controller.register();
-
-            return controller.unregister();
-        }
-    );
 
     // Expand and contract the textarea to
     // the size of the text as the user types.
@@ -56,30 +41,60 @@ const Message = (
         },
         [
             textRef,
-            value,
             props
         ]
     );
-
-    const renderText = () => ReactDOMServer.renderToString(<>{messageTree.render(emojis)}</>);
 
     const [showTenor, setShowTenor] = React.useState(false);
     const [showEmojis, setShowEmojis] = React.useState(false);
     const [emojiBtn, setEmojiBtn] = React.useState(getRandomEmoji());
 
+    const renderElement = React.useCallback(
+        (props: RenderElementProps) => {
+            switch(props.element.type) {
+                case 'code':
+                    return <CodePart {...props} />;
+                case 'emoji':
+                    return <EmojiPart
+                        {...props}
+                        element={props.element as EmojiElement}
+                    />;
+                default:
+                    return <DefaultElement {...props} />;
+            }
+        },
+        []
+    );
+
+    const initialValue: Descendant[] = [
+        {
+            type: 'paragraph',
+            children: field.value.split('\n').map(text => ({
+                text: text
+            }))
+        }
+    ];
 
     return (
         <div className={props.className}>
             <div className='d-flex flex-column message'>
-                <div className='form-floating main-block'>
-                    <div
-                        ref={textRef}
-                        id={field.name}
-                        className='wysiwyg form-control'
-                        contentEditable
-                        suppressContentEditableWarning
-                        dangerouslySetInnerHTML={{ __html: renderText() }}
-                    />
+                <div
+                    ref={textRef}
+                    className='form-floating main-block'
+                >
+                    <Slate
+                        editor={editor}
+                        value={initialValue}
+                        onChange={(value: Descendant[]) => {
+                            console.log(value)
+                        }}
+                    >
+                        <Editable
+                            id={field.name}
+                            className='wysiwyg form-control'
+                            renderElement={renderElement}
+                        />
+                    </Slate>
                     <label htmlFor={field.name}>
                         Message
                     </label>
@@ -127,8 +142,16 @@ const Message = (
                 {
                     showEmojis &&
                     <EmojiPicker
-                        onClick={(encodedEmoji: string) => {
-                            controller.insert(encodedEmoji);
+                        onClick={(
+                            encodedEmoji: string,
+                            name: string,
+                            id: string
+                        ) => {
+                            insertEmoji(
+                                editor,
+                                name,
+                                id
+                            );
                         }}
                     />
                 }
