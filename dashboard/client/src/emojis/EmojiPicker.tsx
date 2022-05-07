@@ -121,10 +121,7 @@ const EmojiPicker = (props: {
                             emoji.id
                         )}
                     >
-                        <img
-                            src={emoji.getEmojiUrl()}
-                            alt={emoji.name}
-                        />
+                        {emoji.render()}
                     </div>;
                 }  
             )

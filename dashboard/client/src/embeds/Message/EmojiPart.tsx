@@ -24,16 +24,12 @@ const EmojiPart = (
 
     const emoji = emojis.emoji_lookup.get(`${name}:${id}`);
 
-    console.log(emoji)
-
     return (
         emoji
-        ? <img
-            {...attributes}
-            className='emoji'
-            src={emoji.getEmojiUrl()}
-            alt={name}
-        />
+        ? <span {...attributes}>
+            {emoji.render()}
+            {children}
+        </span>
         : <span>
             {children}
         </span>

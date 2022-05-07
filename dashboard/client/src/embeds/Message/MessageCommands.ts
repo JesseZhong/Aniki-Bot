@@ -7,9 +7,20 @@ export const withMedia = (
 ) => {
     const {
         isVoid,
+        isInline,
         insertData
     } = editor;
 
+    // Treat emojis as inline.
+    editor.isInline = (
+        element: MessageElement
+    ) => {
+        return element.type === 'emoji'
+            ? true
+            : isInline(element);
+    }
+
+    // Prevent emojis and images from being editable like text.
     editor.isVoid = (
         element: MessageElement
     ) => {

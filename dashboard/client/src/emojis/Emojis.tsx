@@ -1,4 +1,5 @@
-import { Guild } from "../guild/Guild";
+import React from 'react';
+import { Guild } from '../guild/Guild';
 
 const cdnUrl = 'https://cdn.discordapp.com';
 
@@ -28,8 +29,44 @@ export class Emoji {
     /**
      * Generate an emoji's CDN URI.
      */
-    public getEmojiUrl() {
-        return `${cdnUrl}/emojis/${this.id}.webp`;
+    public getEmojiUrl(
+        options?: {
+            webp?: boolean,
+            size?: number
+        }
+    ) {
+        const size = options?.size ?? 40;
+        if (options?.webp) {
+            return `${cdnUrl}/emojis/${this.id}.${this.animated ? 'gif' : 'png'}?size=${size}`;
+        }
+        else {
+            return `${cdnUrl}/emojis/${this.id}.webp?size=${size}&quality=lossless`;
+        }
+    }
+
+    public render(
+        size?: number
+    ) {
+        return (
+            <picture>
+                <source
+                    srcSet={this.getEmojiUrl({
+                        webp: true,
+                        size: size
+                    })}
+                    type='image/webp'
+                />
+                <img
+                    className='emoji'
+                    src={this.getEmojiUrl({
+                        size: size
+                    })}
+                    alt={`:${this.name}:`}
+                    draggable={false}
+                    data-id={this.id}
+                />
+            </picture>
+        )
     }
 }
 
