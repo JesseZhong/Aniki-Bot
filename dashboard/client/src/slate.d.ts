@@ -10,7 +10,7 @@ type BaseElement = {
 }
 
 type DefaultElement = {
-    type: 'paragraph' | 'code';
+    type: 'paragraph' | 'code' | 'quote';
 } & BaseElement;
 
 type ImageElement = {

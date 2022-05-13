@@ -2,12 +2,10 @@ import React from 'react';
 import { ErrorMessage, FieldHookConfig, useField } from 'formik';
 import EmojiPicker, { getRandomEmoji } from '../../emojis/EmojiPicker';
 import Tenor, { Result } from 'react-tenor';
-import { DefaultElement, Editable, RenderElementProps, Slate, withReact } from 'slate-react';
+import { Editable, Slate, withReact } from 'slate-react';
 import { createEditor, Descendant } from 'slate';
-import { EmojiElement } from '../../slate';
-import { insertEmoji, withMedia } from './MessageCommands';
-import EmojiPart from './EmojiPart';
-import CodePart from './CodePart';
+import { insertEmoji, insertImage, withMedia } from './MessageCommands';
+import { MessageController } from './MessageController';
 import './Message.sass';
 import './ReactTenor.sass';
 
@@ -27,6 +25,8 @@ const Message = (
     const [editor] = React.useState(() => withMedia(withReact(createEditor())));
 
     const textRef = React.useRef<HTMLDivElement>(null);
+
+    const controller = new MessageController(editor);
 
     // Expand and contract the textarea to
     // the size of the text as the user types.
@@ -49,22 +49,7 @@ const Message = (
     const [showEmojis, setShowEmojis] = React.useState(false);
     const [emojiBtn, setEmojiBtn] = React.useState(getRandomEmoji());
 
-    const renderElement = React.useCallback(
-        (props: RenderElementProps) => {
-            switch(props.element.type) {
-                case 'code':
-                    return <CodePart {...props} />;
-                case 'emoji':
-                    return <EmojiPart
-                        {...props}
-                        element={props.element as EmojiElement}
-                    />;
-                default:
-                    return <DefaultElement {...props} />;
-            }
-        },
-        []
-    );
+    const renderElement = React.useCallback(controller.onRenderElement, []);
 
     const initialValue: Descendant[] = [
         {
@@ -86,13 +71,13 @@ const Message = (
                         editor={editor}
                         value={initialValue}
                         onChange={(value: Descendant[]) => {
-                            console.log(value)
                         }}
                     >
                         <Editable
                             id={field.name}
                             className='wysiwyg form-control'
                             renderElement={renderElement}
+                            onKeyDown={event => controller.onKeyDown(event)}
                         />
                     </Slate>
                     <label htmlFor={field.name}>
@@ -131,10 +116,9 @@ const Message = (
                         token={tenorKey}
                         onSelect={(result: Result) => {
                             const gif = result.media[0].gif.url;
-                            const text = field.value
-                                ? `${field.value}\n${gif}`
-                                : gif
-                            helpers.setValue(text, true);
+                            if (gif) {
+                                insertImage(editor, gif);
+                            }
                         }}
                         searchPlaceholder='Search Tenor'
                     />
