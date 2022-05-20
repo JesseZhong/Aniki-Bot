@@ -139,7 +139,7 @@ After=network.target
 [Service]
 User=$user
 WorkingDirectory=$script_path
-Environment='PATH=$script_path/env/bin'
+Environment='PATH=$script_path/env/bin:/usr/local/bin:$PATH'
 ExecStart=$script_path/env/bin/uwsgi --ini dashboard/api/api.ini --enable-threads
 
 [Install]
