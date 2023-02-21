@@ -46,5 +46,5 @@ websockets==10.3
 Werkzeug==2.0.3
 yarl==1.6.3
 youtube-dl==2021.4.26
-yt-dlp==2022.4.8
+yt-dlp==2023.2.17
 zipp==3.14.0
