@@ -1,6 +1,5 @@
 #!/bin/python
 
-import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileModifiedEvent
 from typing import Callable
@@ -12,7 +11,6 @@ class FileWatcher:
         directory: str,
         callback
     ):
-        super().__init__()
         self.directory = directory
         
         handler = FileHandler(callback)

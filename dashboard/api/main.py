@@ -26,7 +26,7 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
     response.headers.add(
         'Access-Control-Allow-Headers',
-        'Content-Type, Accept, Authorization, Refresh, Guild, Code, Content-Type, State, Refresh, X-Requested-With'
+        'Accept, Authorization, Refresh, Guild, Code, Content-Type, State, Refresh, X-Requested-With'
     )
     response.headers.add(
         'Access-Control-Allow-Methods',

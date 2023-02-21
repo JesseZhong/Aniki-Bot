@@ -139,7 +139,8 @@ class Bot(Client):
                         url,
                         self.voice_clients,
                         channel,
-                        self.loop
+                        self.loop,
+                        use_ytdlp=True
                     )
                 except Exception as error:
                     self.log_error(error)
