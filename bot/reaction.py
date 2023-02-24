@@ -73,7 +73,8 @@ class Reaction:
                 loop,
                 start=self.start,
                 end=self.end,
-                clip=self.clip
+                clip=self.clip,
+                use_ytdlp=True
             )
 
 
