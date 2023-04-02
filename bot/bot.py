@@ -4,7 +4,7 @@ import traceback
 from os import path
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
-from discord import Client, Message, Member
+from discord import Client, Intents, Message, Member
 from bot.persona import Persona
 from bot.reaction import Reaction
 from bot.state import is_connected
@@ -18,9 +18,10 @@ class Bot(Client):
 
     def __init__(
         self,
+        intents: Intents,
         log_location: str
     ):
-        super().__init__()
+        super().__init__(intents=intents)
 
         # Setup logging.
         Path(log_location).mkdir(parents=True, exist_ok=True)
